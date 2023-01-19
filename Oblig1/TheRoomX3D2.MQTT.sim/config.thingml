@@ -1,0 +1,30 @@
+import "psm.thingml"
+import "pim.thingml"
+import "io.thingml"
+import "javatimer.thingml"
+
+configuration X3D_MQTT_SIM {
+	instance T1:MQTTDriver
+	instance pim:PIM
+	instance myself:Human
+	instance g_temp:TimerJava
+	instance g_humn:TimerJava
+	
+	// PSM	
+	connector T1.provide_temp => pim.get_sensor
+		
+	// HMI
+	connector myself.send_cmd => pim.human_input
+	
+	// PIM outwards 
+	connector pim.request_sensor => T1.require_val
+	connector pim.request_actuator => T1.require_val
+	connector pim.human_output => myself.get_values
+	
+	connector pim.guard_temperature =>g_temp.timer
+	connector pim.guard_human => g_humn.timer
+	
+	// Simulation
+	instance sim:Simulation
+	connector sim.toMQTT => T1.MQTT // but it also works the other way 
+}
