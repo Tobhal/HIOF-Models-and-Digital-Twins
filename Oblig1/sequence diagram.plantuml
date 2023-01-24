@@ -1,0 +1,32 @@
+@startuml sequense diagram
+mainframe sd SimpleThermostat
+
+participant "Simulation:sim" as sim
+participant "psm:PSM" as psm
+participant "pim:PIM" as pim
+actor human
+
+pim <- human : set_temperature(temp1)
+psm <- pim: add_thermometer(id1, txt1)
+psm <- pim: add_light_sensor(id1, txt1)
+psm <- pim: add_device(didid1, didtxt1)
+pim -> human : prompt("Now entering thermostat")
+
+loop
+    sim -> pim: luminance_change(id1, lightval)
+    sim -> pim: temperature(id1, txt1, temp2)
+
+    alt regulate temprature
+        |||
+        else temp2 < temp1 - temp_diff
+            pim -> sim: SwitchOn(did1)
+        else temp2 >= temp1 + temp_diff
+            pim -> sim: SwitchOff(did1)
+    end
+
+end
+
+sim <- human: SwitchOn(did1)
+sim <- human: SwitchOff(did1)
+
+@enduml
