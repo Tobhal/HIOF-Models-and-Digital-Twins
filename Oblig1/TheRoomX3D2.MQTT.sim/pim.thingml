@@ -53,6 +53,8 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 		end
 		
 		composite state Build init Alive1 keeps history {
+			
+		
 		on entry guard_human!timer_start(30000) // 30s to start the thermostat 
 		on exit guard_human!timer_cancel()
 			state Alive1 {
@@ -301,15 +303,13 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				end
 			}
 			
-			// Transitions of the composite state Running
-			transition -> Running
-			event givedelta:human_input?set_delta
+			// Internal event of set_delta and fetch_temp
+			internal event givedelta:human_input?set_delta
 			action do
 				// just forward the polling interval instructions to the PSM
 				delta = givedelta.dlta
 			end
-			transition -> Running
-			event fetch:human_input?fetch_temp
+			internal event fetch:human_input?fetch_temp
 			action do
 				// reporting the temperature value
 				human_output!temperature(thermo_id,"temperature ",lasttemp)

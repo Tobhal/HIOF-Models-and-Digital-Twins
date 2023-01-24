@@ -48,26 +48,8 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg {
 	property last_onoff:Integer = 0 // number of onoff switches in the set 		
 	property did:Integer // temporary device id
 	
-	statechart behaviorMQTTDriver init Alive1 {
-			state Alive1 {
-				on entry do
-					provide_temp!iamalive1() // making sure that all processes are alive before starting
-				end
-				transition -> Alive2
-				event alv:require_val?iamalive1
-				action do
-					provide_temp!iamalive2()
-				end				
-				transition -> Idle
-				event alv:require_val?iamalive2
-				action do
-					provide_temp!iamalive2()
-				end				
-			}	
-			state Alive2{
-				transition -> Idle	
-				event alv:require_val?iamalive2 
-			}
+	statechart behaviorMQTTDriver init Idle {
+		
 		state Idle {
 			transition -> Idle
 			event put_t:MQTT?temperature
