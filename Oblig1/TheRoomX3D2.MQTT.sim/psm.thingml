@@ -17,57 +17,53 @@ protocol MQTT @serializer "JSON"
  */
 
 thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg {
-	required port provide_temp {sends temperature, iamalive1, iamalive2}
-	provided port require_val {receives add_thermometer, add_device, SwitchOn, SwitchOff, iamalive1, iamalive2}
+	// Receives
+	provided port require_val {
+		receives add_thermometer, 
+				 add_device, 
+				 SwitchOn, 
+				 SwitchOff, 
+				 iamalive1, 
+				 iamalive2
+	}
+
+	// Sends
+	required port provide_temp {
+		sends temperature, 
+			  iamalive1, 
+			  iamalive2
+	}
 	
 	//Only one MQTT port to receive the sensor values
 	provided port MQTT {
 		receives temperature
-		sends SwitchOn,SwitchOff
+		sends SwitchOn,
+			  SwitchOff
 	}
 
-	property thermometers:Integer[25] // Identifiers of the thermometers in the set
-	property thermotext:String[25] // corresponding explanatory text 
-	property thermoval:Double[25] // values to report from the corresponding thermometer
+	property thermometers:Integer[25] 	// Identifiers of the thermometers in the set
+	property thermotext:String[25] 		// corresponding explanatory text 
+	property thermoval:Double[25] 		// values to report from the corresponding thermometer
 	
-	property lightsensors:Integer[25] // Identifiers of the lightsensors in the set
-	property lightval:Double[25] // values to report from the corresponding lightsensor
+	property lightsensors:Integer[25] 	// Identifiers of the lightsensors in the set
+	property lightval:Double[25] 		// values to report from the corresponding lightsensor
 	
 	property motionsensors:Integer[25] // Identifiers of the thermometers in the set
 	
-	property last_mo:Integer = 0 // number of motion sensors in the set  
-	property last_light:Integer = 0 // number of light sensors in the set  
-	property last_thermo:Integer = 0 // number of thermometers in the set 
-	property foundL:Boolean // temporary - true when item found in loop
-	property i:Integer // runner index in list
-	property id_s:Integer // temporary id value (to be used with kick-down)
-	property found:Boolean // temporary - true when item found in loop
+	property last_mo:Integer = 0 		// number of motion sensors in the set  
+	property last_light:Integer = 0 	// number of light sensors in the set  
+	property last_thermo:Integer = 0 	// number of thermometers in the set 
+
+	property foundL:Boolean 	// temporary - true when item found in loop
+	property i:Integer 			// runner index in list
+	property id_s:Integer 		// temporary id value (to be used with kick-down)
+	property found:Boolean 		// temporary - true when item found in loop
 	
+	property onoffswitches:Integer[25] 	// Identifiers of the onoffswitches in the set
+	property last_onoff:Integer = 0 	// number of onoff switches in the set 		
+	property did:Integer 				// temporary device id
 	
-	property onoffswitches:Integer[25] // Identifiers of the onoffswitches in the set
-	property last_onoff:Integer = 0 // number of onoff switches in the set 		
-	property did:Integer // temporary device id
-	
-	statechart behaviorMQTTDriver init Alive1 {
-			state Alive1 {
-				on entry do
-					provide_temp!iamalive1() // making sure that all processes are alive before starting
-				end
-				transition -> Alive2
-				event alv:require_val?iamalive1
-				action do
-					provide_temp!iamalive2()
-				end				
-				transition -> Idle
-				event alv:require_val?iamalive2
-				action do
-					provide_temp!iamalive2()
-				end				
-			}	
-			state Alive2{
-				transition -> Idle	
-				event alv:require_val?iamalive2 
-			}
+	statechart behaviorMQTTDriver init Idle{
 		state Idle {
 			transition -> Idle
 			event put_t:MQTT?temperature

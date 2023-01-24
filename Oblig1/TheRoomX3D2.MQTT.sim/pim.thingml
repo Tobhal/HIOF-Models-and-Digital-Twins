@@ -9,43 +9,57 @@ import "pim_messages.thingml"
 import "timer.thingml"
 
 thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
+	// Receives
 	provided port get_sensor {
-		receives iamalive1,iamalive2, temperature
-	}
-	required port request_sensor {
-		sends iamalive1, iamalive2, add_thermometer
-	}
-	required port request_actuator{
-		sends add_device, SwitchOn, SwitchOff
+		receives iamalive1, 
+				 iamalive2, 
+				 temperature
 	}
 	provided port human_input {
-		receives SwitchOn, SwitchOff, set_temperature,  set_delta, fetch_temp
+		receives SwitchOn, 
+				 SwitchOff, 
+				 set_temperature,  
+				 set_delta, 
+				 fetch_temp
 	}
+
+	// Sends
 	required port human_output {
-		sends temperature, prompt
+		sends temperature, 
+			  prompt
 	}
-	
+	required port request_sensor {
+		sends iamalive1, 
+			  iamalive2, 
+			  add_thermometer
+	}
+	required port request_actuator{
+		sends add_device, 
+			  SwitchOn, 
+			  SwitchOff
+	}
+
 	//timer ports - it does not hold to include TimerClient since it only has one port and therefore cannot distinguish between two timers
 	required port guard_temperature
     {
 		receives timer_timeout
-		sends timer_start, timer_cancel
+		sends timer_start, 
+			  timer_cancel
 	}
     
 	required port guard_human
     {
 		receives timer_timeout
-		sends timer_start, timer_cancel
+		sends timer_start, 
+			  timer_cancel
 	}
     
+	property tmrature:Double = 20 	// the requested temperature for the room
+	property thermo_id:Integer = 1 	// the single thermometer identifier
+	property switch_id:Integer = 1 	// the single on-off switch identifier
+	property delta:Double = 0.10 	// the maximum allowed difference from the comfort temperature
 	
-	
-	property tmrature:Double = 20 // the requested temperature for the room
-	property thermo_id:Integer = 1 // the single thermometer identifier
-	property switch_id:Integer = 1 // the single on-off switch identifier
-	property delta:Double = 0.10 // the maximum allowed difference from the comfort temperature
-	
-	property lasttemp:Double = 0 // the last temperature recorded, buffering one measurement
+	property lasttemp:Double = 0 	// the last temperature recorded, buffering one measurement
 	
 	statechart PIM_behavior init Build {
 		on entry do
@@ -152,7 +166,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 					end
 				}
 				
-				state TemprIncrease{ // Invariant: Switch is ON and temperature should increase
+				state TemprIncrease { // Invariant: Switch is ON and temperature should increase
 				on entry guard_temperature!timer_start(65000)
 				on exit guard_temperature!timer_cancel()
 				
@@ -193,7 +207,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 
 				}
 
-				state TemprDecrease{ // Invariant: Switch is OFF and temperature should decrease
+				state TemprDecrease { // Invariant: Switch is OFF and temperature should decrease
 				on entry guard_temperature!timer_start(65000) 
 				on exit guard_temperature!timer_cancel()
 				
