@@ -1,10 +1,11 @@
 @startuml sequense diagram
-mainframe sd SimpleThermostat
+mainframe set name here
 
-participant "Simulation:sim" as sim
+participant "simulation:sim" as sim
 participant "psm:PSM" as psm
 participant "pim:PIM" as pim
-actor human
+participant "enerty_saver:ES" as es
+actor "myself:Human" as human
 
 pim <- human : set_temperature(temp1)
 psm <- pim: add_thermometer(id1, txt1)

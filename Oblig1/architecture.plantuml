@@ -1,5 +1,5 @@
 @startuml X3D2_MQTT_SIM
-mainframe X3D2_MQTT_SIM
+mainframe set name here
 
 'HUMAN
 rectangle myself:Human {

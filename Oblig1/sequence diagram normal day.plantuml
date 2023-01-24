@@ -1,5 +1,5 @@
 @startuml sequense diagram
-mainframe sd SimpleThermostat
+mainframe set name here
 
 participant "simulation:sim" as sim
 participant "psm:PSM" as psm
@@ -19,8 +19,8 @@ psm <- pim: add_device(didid1, didtxt1)
 pim -> human: prompt("Now entering thermostat")
 
 hnote across: day and light on
-
 'setup compleat
+
 sim -> pim: temprature(1, "", 15)
 sim -> es: luminence(1, "", 20_000)
 sim <- pim: switch_on(1)
