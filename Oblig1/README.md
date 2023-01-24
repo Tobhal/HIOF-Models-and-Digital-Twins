@@ -4,6 +4,6 @@
 
 ### Lights on or off
 
-<img title="Termostate when light goes of or on" alt="Alt text" src="/Bilder/Sequence_diagram_light_sensor_no_current_time_tracking.PNG">
+![Thermostate in different states](https://github.com/Tobhal/HIOF-Models-and-Digital-Twins/blob/AleksanderE/Oblig1/Bilder/Sequence_diagram_light_sensor_no_current_time_tracking.PNG)
 
 ## Composite diagram
