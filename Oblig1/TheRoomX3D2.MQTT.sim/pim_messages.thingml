@@ -33,7 +33,6 @@ thing fragment MotionMsg {
 }
 
 // Devices actuators in general
-
 thing fragment DeviceGeneral {
 	message add_device(did:Integer);
 }
@@ -44,3 +43,9 @@ thing fragment OnOffMsg includes DeviceGeneral{
 	message SwitchOff(did:Integer);
 }
 
+// Luminance
+thing fragment LuminanceMsg {
+    message liminance(id:Integer, lum:Double);
+    message add_lightsensor(id:Integer);
+    message set_luminance(lum:Double)
+}
