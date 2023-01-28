@@ -1,0 +1,12 @@
+import "datatypes.thingml" from stl
+
+/* PSM must be included */
+import "pim.thingml"
+import "pim_messages.thingml"
+import "timer.thingml"
+
+thing ES includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
+	required port get_luminecens {
+		receives lightval
+	}
+}

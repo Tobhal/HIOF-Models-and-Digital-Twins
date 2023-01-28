@@ -2,6 +2,7 @@ import "psm.thingml"
 import "pim.thingml"
 import "io.thingml"
 import "javatimer.thingml"
+import "energy_saver.thingml"
 
 configuration X3D_MQTT_SIM {
 	instance T1:MQTTDriver
@@ -9,6 +10,7 @@ configuration X3D_MQTT_SIM {
 	instance myself:Human
 	instance g_temp:TimerJava
 	instance g_humn:TimerJava
+	instance energy_saver:ES 
 	
 	// PSM	
 	connector T1.provide_temp => pim.get_sensor

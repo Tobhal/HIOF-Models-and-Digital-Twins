@@ -23,3 +23,12 @@ thing Simulation includes TemperatureMsg, OnOffMsg
 		receives SwitchOn, SwitchOff
 	}
 }
+
+// Energy saver
+
+thing ES includes TemperatureMsg, OnOffMsg {
+	required port get_l {
+		receives luminecense
+	}
+	provided port
+}
