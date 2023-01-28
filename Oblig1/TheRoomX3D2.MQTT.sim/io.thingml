@@ -16,19 +16,27 @@ thing Human includes TemperatureMsg, GeneralMsg, OnOffMsg
 }
 
 //SIMULATION
-thing Simulation includes TemperatureMsg, OnOffMsg 
+thing Simulation includes TemperatureMsg, OnOffMsg, LuminanceMsg 
 @mock "true"
 { 	required port toMQTT {
 		sends temperature
 		receives SwitchOn, SwitchOff
 	}
+	required port send_luminence{
+		sends luminance
+	}
 }
 
 // Energy saver
 
-thing ES includes TemperatureMsg, OnOffMsg {
-	required port get_l {
-		receives luminecense
+thing ES includes TemperatureMsg, LuminanceMsg ,OnOffMsg {
+	provided port get_luminence {
+		receives luminance
 	}
-	provided port
+	provided port human_input {
+		receives temperature
+	}
+	required port tempAdjust {
+		sends temperature
+	}
 }
