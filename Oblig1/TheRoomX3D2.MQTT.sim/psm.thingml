@@ -52,12 +52,15 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 	
 	property lightsensors:Integer[25] 	// Identifiers of the lightsensors in the set
 	property lightval:Double[25] 		// values to report from the corresponding lightsensor
+
+	property lumval:Double[25]
 	
 	property motionsensors:Integer[25] // Identifiers of the thermometers in the set
 	
 	property last_mo:Integer = 0 		// number of motion sensors in the set  
 	property last_light:Integer = 0 	// number of light sensors in the set  
 	property last_thermo:Integer = 0 	// number of thermometers in the set 
+	property last_lum:Integer = 0
 
 	property foundL:Boolean 	// temporary - true when item found in loop
 	property i:Integer 			// runner index in list
@@ -88,6 +91,26 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 					provide_temp!temperature(id_s,thermotext[i],put_t.t)				
 				end
 			end
+
+			transition -> Idle
+			event put_t:MQTT?luminance
+			action do 
+				id_s = put_t.id
+
+				i = 0
+				found = false
+				while (i < last_lum and (not found)) do 
+					if (id_s == lightsensors[i]) do 
+						found = true
+					end
+				end
+
+				if (found) do 
+					lumval[i-1] = put_t.lum
+					provice_lum_motion!luminance(id_s, put_t.lum)
+				end
+
+			end
 						
 			transition -> Idle
 			event addt:require_val?add_thermometer
@@ -109,11 +132,12 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 			end
 
 			transition -> Idle
-			event swon: require_val?SwitchOn
+			event swon:require_val?SwitchOn
 			action do
 				did=swon.did
 				i=0
 				found = false
+
 				while (i<last_onoff and (not found)) do
 					if (did==onoffswitches[i]) do
 						found=true // trick to terminate while loop
@@ -126,7 +150,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 			end
 
 			transition -> Idle
-			event swoff: require_val?SwitchOff
+			event swoff:require_val?SwitchOff
 			action do
 				did=swoff.did
 				i=0

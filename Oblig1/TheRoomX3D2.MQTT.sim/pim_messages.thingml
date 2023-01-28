@@ -11,7 +11,7 @@ thing fragment GeneralMsg {
 
 //Temperature
 thing fragment TemperatureMsg {
-    message temperature(id:Integer, txt:String, t : Double);
+    message temperature(id:Integer, txt:String, t:Double);
     message add_thermometer(id:Integer,txt:String);
     message set_temperature(t:Double);
     message set_delta(dlta:Double) // how close the temperature must be to the comfort temperature
@@ -20,7 +20,7 @@ thing fragment TemperatureMsg {
 
 //Luminance
 thing fragment LuminanceMsg {
-    message luminance(id:Integer,lum : Double); //luminance
+    message luminance(id:Integer, lum:Double); //luminance
     message add_lightsensor(id:Integer);
     message set_luminance(lum:Double); // for setting the threshold
 }
@@ -41,11 +41,4 @@ thing fragment DeviceGeneral {
 thing fragment OnOffMsg includes DeviceGeneral{
 	message SwitchOn(did:Integer);
 	message SwitchOff(did:Integer);
-}
-
-// Luminance
-thing fragment LuminanceMsg {
-    message liminance(id:Integer, lum:Double);
-    message add_lightsensor(id:Integer);
-    message set_luminance(lum:Double)
 }

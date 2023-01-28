@@ -1,0 +1,50 @@
+import "datatypes.thingml" from stl
+
+import "pim_messages.thingml"
+
+thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
+    required port provide_temp {
+        sends set_temperature
+    }
+
+    provided port get_cmd {
+        receives temperature,
+                 luminance
+    }
+
+    property temp:Double = 20           // Store comfort temprature
+    property last_lum: Double = 1000    // Last recored luminence value
+
+    property lights_off_temp:Double = 2 // Store temprature offsett for when lights are off
+    property night:Double = 8           // Store temprature offsett for when there is night
+
+    property lum_thres: Double = 1000   // Threshold for when the room is dart or not
+
+    statechart ES_behavior init Idle {
+        on entry do
+            print("Running Energy saver (ES) \n")
+        end
+
+        state Idle {
+            transition -> Idle
+            event get_temp:get_cmd?temperature
+            action do
+                temp = get_temp.t
+
+                if (last_lum > lum_thres) do 
+                    provide_temp!set_temperature(temp)
+                end
+
+                if (last_lum <= lum_thres) do
+                    provide_temp!set_temperature(temp - lights_off_temp)
+                end
+            end
+
+            transition -> Idle
+            event get_lum:get_cmd?luminance
+            action do
+                provide_temp!set_temperature(5) // This is a temprary solution
+            end
+        }
+    }
+}

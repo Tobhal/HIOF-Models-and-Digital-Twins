@@ -8,6 +8,10 @@ rectangle myself:Human {
     portin get_values
 }
 
+rectangle timer:T {
+    portout time
+}
+
 'PIM
 rectangle pim:PIM {
     portout get_sensor
@@ -38,21 +42,25 @@ rectangle simulation:sim {
 }
 
 'energy saver
-rectangle enerty_saver:ES {
+rectangle energy_saver:ES {
     portin send_temp
+    portin get_time
 
-    portout get_temp
+    portout get_es_cmd
+    portout get_luminance
 }
  
 provide_temp --> get_sensor
-provide_luminence --> get_sensor
+provide_luminence --> get_luminance
 
-send_cmd --> get_temp
+send_cmd --> get_es_cmd
 send_temp -> tempratue_input
  
 request_sensor --> require_val
 request_actuator --> require_val
 human_output -----> get_values
  
+time -> get_time
+
 toMQTT <--> MQTT
 @enduml

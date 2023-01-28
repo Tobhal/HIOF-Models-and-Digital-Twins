@@ -23,3 +23,15 @@ thing Simulation includes TemperatureMsg, OnOffMsg
 		receives SwitchOn, SwitchOff
 	}
 }
+
+thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg 
+@mock "true" 
+{
+	required port provide_temp {
+		sends set_temperature
+	}
+
+	provided port get_cmd {
+		receives temperature, luminance
+	}
+}
