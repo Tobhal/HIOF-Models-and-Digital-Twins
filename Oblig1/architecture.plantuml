@@ -1,5 +1,4 @@
 @startuml X3D2_MQTT_SIM
-mainframe set name here
 
 'HUMAN
 rectangle myself:Human {
@@ -54,13 +53,13 @@ provide_temp --> get_sensor
 provide_luminence --> get_luminance
 
 send_cmd --> get_es_cmd
-send_temp -> tempratue_input
+send_temp ---> tempratue_input
  
 request_sensor --> require_val
 request_actuator --> require_val
 human_output -----> get_values
  
-time -> get_time
+time --> get_time
 
 toMQTT <--> MQTT
 @enduml

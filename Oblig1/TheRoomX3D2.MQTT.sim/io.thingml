@@ -3,6 +3,7 @@
 // Base datatypes
 import "datatypes.thingml" from stl
 import "pim.thingml"
+import "timer.thingml"
 
 // A Mock only needs the port definition and a Swing component will be generated
 thing Human includes TemperatureMsg, GeneralMsg, OnOffMsg
@@ -24,6 +25,7 @@ thing Simulation includes TemperatureMsg, OnOffMsg
 	}
 }
 
+// Energy saver
 thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg 
 @mock "true" 
 {

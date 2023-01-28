@@ -3,13 +3,28 @@ import "datatypes.thingml" from stl
 import "pim_messages.thingml"
 
 thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
-    required port provide_temp {
-        sends set_temperature
+    required port provide_cmd {
+        sends set_temperature,
+              set_delta,
+              fetch_temp,
+              SwitchOn,
+              SwitchOff
     }
 
     provided port get_cmd {
         receives temperature,
-                 luminance
+                 temperature_delta,
+                 fetch_temp,
+                 switch_on,
+                 switch_off
+    }
+
+    provided port get_luminence {
+        receives luminence
+    }
+
+    provided port get_time {
+        receives time
     }
 
     property temp:Double = 20           // Store comfort temprature
@@ -26,24 +41,56 @@ thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
         end
 
         state Idle {
+            // Handle CMD
             transition -> Idle
             event get_temp:get_cmd?temperature
             action do
                 temp = get_temp.t
 
                 if (last_lum > lum_thres) do 
-                    provide_temp!set_temperature(temp)
+                    provide_cmd!set_temperature(temp)
                 end
 
                 if (last_lum <= lum_thres) do
-                    provide_temp!set_temperature(temp - lights_off_temp)
+                    provide_cmd!set_temperature(temp - lights_off_temp)
                 end
             end
 
             transition -> Idle
-            event get_lum:get_cmd?luminance
+            event temp_delta:get_cmd?temperature_delta
+            action do 
+                provide_cmd!set_delta(temp_delta)
+            end
+
+            transition -> Idle
+            event get_cmd?fetch_temp
+            action do 
+                provide_cmd!fetch_temp()
+            end
+
+            transition -> Idle
+            event id:get_cmd?switch_on
+            action do 
+                provide_cmd!switch_on(id)
+            end
+
+            transition -> Idle
+            event id:get_cmd?switch_off
+            action do 
+                provide_cmd!switch_off(id)
+            end
+
+            // Handle luminence
+            transition -> Idle
+            event get_lum:get_luminence?luminance
             action do
-                provide_temp!set_temperature(5) // This is a temprary solution
+                provide_cmd!set_temperature(5) // This is a temprary solution
+            end
+
+            // Handle Timer
+            internal event get_time?time
+            action do 
+                // Handle getting a time
             end
         }
     }
