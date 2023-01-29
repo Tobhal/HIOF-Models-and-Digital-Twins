@@ -60,10 +60,10 @@ thing Energy_saver includes GeneralMsg, TemperatureMsg, LuminanceMsg, OnOffMsg, 
 			event get_lum: get_luminance?luminance
 			action do
 					luminance_val = get_lum.lum
-					if (luminance_val >= lum_threshold) do
+					if (luminance_val <= lum_threshold) do
 						tempAdjust!set_temperature(temp-tempDecrease)
 					end
-					if (luminance_val < lum_threshold) do
+					if (luminance_val > lum_threshold) do
 						tempAdjust!set_temperature(temp)
 					end			
 						
