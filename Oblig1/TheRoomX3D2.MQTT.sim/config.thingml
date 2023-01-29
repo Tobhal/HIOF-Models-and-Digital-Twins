@@ -29,10 +29,9 @@ configuration X3D_MQTT_SIM {
 	// Simulation
 	instance sim:Simulation
 	connector sim.toMQTT => T1.MQTT // but it also works the other way 
-	connector sim.send_luminence => ES.get_luminence    // ES gets sent lum value
+	connector sim.send_luminence => ES.get_luminance    // ES gets sent lum value
 	
 	// ES
 	connector ES.tempAdjust => pim.human_input      // ES sends adjusted temperature to pim based on lum value
-	connector ES.get_lum_threshold => sim.get_threshold
-	
+	connector ES.set_lum => sim.get_lum_threshold
 }

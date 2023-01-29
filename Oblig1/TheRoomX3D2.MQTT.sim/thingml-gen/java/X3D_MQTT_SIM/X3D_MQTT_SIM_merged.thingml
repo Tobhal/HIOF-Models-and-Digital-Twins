@@ -399,10 +399,16 @@ thing Simulation includes TemperatureMsg , OnOffMsg , LuminanceMsg {
 	required port send_luminence {
 		sends luminance
 	}
+	provided port get_lum_threshold {
+		receives set_luminance
+	}
 }
-thing EnergySaver includes TemperatureMsg , LuminanceMsg , OnOffMsg {
+thing Energy_Saver includes TemperatureMsg , LuminanceMsg , OnOffMsg {
 	provided port get_luminence {
 		receives luminance
+	}
+	required port set_lum {
+		sends set_luminance
 	}
 	provided port human_input {
 		receives temperature
@@ -445,39 +451,51 @@ thing TimerJava includes Timer @pim "Timer" @platform "java" {
 	}
 }
 thing Energy_saver includes GeneralMsg , TemperatureMsg , LuminanceMsg , OnOffMsg , TimerMsgs {
-	provided port get_luminence {
-		receives luminance
-	}
 	provided port human_input {
 		receives temperature
 	}
 	required port tempAdjust {
-		sends temperature
+		sends set_temperature
+	}
+	provided port get_luminance {
+		receives luminance
+	}
+	required port set_lum {
+		sends set_luminance
 	}
 	property temp : Double = 20
 	property tempDecrease : Double = 2
 	property nightDecrease : Double = 8
 	property lum_threshold : Double = 200
-	property luminence_val : Double = 100
+	property luminance_val : Double = 100
+	property lum_id : Integer
 	statechart ES_states init Idle {
 		on entry do
-			print ("Activate energy saver")
+			print ("Activate energy saver\n")
 		end
 		on exit do
-			print ("Exiting energy saver")
+			print ("Exiting energy saver\n")
 		end
 		state Idle {
-			internal
+			transition -> Idle
 			event get_temp : human_input?temperature
 			action do
 				temp = get_temp.t
 			end
-			internal
-			event get_lum : get_luminence?luminance
+			transition -> Idle
+			event set_lum : get_luminance?luminance
 			action do
-				luminence_val = get_lum.lum
-				if (luminence_val > lum_threshold) do
-					temp = temp - tempDecrease
+				set_lum!set_luminance(luminance_val)
+			end
+			transition -> Idle
+			event get_lum : get_luminance?luminance
+			action do
+				luminance_val = get_lum.lum
+				if (luminance_val >= lum_threshold) do
+					tempAdjust!set_temperature(temp - tempDecrease)
+				end
+				if (luminance_val < lum_threshold) do
+					tempAdjust!set_temperature(temp)
 				end
 			end
 		}
@@ -631,6 +649,42 @@ thing fragment TimerClient includes TimerMsgs {
 }
 thing TimerClientMock includes TimerClient @mock "true" {
 }
+thing fragment TimeStuff @java_import "import java.time.LocalTime;" {
+	property night_start : Long = 23 * 60 * 60 * 1000
+	property night_end : Long = 7 * 60 * 60 * 1000
+	function Now() : Long do
+		var timeval : Long
+		timeval = `LocalTime.now().toNanoOfDay()/1000000`
+		return timeval
+	end
+	function Timestamp(h : Integer, m : Integer, s : Integer) : Long do
+		return (s + m * 60 + h * 60 * 60) * 1000
+	end
+	function LeftOfDay() : Long do
+		var n : Long = Now()
+		var left : Long = night_start - n
+		if (left < 0) left = left + 24 * 60 * 60 * 1000
+		if (not Night(n)) return left
+		else return 0
+	end
+	function LeftOfNight() : Long do
+		var n : Long = Now()
+		var left : Long = night_end - n
+		if (left < 0) left = left + 24 * 60 * 60 * 1000
+		if (Night(n)) return left
+		else return 0
+	end
+	function Night(x : Long) : Boolean do
+		if (night_end < night_start) do
+			if (night_start <= x or x < night_end) return true
+			else return false
+		end
+		else do
+			if (night_start <= x and x < night_end) return true
+			else return false
+		end
+	end
+}
 configuration X3D_MQTT_SIM {
 	instance T1 : MQTTDriver
 	instance pim : PIM
@@ -647,6 +701,7 @@ configuration X3D_MQTT_SIM {
 	connector pim.guard_temperature => g_temp . timer
 	connector pim.guard_human => g_humn . timer
 	connector sim.toMQTT => T1 . MQTT
-	connector sim.send_luminence => ES . get_luminence
+	connector sim.send_luminence => ES . get_luminance
 	connector ES.tempAdjust => pim . human_input
+	connector ES.set_lum => sim . get_lum_threshold
 }
