@@ -32,7 +32,7 @@ thing Simulation includes TemperatureMsg, OnOffMsg, LuminanceMsg
 
 // Energy saver
 
-thing ES includes TemperatureMsg, LuminanceMsg ,OnOffMsg {
+thing Energy_Saver includes TemperatureMsg, LuminanceMsg ,OnOffMsg {
 	provided port get_luminence {
 		receives luminance
 	}
