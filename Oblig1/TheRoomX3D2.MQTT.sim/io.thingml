@@ -6,7 +6,7 @@ import "pim.thingml"
 
 // A Mock only needs the port definition and a Swing component will be generated
 thing Human includes TemperatureMsg, GeneralMsg, OnOffMsg
-@mock "true"
+
 { 	required port send_cmd {
 		sends SwitchOn, SwitchOff, set_temperature, set_delta, fetch_temp
 	}
@@ -17,7 +17,7 @@ thing Human includes TemperatureMsg, GeneralMsg, OnOffMsg
 
 //SIMULATION
 thing Simulation includes TemperatureMsg, OnOffMsg, LuminanceMsg 
-@mock "true"
+
 { 	required port toMQTT {
 		sends temperature
 		receives SwitchOn, SwitchOff

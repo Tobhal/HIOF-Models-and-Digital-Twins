@@ -4,9 +4,10 @@ import "datatypes.thingml" from stl
 import "pim.thingml"
 import "pim_messages.thingml"
 import "timer.thingml"
+import "timestuff.thingml"
 
-thing energy_saver includes GeneralMsg, TemperatureMsg, LuminanceMsg, OnOffMsg, TimerMsgs {
-	provided port get_luminence {
+thing Energy_saver includes GeneralMsg, TemperatureMsg, LuminanceMsg, OnOffMsg, TimerMsgs {
+	provided port get_luminance {
 		receives luminance
 	}
 	provided port human_input {
@@ -15,13 +16,15 @@ thing energy_saver includes GeneralMsg, TemperatureMsg, LuminanceMsg, OnOffMsg, 
 	required port tempAdjust {
 		sends temperature
 	}
-	
+	required port  get_lum_threshold{
+		receives set_luminance
+	}
 	property temp:Double = 20
 	property tempDecrease:Double = 2
 	property nightDecrease:Double = 8
 	
 	property lum_threshold:Double = 200
-	property luminence_val:Double = 100
+	property luminance_val:Double = 100
 	
 	
 	statechart ES_states init Idle {
@@ -34,19 +37,30 @@ thing energy_saver includes GeneralMsg, TemperatureMsg, LuminanceMsg, OnOffMsg, 
 				print("Exiting energy saver")
 			end
 		state Idle {
-			internal event get_temp: human_input?temperature    // When starting, ES gets human input of temp
+			
+			transition -> Idle
+			event get_temp: human_input?temperature    // When starting, ES gets human input of temp
 			action
 				do
 					temp = get_temp.t
 				end
-			internal event get_lum: get_luminence?luminance
+				
+			transition -> Idle
+			event set_lum: get_lum_threshold?set_luminance
 			action do
-					luminence_val = get_lum.lum
-					if (luminence_val > lum_threshold) do
+					lum_threshold = set_lum.lum
+				end
+				
+			transition -> Idle
+			event get_lum: get_luminance?luminance
+			action do
+					luminance_val = get_lum.lum
+					if (luminance_val > lum_threshold) do
 						temp= temp - tempDecrease
 					end		
 						
 				end
+
 		}
 	}
 	

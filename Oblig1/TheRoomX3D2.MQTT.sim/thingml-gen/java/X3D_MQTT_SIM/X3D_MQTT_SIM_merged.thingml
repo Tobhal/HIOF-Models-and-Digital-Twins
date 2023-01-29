@@ -24,26 +24,7 @@ thing MQTTDriver includes TemperatureMsg , OnOffMsg , GeneralMsg {
 	property onoffswitches : Integer [ 25 ]
 	property last_onoff : Integer = 0
 	property did : Integer
-	statechart behaviorMQTTDriver init Alive1 {
-		state Alive1 {
-			on entry do
-				provide_temp!iamalive1()
-			end
-			transition -> Alive2
-			event alv : require_val?iamalive1
-			action do
-				provide_temp!iamalive2()
-			end
-			transition -> Idle
-			event alv : require_val?iamalive2
-			action do
-				provide_temp!iamalive2()
-			end
-		}
-		state Alive2 {
-			transition -> Idle
-			event alv : require_val?iamalive2
-		}
+	statechart behaviorMQTTDriver init Idle {
 		state Idle {
 			transition -> Idle
 			event put_t : MQTT?temperature
@@ -360,6 +341,16 @@ thing PIM includes GeneralMsg , TemperatureMsg , OnOffMsg , TimerMsgs {
 				end
 			}
 			internal
+			event givedelta : human_input?set_delta
+			action do
+				delta = givedelta.dlta
+			end
+			internal
+			event fetch : human_input?fetch_temp
+			action do
+				human_output!temperature(thermo_id, "temperature ", lasttemp)
+			end
+			internal
 			event get_sensor?iamalive1
 			action do
 				human_output!prompt("INTERNAL ERROR: iamalive1 received at PIM.Running")
@@ -368,16 +359,6 @@ thing PIM includes GeneralMsg , TemperatureMsg , OnOffMsg , TimerMsgs {
 			event get_sensor?iamalive2
 			action do
 				human_output!prompt("INTERNAL ERROR: iamalive2 received at PIM.Running")
-			end
-			transition -> Running
-			event givedelta : human_input?set_delta
-			action do
-				delta = givedelta.dlta
-			end
-			transition -> Running
-			event fetch : human_input?fetch_temp
-			action do
-				human_output!temperature(thermo_id, "temperature ", lasttemp)
 			end
 			transition -> Running
 			event human_input?SwitchOn
@@ -403,7 +384,7 @@ thing PIM includes GeneralMsg , TemperatureMsg , OnOffMsg , TimerMsgs {
 		}
 	}
 }
-thing Human includes TemperatureMsg , GeneralMsg , OnOffMsg @mock "true" {
+thing Human includes TemperatureMsg , GeneralMsg , OnOffMsg {
 	required port send_cmd {
 		sends SwitchOn sends SwitchOff sends set_temperature sends set_delta sends fetch_temp
 	}
@@ -411,9 +392,23 @@ thing Human includes TemperatureMsg , GeneralMsg , OnOffMsg @mock "true" {
 		receives temperature receives prompt
 	}
 }
-thing Simulation includes TemperatureMsg , OnOffMsg @mock "true" {
+thing Simulation includes TemperatureMsg , OnOffMsg , LuminanceMsg {
 	required port toMQTT {
 		sends temperature receives SwitchOn receives SwitchOff
+	}
+	required port send_luminence {
+		sends luminance
+	}
+}
+thing ES includes TemperatureMsg , LuminanceMsg , OnOffMsg {
+	provided port get_luminence {
+		receives luminance
+	}
+	provided port human_input {
+		receives temperature
+	}
+	required port tempAdjust {
+		sends temperature
 	}
 }
 object JTimerTask @java_type "java.util.TimerTask"
@@ -446,6 +441,45 @@ thing TimerJava includes Timer @pim "Timer" @platform "java" {
 			internal cancel
 			event m : timer?timer_cancel
 			action cancel()
+		}
+	}
+}
+thing Energy_saver includes GeneralMsg , TemperatureMsg , LuminanceMsg , OnOffMsg , TimerMsgs {
+	provided port get_luminence {
+		receives luminance
+	}
+	provided port human_input {
+		receives temperature
+	}
+	required port tempAdjust {
+		sends temperature
+	}
+	property temp : Double = 20
+	property tempDecrease : Double = 2
+	property nightDecrease : Double = 8
+	property lum_threshold : Double = 200
+	property luminence_val : Double = 100
+	statechart ES_states init Idle {
+		on entry do
+			print ("Activate energy saver")
+		end
+		on exit do
+			print ("Exiting energy saver")
+		end
+		state Idle {
+			internal
+			event get_temp : human_input?temperature
+			action do
+				temp = get_temp.t
+			end
+			internal
+			event get_lum : get_luminence?luminance
+			action do
+				luminence_val = get_lum.lum
+				if (luminence_val > lum_threshold) do
+					temp = temp - tempDecrease
+				end
+			end
 		}
 	}
 }
@@ -603,13 +637,16 @@ configuration X3D_MQTT_SIM {
 	instance myself : Human
 	instance g_temp : TimerJava
 	instance g_humn : TimerJava
+	instance ES : Energy_saver
 	instance sim : Simulation
 	connector T1.provide_temp => pim . get_sensor
-	connector myself.send_cmd => pim . human_input
+	connector myself.send_cmd => ES . human_input
 	connector pim.request_sensor => T1 . require_val
 	connector pim.request_actuator => T1 . require_val
 	connector pim.human_output => myself . get_values
 	connector pim.guard_temperature => g_temp . timer
 	connector pim.guard_human => g_humn . timer
 	connector sim.toMQTT => T1 . MQTT
+	connector sim.send_luminence => ES . get_luminence
+	connector ES.tempAdjust => pim . human_input
 }
