@@ -25,6 +25,9 @@ thing Simulation includes TemperatureMsg, OnOffMsg, LuminanceMsg
 	required port send_luminence{
 		sends luminance
 	}
+	provided port get_threshold{
+		receives set_luminance
+	}
 }
 
 // Energy saver
