@@ -400,7 +400,7 @@ thing Simulation includes TemperatureMsg , OnOffMsg , LuminanceMsg {
 		sends luminance
 	}
 }
-thing ES includes TemperatureMsg , LuminanceMsg , OnOffMsg {
+thing EnergySaver includes TemperatureMsg , LuminanceMsg , OnOffMsg {
 	provided port get_luminence {
 		receives luminance
 	}

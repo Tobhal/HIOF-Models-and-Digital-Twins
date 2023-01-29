@@ -30,11 +30,11 @@ thing Energy_saver includes GeneralMsg, TemperatureMsg, LuminanceMsg, OnOffMsg, 
 	statechart ES_states init Idle {
 		on entry
 			do
-				print("Activate energy saver")
+				print("Activate energy saver\n")
 			end
 		on exit
 			do
-				print("Exiting energy saver")
+				print("Exiting energy saver\n")
 			end
 		state Idle {
 			
