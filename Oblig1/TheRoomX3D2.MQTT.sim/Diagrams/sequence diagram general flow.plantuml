@@ -1,6 +1,6 @@
 @startuml sequense diagram
-mainframe set name here
 
+mainframe set name here
 participant "simulation:sim" as sim
 participant "psm:PSM" as psm
 participant "pim:PIM" as pim
@@ -9,9 +9,7 @@ actor "myself:Human" as human
 
 es <- human : set_temperature(preferred_temp)
 pim <- es : set_temperature(preferred_temp)
-
 psm <- es: add_light_sensor(id1, txt1)
-
 psm <- pim: add_thermometer(id1, txt1)
 psm <- pim: add_device(didid1, didtxt1)
 pim -> human : prompt("Now entering thermostat")
@@ -30,7 +28,6 @@ end
 
 loop regulate temprature
     sim -> pim: temperature(id1, txt1, temp2)
-
     alt 
         |||
         else temp2 < temp1 - temp_diff
