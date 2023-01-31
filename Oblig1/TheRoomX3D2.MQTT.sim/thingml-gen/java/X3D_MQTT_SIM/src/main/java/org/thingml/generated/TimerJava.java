@@ -56,6 +56,7 @@ private Port timer_port;
 protected final Timer_startMessageType timer_startType = new Timer_startMessageType();
 protected final Timer_cancelMessageType timer_cancelType = new Timer_cancelMessageType();
 protected final Timer_timeoutMessageType timer_timeoutType = new Timer_timeoutMessageType();
+protected final TimeMessageType timeType = new TimeMessageType();
 //Empty Constructor
 public TimerJava() {
 super();
@@ -94,16 +95,16 @@ return timer_port;
 }
 private CompositeState buildTimerJava_SoftTimer(){
 final AtomicState state_TimerJava_SoftTimer_default = new AtomicState("default");
-Handler h1718943335 = new Handler();
-h1718943335.from(state_TimerJava_SoftTimer_default);
-h1718943335.event(timer_startType);
-h1718943335.guard((Event e)->{
+Handler h449445798 = new Handler();
+h449445798.from(state_TimerJava_SoftTimer_default);
+h449445798.event(timer_startType);
+h449445798.guard((Event e)->{
 final Timer_startMessageType.Timer_startMessage timer_start = (Timer_startMessageType.Timer_startMessage) e;
 return timer_start.delay > 0;
 });
 
-h1718943335.port(timer_port);
-h1718943335.action((Event e)->{
+h449445798.port(timer_port);
+h449445798.action((Event e)->{
 final Timer_startMessageType.Timer_startMessage timer_start = (Timer_startMessageType.Timer_startMessage) e;
 startTimer((int) (timer_start.delay));
 });

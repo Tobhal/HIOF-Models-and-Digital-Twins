@@ -3,7 +3,7 @@
 'HUMAN
 rectangle myself:Human {
     port send_cmd
-    
+    portout send_lumSensor
     portin get_values
 }
 
@@ -16,7 +16,7 @@ rectangle pim:PIM {
     portout get_sensor
     portout request_sensor
     portout request_actuator
-    portout tempratue_input
+    portout human_input
     portout human_output
 
     'guards
@@ -47,13 +47,16 @@ rectangle energy_saver:ES {
 
     portout get_es_cmd
     portout get_luminance
+    portin request_lumSensor
 }
  
 provide_temp --> get_sensor
 provide_luminence --> get_luminance
 
+send_lumSensor --> request_lumSensor
+
 send_cmd --> get_es_cmd
-send_temp ---> tempratue_input
+send_temp ---> human_input
  
 request_sensor --> require_val
 request_actuator --> require_val

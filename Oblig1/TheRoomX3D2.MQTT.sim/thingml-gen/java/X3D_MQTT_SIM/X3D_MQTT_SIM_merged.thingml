@@ -1,22 +1,27 @@
-thing MQTTDriver includes TemperatureMsg , OnOffMsg , GeneralMsg {
-	required port provide_temp {
-		sends temperature sends iamalive1 sends iamalive2
-	}
+thing MQTTDriver includes TemperatureMsg , OnOffMsg , GeneralMsg , LuminanceMsg {
 	provided port require_val {
-		receives add_thermometer receives add_device receives SwitchOn receives SwitchOff receives iamalive1 receives iamalive2
+		receives add_thermometer receives add_device receives add_lightsensor receives SwitchOn receives SwitchOff receives iamalive1 receives iamalive2
+	}
+	required port provide_temp {
+		sends temperature
+	}
+	required port provice_lum_motion {
+		sends luminance
 	}
 	provided port MQTT {
-		sends SwitchOn sends SwitchOff receives temperature
+		sends SwitchOn sends SwitchOff receives temperature receives luminance
 	}
 	property thermometers : Integer [ 25 ]
 	property thermotext : String [ 25 ]
 	property thermoval : Double [ 25 ]
 	property lightsensors : Integer [ 25 ]
 	property lightval : Double [ 25 ]
+	property lumval : Double [ 25 ]
 	property motionsensors : Integer [ 25 ]
 	property last_mo : Integer = 0
 	property last_light : Integer = 0
 	property last_thermo : Integer = 0
+	property last_lum : Integer = 0
 	property foundL : Boolean
 	property i : Integer
 	property id_s : Integer
@@ -41,6 +46,22 @@ thing MQTTDriver includes TemperatureMsg , OnOffMsg , GeneralMsg {
 				if (found) do
 					thermoval[i - 1] = put_t.t
 					provide_temp!temperature(id_s, thermotext [i], put_t.t)
+				end
+			end
+			transition -> Idle
+			event put_t : MQTT?luminance
+			action do
+				id_s = put_t.id
+				i = 0
+				found = false
+				while (i < last_lum and (not found)) do
+					if (id_s == lightsensors [i]) do
+						found = true
+					end
+				end
+				if (found) do
+					lumval[i - 1] = put_t.lum
+					provice_lum_motion!luminance(id_s, put_t.lum)
 				end
 			end
 			transition -> Idle
@@ -91,6 +112,31 @@ thing MQTTDriver includes TemperatureMsg , OnOffMsg , GeneralMsg {
 					MQTT!SwitchOff(did)
 				end
 			end
+			transition -> Idle
+			event addlum : require_val?add_lightsensor
+			action do
+				id_s = addlum.id
+				lightsensors[last_light] = id_s
+				lightval[last_light] = 50
+				last_light = last_light + 1
+			end
+			transition -> Idle
+			event put_lum : MQTT?luminance
+			action do
+				id_s = put_lum.id
+				i = 0
+				foundL = false
+				while (i > last_light and (not foundL)) do
+					if (id_s == lightsensors [i]) do
+						foundL = true
+					end
+					i = i + 1
+				end
+				if (foundL) do
+					lightval[i - 1] = put_lum.lum
+					provice_lum_motion!luminance(id_s, put_lum.lum)
+				end
+			end
 		}
 	}
 }
@@ -98,17 +144,17 @@ thing PIM includes GeneralMsg , TemperatureMsg , OnOffMsg , TimerMsgs {
 	provided port get_sensor {
 		receives iamalive1 receives iamalive2 receives temperature
 	}
-	required port request_sensor {
-		sends iamalive1 sends iamalive2 sends add_thermometer
-	}
-	required port request_actuator {
-		sends add_device sends SwitchOn sends SwitchOff
-	}
 	provided port human_input {
 		receives SwitchOn receives SwitchOff receives set_temperature receives set_delta receives fetch_temp
 	}
 	required port human_output {
 		sends temperature sends prompt
+	}
+	required port request_sensor {
+		sends add_thermometer
+	}
+	required port request_actuator {
+		sends add_device sends SwitchOn sends SwitchOff
 	}
 	required port guard_temperature {
 		sends timer_start sends timer_cancel receives timer_timeout
@@ -125,28 +171,9 @@ thing PIM includes GeneralMsg , TemperatureMsg , OnOffMsg , TimerMsgs {
 		on entry do
 			print ("Running The Room X3D.MQTT.sim\n")
 		end
-		composite state Build init Alive1 keeps history {
+		composite state Build init SetThermostat keeps history {
 			on entry guard_human!timer_start(30000)
 			on exit guard_human!timer_cancel()
-			state Alive1 {
-				on entry do
-					request_sensor!iamalive1()
-				end
-				transition -> Alive2
-				event alv : get_sensor?iamalive1
-				action do
-					request_sensor!iamalive2()
-				end
-				transition -> SetThermostat
-				event alv : get_sensor?iamalive2
-				action do
-					request_sensor!iamalive2()
-				end
-			}
-			state Alive2 {
-				transition -> SetThermostat
-				event alv : get_sensor?iamalive2
-			}
 			state SetThermostat {
 				on entry do
 					request_sensor!add_thermometer(thermo_id, "t")
@@ -341,24 +368,14 @@ thing PIM includes GeneralMsg , TemperatureMsg , OnOffMsg , TimerMsgs {
 				end
 			}
 			internal
-			event givedelta : human_input?set_delta
-			action do
-				delta = givedelta.dlta
-			end
-			internal
 			event fetch : human_input?fetch_temp
 			action do
 				human_output!temperature(thermo_id, "temperature ", lasttemp)
 			end
-			internal
-			event get_sensor?iamalive1
+			transition -> Running
+			event givedelta : human_input?set_delta
 			action do
-				human_output!prompt("INTERNAL ERROR: iamalive1 received at PIM.Running")
-			end
-			internal
-			event get_sensor?iamalive2
-			action do
-				human_output!prompt("INTERNAL ERROR: iamalive2 received at PIM.Running")
+				delta = givedelta.dlta
 			end
 			transition -> Running
 			event human_input?SwitchOn
@@ -384,7 +401,7 @@ thing PIM includes GeneralMsg , TemperatureMsg , OnOffMsg , TimerMsgs {
 		}
 	}
 }
-thing Human includes TemperatureMsg , GeneralMsg , OnOffMsg {
+thing Human includes TemperatureMsg , GeneralMsg , OnOffMsg @mock "true" {
 	required port send_cmd {
 		sends SwitchOn sends SwitchOff sends set_temperature sends set_delta sends fetch_temp
 	}
@@ -392,29 +409,74 @@ thing Human includes TemperatureMsg , GeneralMsg , OnOffMsg {
 		receives temperature receives prompt
 	}
 }
-thing Simulation includes TemperatureMsg , OnOffMsg , LuminanceMsg {
+thing Simulation includes TemperatureMsg , OnOffMsg @mock "true" {
 	required port toMQTT {
 		sends temperature receives SwitchOn receives SwitchOff
 	}
-	required port send_luminence {
-		sends luminance
+}
+thing Energy_saver includes TemperatureMsg , LuminanceMsg , GeneralMsg @mock "true" {
+	required port send_temp {
+		sends set_temperature
 	}
-	provided port get_lum_threshold {
-		receives set_luminance
+	provided port get_cmd {
+		receives temperature receives luminance
 	}
 }
-thing Energy_Saver includes TemperatureMsg , LuminanceMsg , OnOffMsg {
-	provided port get_luminence {
-		receives luminance
+thing Energy_saver includes TemperatureMsg , LuminanceMsg , GeneralMsg {
+	required port set_temperature {
+		sends set_temperature
 	}
-	required port set_lum {
-		sends set_luminance
-	}
-	provided port human_input {
+	provided port get_temp {
 		receives temperature
 	}
-	required port tempAdjust {
-		sends temperature
+	provided port get_luminance {
+		receives luminance
+	}
+	provided port set_luminance {
+		sends set_luminance
+	}
+	property temp : Double = 20
+	property last_lum : Double = 1000
+	property lights_off_temp : Double = 2
+	property night : Double = 8
+	property lum_thres : Double = 1000
+	statechart ES_behavior init present {
+		on entry do
+			print ("Running Energy saver (ES) \n")
+		end
+		state present {
+			transition -> present
+			event get_temp : get_temp?temperature
+			action do
+				temp = get_temp.t
+				if (last_lum > lum_thres) do
+					set_temperature!set_temperature(temp)
+				end
+				if (last_lum <= lum_thres) do
+					set_temperature!set_temperature(temp - lights_off_temp)
+				end
+			end
+			transition -> present
+			event set_lum : get_luminance?luminance
+			action do
+				set_luminance!set_luminance(last_lum)
+			end
+			transition -> present
+			event get_lum : get_luminance?luminance
+			action do
+				last_lum = get_lum.lum
+				if (last_lum <= lum_thres) do
+					set_temperature!set_temperature(temp - lights_off_temp)
+				end
+				if (last_lum > lum_thres) do
+					set_temperature!set_temperature(temp)
+				end
+			end
+		}
+		state night {
+		}
+		state day {
+		}
 	}
 }
 object JTimerTask @java_type "java.util.TimerTask"
@@ -450,56 +512,24 @@ thing TimerJava includes Timer @pim "Timer" @platform "java" {
 		}
 	}
 }
-thing Energy_saver includes GeneralMsg , TemperatureMsg , LuminanceMsg , OnOffMsg , TimerMsgs {
-	provided port human_input {
-		receives temperature
+thing fragment TimerMsgs {
+	message timer_start(delay : Integer)
+	message timer_cancel()
+	@debug "false"
+	message timer_timeout()
+	message time(t : Long)
+}
+thing fragment Timer includes TimerMsgs {
+	provided port timer {
+		sends timer_timeout receives timer_start receives timer_cancel
 	}
-	required port tempAdjust {
-		sends set_temperature
+}
+thing fragment TimerClient includes TimerMsgs {
+	required port timer {
+		sends timer_start sends timer_cancel receives timer_timeout
 	}
-	provided port get_luminance {
-		receives luminance
-	}
-	required port set_lum {
-		sends set_luminance
-	}
-	property temp : Double = 20
-	property tempDecrease : Double = 2
-	property nightDecrease : Double = 8
-	property lum_threshold : Double = 200
-	property luminance_val : Double = 100
-	property lum_id : Integer
-	statechart ES_states init Idle {
-		on entry do
-			print ("Activate energy saver\n")
-		end
-		on exit do
-			print ("Exiting energy saver\n")
-		end
-		state Idle {
-			transition -> Idle
-			event get_temp : human_input?temperature
-			action do
-				temp = get_temp.t
-			end
-			transition -> Idle
-			event set_lum : get_luminance?luminance
-			action do
-				set_lum!set_luminance(luminance_val)
-			end
-			transition -> Idle
-			event get_lum : get_luminance?luminance
-			action do
-				luminance_val = get_lum.lum
-				if (luminance_val >= lum_threshold) do
-					tempAdjust!set_temperature(temp - tempDecrease)
-				end
-				if (luminance_val < lum_threshold) do
-					tempAdjust!set_temperature(temp)
-				end
-			end
-		}
-	}
+}
+thing TimerClientMock includes TimerClient @mock "true" {
 }
 datatype Byte<1>
 	@type_checker "Integer"
@@ -631,77 +661,23 @@ thing fragment OnOffMsg includes DeviceGeneral {
 	message SwitchOn(did : Integer)
 	message SwitchOff(did : Integer)
 }
-thing fragment TimerMsgs {
-	message timer_start(delay : Integer)
-	message timer_cancel()
-	@debug "false"
-	message timer_timeout()
-}
-thing fragment Timer includes TimerMsgs {
-	provided port timer {
-		sends timer_timeout receives timer_start receives timer_cancel
-	}
-}
-thing fragment TimerClient includes TimerMsgs {
-	required port timer {
-		sends timer_start sends timer_cancel receives timer_timeout
-	}
-}
-thing TimerClientMock includes TimerClient @mock "true" {
-}
-thing fragment TimeStuff @java_import "import java.time.LocalTime;" {
-	property night_start : Long = 23 * 60 * 60 * 1000
-	property night_end : Long = 7 * 60 * 60 * 1000
-	function Now() : Long do
-		var timeval : Long
-		timeval = `LocalTime.now().toNanoOfDay()/1000000`
-		return timeval
-	end
-	function Timestamp(h : Integer, m : Integer, s : Integer) : Long do
-		return (s + m * 60 + h * 60 * 60) * 1000
-	end
-	function LeftOfDay() : Long do
-		var n : Long = Now()
-		var left : Long = night_start - n
-		if (left < 0) left = left + 24 * 60 * 60 * 1000
-		if (not Night(n)) return left
-		else return 0
-	end
-	function LeftOfNight() : Long do
-		var n : Long = Now()
-		var left : Long = night_end - n
-		if (left < 0) left = left + 24 * 60 * 60 * 1000
-		if (Night(n)) return left
-		else return 0
-	end
-	function Night(x : Long) : Boolean do
-		if (night_end < night_start) do
-			if (night_start <= x or x < night_end) return true
-			else return false
-		end
-		else do
-			if (night_start <= x and x < night_end) return true
-			else return false
-		end
-	end
-}
 configuration X3D_MQTT_SIM {
 	instance T1 : MQTTDriver
 	instance pim : PIM
 	instance myself : Human
 	instance g_temp : TimerJava
 	instance g_humn : TimerJava
-	instance ES : Energy_saver
+	instance es : Energy_saver
 	instance sim : Simulation
+	instance t : TimerClientMock
 	connector T1.provide_temp => pim . get_sensor
-	connector myself.send_cmd => ES . human_input
+	connector T1.provice_lum_motion => es . get_cmd
+	connector myself.send_cmd => es . get_cmd
 	connector pim.request_sensor => T1 . require_val
 	connector pim.request_actuator => T1 . require_val
 	connector pim.human_output => myself . get_values
 	connector pim.guard_temperature => g_temp . timer
 	connector pim.guard_human => g_humn . timer
+	connector es.send_temp => pim . human_input
 	connector sim.toMQTT => T1 . MQTT
-	connector sim.send_luminence => ES . get_luminance
-	connector ES.tempAdjust => pim . human_input
-	connector ES.set_lum => sim . get_lum_threshold
 }

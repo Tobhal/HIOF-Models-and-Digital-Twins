@@ -18,7 +18,7 @@ import java.util.*;
 /**
  * Definition for type : Simulation
  **/
-public class Simulation extends Component implements ISimulation_get_lum_threshold, ISimulation_toMQTT {
+public class Simulation extends Component implements ISimulation_toMQTT {
 
 private boolean debug = false;
 public boolean isDebug() {return debug;}
@@ -41,25 +41,13 @@ _msg.setPort(toMQTT_port);
 receive(_msg);
 }
 
-public synchronized void set_luminance_via_get_lum_threshold(double LuminanceMsg_set_luminance_lum_var){
-final Event _msg = set_luminanceType.instantiate(LuminanceMsg_set_luminance_lum_var);
-_msg.setPort(get_lum_threshold_port);
-receive(_msg);
-}
-
 private void sendTemperature_via_toMQTT(int TemperatureMsg_temperature_id_var, String TemperatureMsg_temperature_txt_var, double TemperatureMsg_temperature_t_var){
 toMQTT_port.send(temperatureType.instantiate(TemperatureMsg_temperature_id_var, TemperatureMsg_temperature_txt_var, TemperatureMsg_temperature_t_var));
-}
-
-private void sendLuminance_via_send_luminence(int LuminanceMsg_luminance_id_var, double LuminanceMsg_luminance_lum_var){
-send_luminence_port.send(luminanceType.instantiate(LuminanceMsg_luminance_id_var, LuminanceMsg_luminance_lum_var));
 }
 
 //Attributes
 //Ports
 private Port toMQTT_port;
-private Port send_luminence_port;
-private Port get_lum_threshold_port;
 //Message types
 protected final TemperatureMessageType temperatureType = new TemperatureMessageType();
 protected final Add_thermometerMessageType add_thermometerType = new Add_thermometerMessageType();
@@ -69,9 +57,6 @@ protected final Fetch_tempMessageType fetch_tempType = new Fetch_tempMessageType
 protected final Add_deviceMessageType add_deviceType = new Add_deviceMessageType();
 protected final SwitchOnMessageType SwitchOnType = new SwitchOnMessageType();
 protected final SwitchOffMessageType SwitchOffType = new SwitchOffMessageType();
-protected final LuminanceMessageType luminanceType = new LuminanceMessageType();
-protected final Add_lightsensorMessageType add_lightsensorType = new Add_lightsensorMessageType();
-protected final Set_luminanceMessageType set_luminanceType = new Set_luminanceMessageType();
 //Empty Constructor
 public Simulation() {
 super();
@@ -82,22 +67,12 @@ super();
 public Port getToMQTT_port() {
 return toMQTT_port;
 }
-public Port getSend_luminence_port() {
-return send_luminence_port;
-}
-public Port getGet_lum_threshold_port() {
-return get_lum_threshold_port;
-}
 public Component buildBehavior(String session, Component root) {
 if (root == null) {
 //Init ports
 toMQTT_port = new Port("toMQTT", this);
-send_luminence_port = new Port("send_luminence", this);
-get_lum_threshold_port = new Port("get_lum_threshold", this);
 } else {
 toMQTT_port = ((Simulation)root).toMQTT_port;
-send_luminence_port = ((Simulation)root).send_luminence_port;
-get_lum_threshold_port = ((Simulation)root).get_lum_threshold_port;
 }
 if (session == null){
 //Init state machine

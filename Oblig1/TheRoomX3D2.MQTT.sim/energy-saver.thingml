@@ -1,0 +1,77 @@
+import "datatypes.thingml" from stl
+
+import "pim_messages.thingml"
+
+thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
+    
+    
+    required port set_temperature {
+        sends set_temperature
+      
+    }
+
+    provided port get_temp {
+        receives temperature
+	}
+	
+	provided port get_luminance {
+		receives luminance
+	}
+	provided port set_luminance {
+		sends set_luminance
+	}
+
+    property temp:Double = 20           // Store comfort temprature
+    property last_lum: Double = 1000    // Last recored luminence value
+
+    property lights_off_temp:Double = 2 // Store temprature offsett for when lights are off
+    property night:Double = 8           // Store temprature offsett for when there is night
+
+    property lum_thres: Double = 1000   // Threshold for when the room is dart or not
+
+    statechart ES_behavior init present {
+        on entry do
+            print("Running Energy saver (ES) \n")
+        end
+
+        state present {
+            // Handle CMD
+            transition -> present
+            event get_temp:get_temp?temperature
+            action do
+                temp = get_temp.t
+				print("This is the temp now: " + temp)
+                if (last_lum > lum_thres) do 
+                    set_temperature!set_temperature(temp)
+                end
+
+                if (last_lum <= lum_thres) do
+                    set_temperature!set_temperature(temp - lights_off_temp)
+                end
+            end
+            		// Luminance
+			transition -> present
+			event set_lum: get_luminance?luminance
+			action do
+						set_luminance!set_luminance(last_lum)
+				end
+						
+			transition -> present
+			event get_lum: get_luminance?luminance
+			action do
+					last_lum = get_lum.lum
+					if (last_lum <= lum_thres) do
+						set_temperature!set_temperature(temp-lights_off_temp)
+					end
+					if (last_lum > lum_thres) do
+						set_temperature!set_temperature(temp)
+					end			
+						
+				end 
+
+        }
+        state night{}
+        state day {}
+        
+    }
+}
