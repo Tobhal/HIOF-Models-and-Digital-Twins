@@ -449,6 +449,7 @@ thing Energy_saver includes TemperatureMsg , LuminanceMsg , GeneralMsg {
 			event get_temp : get_temp?temperature
 			action do
 				temp = get_temp.t
+				print ("This is the temp now: " + temp)
 				if (last_lum > lum_thres) do
 					set_temperature!set_temperature(temp)
 				end

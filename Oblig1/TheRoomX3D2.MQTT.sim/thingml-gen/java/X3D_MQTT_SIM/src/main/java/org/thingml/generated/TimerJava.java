@@ -48,8 +48,8 @@ timer_port.send(timer_timeoutType.instantiate());
 }
 
 //Attributes
-private java.util.TimerTask TimerJava_timer_task_var;
 private java.util.Timer TimerJava_timer_var;
+private java.util.TimerTask TimerJava_timer_task_var;
 //Ports
 private Port timer_port;
 //Message types
@@ -63,19 +63,6 @@ super();
 }
 
 //Getters and Setters for non readonly/final attributes
-public java.util.TimerTask getTimerJava_timer_task_var() {
-return TimerJava_timer_task_var;
-}
-
-public void setTimerJava_timer_task_var(java.util.TimerTask TimerJava_timer_task_var) {
-this.TimerJava_timer_task_var = TimerJava_timer_task_var;
-}
-
-public TimerJava initTimerJava_timer_task_var(java.util.TimerTask TimerJava_timer_task_var) {
-this.TimerJava_timer_task_var = TimerJava_timer_task_var;
-return this;
-}
-
 public java.util.Timer getTimerJava_timer_var() {
 return TimerJava_timer_var;
 }
@@ -89,22 +76,35 @@ this.TimerJava_timer_var = TimerJava_timer_var;
 return this;
 }
 
+public java.util.TimerTask getTimerJava_timer_task_var() {
+return TimerJava_timer_task_var;
+}
+
+public void setTimerJava_timer_task_var(java.util.TimerTask TimerJava_timer_task_var) {
+this.TimerJava_timer_task_var = TimerJava_timer_task_var;
+}
+
+public TimerJava initTimerJava_timer_task_var(java.util.TimerTask TimerJava_timer_task_var) {
+this.TimerJava_timer_task_var = TimerJava_timer_task_var;
+return this;
+}
+
 //Getters for Ports
 public Port getTimer_port() {
 return timer_port;
 }
 private CompositeState buildTimerJava_SoftTimer(){
 final AtomicState state_TimerJava_SoftTimer_default = new AtomicState("default");
-Handler h449445798 = new Handler();
-h449445798.from(state_TimerJava_SoftTimer_default);
-h449445798.event(timer_startType);
-h449445798.guard((Event e)->{
+Handler h1943423487 = new Handler();
+h1943423487.from(state_TimerJava_SoftTimer_default);
+h1943423487.event(timer_startType);
+h1943423487.guard((Event e)->{
 final Timer_startMessageType.Timer_startMessage timer_start = (Timer_startMessageType.Timer_startMessage) e;
 return timer_start.delay > 0;
 });
 
-h449445798.port(timer_port);
-h449445798.action((Event e)->{
+h1943423487.port(timer_port);
+h1943423487.action((Event e)->{
 final Timer_startMessageType.Timer_startMessage timer_start = (Timer_startMessageType.Timer_startMessage) e;
 startTimer((int) (timer_start.delay));
 });

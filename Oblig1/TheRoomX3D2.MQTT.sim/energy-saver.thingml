@@ -4,12 +4,12 @@ import "pim_messages.thingml"
 
 thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
     
-    
+    // Sends
     required port set_temperature {
-        sends set_temperature
-      
+        sends set_temperature 
     }
-
+    
+	// Receives
     provided port get_temp {
         receives temperature
 	}
@@ -17,9 +17,7 @@ thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
 	provided port get_luminance {
 		receives luminance
 	}
-	provided port set_luminance {
-		sends set_luminance
-	}
+	
 
     property temp:Double = 20           // Store comfort temprature
     property last_lum: Double = 1000    // Last recored luminence value
@@ -35,7 +33,8 @@ thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
         end
 
         state present {
-            // Handle CMD
+            // Get temperature from human
+            // and set it for pim
             transition -> present
             event get_temp:get_temp?temperature
             action do
@@ -49,13 +48,8 @@ thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
                     set_temperature!set_temperature(temp - lights_off_temp)
                 end
             end
-            		// Luminance
-			transition -> present
-			event set_lum: get_luminance?luminance
-			action do
-						set_luminance!set_luminance(last_lum)
-				end
-						
+            
+            // Check Luminance				
 			transition -> present
 			event get_lum: get_luminance?luminance
 			action do
