@@ -17,59 +17,63 @@ import java.util.*;
 import org.thingml.generated.gui.*;
 public class Main {
 //Things
+public static PIM PIM_pim;
 public static HumanMock Human_myself;
-public static TimerJava TimerJava_g_humn;
-public static SimulationMock Simulation_sim;
+public static Energy_saverMock Energy_saver_es;
 public static TimerClientMockMock TimerClientMock_t;
+public static SimulationMock Simulation_sim;
 public static TimerJava TimerJava_g_temp;
 public static MQTTDriver MQTTDriver_T1;
-public static Energy_saverMock Energy_saver_es;
-public static PIM PIM_pim;
+public static TimerJava TimerJava_g_humn;
 public static void main(String args[]) {
 //Things
+PIM_pim = (PIM) new PIM();
+PIM_pim.buildBehavior(null, null);
+PIM_pim.init();
 Human_myself = (HumanMock) new HumanMock("Human_myself").buildBehavior(null, null);
-TimerJava_g_humn = (TimerJava) new TimerJava();
-TimerJava_g_humn.buildBehavior(null, null);
-TimerJava_g_humn.init();
-Simulation_sim = (SimulationMock) new SimulationMock("Simulation_sim").buildBehavior(null, null);
+Energy_saver_es = (Energy_saverMock) new Energy_saverMock("Energy_saver_es").buildBehavior(null, null);
 TimerClientMock_t = (TimerClientMockMock) new TimerClientMockMock("TimerClientMock_t").buildBehavior(null, null);
+Simulation_sim = (SimulationMock) new SimulationMock("Simulation_sim").buildBehavior(null, null);
 TimerJava_g_temp = (TimerJava) new TimerJava();
 TimerJava_g_temp.buildBehavior(null, null);
 TimerJava_g_temp.init();
 MQTTDriver_T1 = (MQTTDriver) new MQTTDriver();
 MQTTDriver_T1.buildBehavior(null, null);
 MQTTDriver_T1.init();
-Energy_saver_es = (Energy_saverMock) new Energy_saverMock("Energy_saver_es").buildBehavior(null, null);
-PIM_pim = (PIM) new PIM();
-PIM_pim.buildBehavior(null, null);
-PIM_pim.init();
+TimerJava_g_humn = (TimerJava) new TimerJava();
+TimerJava_g_humn.buildBehavior(null, null);
+TimerJava_g_humn.init();
 //Connecting internal ports...
 //Connectors
-TimerJava_g_temp.getTimer_port().addListener(PIM_pim.getGuard_temperature_port());
-PIM_pim.getGuard_temperature_port().addListener(TimerJava_g_temp.getTimer_port());
-PIM_pim.getRequest_actuator_port().addListener(MQTTDriver_T1.getRequire_val_port());
-PIM_pim.getRequest_sensor_port().addListener(MQTTDriver_T1.getRequire_val_port());
 Energy_saver_es.getSend_temp_port().addListener(PIM_pim.getHuman_input_port());
 TimerJava_g_humn.getTimer_port().addListener(PIM_pim.getGuard_human_port());
 PIM_pim.getGuard_human_port().addListener(TimerJava_g_humn.getTimer_port());
-MQTTDriver_T1.getProvice_lum_motion_port().addListener(Energy_saver_es.getGet_cmd_port());
-PIM_pim.getHuman_output_port().addListener(Human_myself.getGet_values_port());
-MQTTDriver_T1.getProvide_temp_port().addListener(PIM_pim.getGet_sensor_port());
+Energy_saver_es.getSend_lightsensor_port().addListener(MQTTDriver_T1.getRequire_val_port());
+TimerJava_g_temp.getTimer_port().addListener(PIM_pim.getGuard_temperature_port());
+PIM_pim.getGuard_temperature_port().addListener(TimerJava_g_temp.getTimer_port());
+PIM_pim.getRequest_sensor_port().addListener(MQTTDriver_T1.getRequire_val_port());
+PIM_pim.getRequest_actuator_port().addListener(MQTTDriver_T1.getRequire_val_port());
 MQTTDriver_T1.getMQTT_port().addListener(Simulation_sim.getToMQTT_port());
 Simulation_sim.getToMQTT_port().addListener(MQTTDriver_T1.getMQTT_port());
+MQTTDriver_T1.getProvice_lum_motion_port().addListener(Energy_saver_es.getGet_cmd_port());
+MQTTDriver_T1.getProvide_temp_port().addListener(PIM_pim.getGet_sensor_port());
 Human_myself.getSend_cmd_port().addListener(Energy_saver_es.getGet_cmd_port());
-TimerJava_g_humn.initTimerJava_timer_var((java.util.Timer)null);
-TimerJava_g_humn.initTimerJava_timer_task_var((java.util.TimerTask)null);
+PIM_pim.getHuman_output_port().addListener(Human_myself.getGet_values_port());
+PIM_pim.initPIM_tmrature_var((double) (20));
+PIM_pim.initPIM_thermo_id_var((int) (1));
+PIM_pim.initPIM_switch_id_var((int) (1));
+PIM_pim.initPIM_delta_var((double) (0.1));
+PIM_pim.initPIM_lasttemp_var((double) (0));
 TimerJava_g_temp.initTimerJava_timer_var((java.util.Timer)null);
 TimerJava_g_temp.initTimerJava_timer_task_var((java.util.TimerTask)null);
-final int[] T1_lightsensors_array = new int[25];
-final double[] T1_thermoval_array = new double[25];
-final double[] T1_lightval_array = new double[25];
-final String[] T1_thermotext_array = new String[25];
-final int[] T1_onoffswitches_array = new int[25];
 final int[] T1_motionsensors_array = new int[25];
 final double[] T1_lumval_array = new double[25];
+final String[] T1_thermotext_array = new String[25];
+final double[] T1_thermoval_array = new double[25];
+final int[] T1_onoffswitches_array = new int[25];
 final int[] T1_thermometers_array = new int[25];
+final int[] T1_lightsensors_array = new int[25];
+final double[] T1_lightval_array = new double[25];
 MQTTDriver_T1.initMQTTDriver_last_mo_var((int) (0));
 MQTTDriver_T1.initMQTTDriver_last_light_var((int) (0));
 MQTTDriver_T1.initMQTTDriver_last_thermo_var((int) (0));
@@ -80,43 +84,40 @@ MQTTDriver_T1.initMQTTDriver_id_s_var((int)0);
 MQTTDriver_T1.initMQTTDriver_found_var((boolean)false);
 MQTTDriver_T1.initMQTTDriver_last_onoff_var((int) (0));
 MQTTDriver_T1.initMQTTDriver_did_var((int)0);
-MQTTDriver_T1.initMQTTDriver_lightsensors_var(T1_lightsensors_array);
-MQTTDriver_T1.initMQTTDriver_thermoval_var(T1_thermoval_array);
-MQTTDriver_T1.initMQTTDriver_lightval_var(T1_lightval_array);
-MQTTDriver_T1.initMQTTDriver_thermotext_var(T1_thermotext_array);
-MQTTDriver_T1.initMQTTDriver_onoffswitches_var(T1_onoffswitches_array);
 MQTTDriver_T1.initMQTTDriver_motionsensors_var(T1_motionsensors_array);
 MQTTDriver_T1.initMQTTDriver_lumval_var(T1_lumval_array);
+MQTTDriver_T1.initMQTTDriver_thermotext_var(T1_thermotext_array);
+MQTTDriver_T1.initMQTTDriver_thermoval_var(T1_thermoval_array);
+MQTTDriver_T1.initMQTTDriver_onoffswitches_var(T1_onoffswitches_array);
 MQTTDriver_T1.initMQTTDriver_thermometers_var(T1_thermometers_array);
-PIM_pim.initPIM_tmrature_var((double) (20));
-PIM_pim.initPIM_thermo_id_var((int) (1));
-PIM_pim.initPIM_switch_id_var((int) (1));
-PIM_pim.initPIM_delta_var((double) (0.1));
-PIM_pim.initPIM_lasttemp_var((double) (0));
+MQTTDriver_T1.initMQTTDriver_lightsensors_var(T1_lightsensors_array);
+MQTTDriver_T1.initMQTTDriver_lightval_var(T1_lightval_array);
+TimerJava_g_humn.initTimerJava_timer_var((java.util.Timer)null);
+TimerJava_g_humn.initTimerJava_timer_task_var((java.util.TimerTask)null);
 //Network components for external connectors
 /*$NETWORK$*/
 //External Connectors
 /*$EXT CONNECTORS$*/
 /*$START$*/
-TimerJava_g_temp.start();
-MQTTDriver_T1.start();
 TimerJava_g_humn.start();
-PIM_pim.start();
+TimerJava_g_temp.start();
 Energy_saver_es.start();
+MQTTDriver_T1.start();
 Human_myself.start();
-Simulation_sim.start();
+PIM_pim.start();
 TimerClientMock_t.start();
+Simulation_sim.start();
 //Hook to stop instances following client/server dependencies (clients firsts)
 Runtime.getRuntime().addShutdownHook(new Thread() {
 public void run() {
-TimerClientMock_t.stop();
 Simulation_sim.stop();
-Human_myself.stop();
-Energy_saver_es.stop();
+TimerClientMock_t.stop();
 PIM_pim.stop();
-TimerJava_g_humn.stop();
+Human_myself.stop();
 MQTTDriver_T1.stop();
+Energy_saver_es.stop();
 TimerJava_g_temp.stop();
+TimerJava_g_humn.stop();
 /*$STOP$*/
 }
 });

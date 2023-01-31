@@ -418,22 +418,19 @@ thing Energy_saver includes TemperatureMsg , LuminanceMsg , GeneralMsg @mock "tr
 	required port send_temp {
 		sends set_temperature
 	}
+	required port send_lightsensor {
+		sends add_lightsensor
+	}
 	provided port get_cmd {
 		receives temperature receives luminance
 	}
 }
 thing Energy_saver includes TemperatureMsg , LuminanceMsg , GeneralMsg {
-	required port set_temperature {
-		sends set_temperature
+	required port provide_cmd {
+		sends set_temperature sends add_lightsensor
 	}
-	provided port get_temp {
-		receives temperature
-	}
-	provided port get_luminance {
-		receives luminance
-	}
-	provided port set_luminance {
-		sends set_luminance
+	provided port get_cmd {
+		receives temperature receives luminance
 	}
 	property temp : Double = 20
 	property last_lum : Double = 1000
@@ -446,31 +443,20 @@ thing Energy_saver includes TemperatureMsg , LuminanceMsg , GeneralMsg {
 		end
 		state present {
 			transition -> present
-			event get_temp : get_temp?temperature
+			event get_temp : get_cmd?temperature
 			action do
 				temp = get_temp.t
 				print ("This is the temp now: " + temp)
-				if (last_lum > lum_thres) do
-					set_temperature!set_temperature(temp)
-				end
-				if (last_lum <= lum_thres) do
-					set_temperature!set_temperature(temp - lights_off_temp)
-				end
 			end
 			transition -> present
-			event set_lum : get_luminance?luminance
-			action do
-				set_luminance!set_luminance(last_lum)
-			end
-			transition -> present
-			event get_lum : get_luminance?luminance
+			event get_lum : get_cmd?luminance
 			action do
 				last_lum = get_lum.lum
 				if (last_lum <= lum_thres) do
-					set_temperature!set_temperature(temp - lights_off_temp)
+					provide_cmd!set_temperature(temp - lights_off_temp)
 				end
 				if (last_lum > lum_thres) do
-					set_temperature!set_temperature(temp)
+					provide_cmd!set_temperature(temp)
 				end
 			end
 		}
@@ -680,5 +666,6 @@ configuration X3D_MQTT_SIM {
 	connector pim.guard_temperature => g_temp . timer
 	connector pim.guard_human => g_humn . timer
 	connector es.send_temp => pim . human_input
+	connector es.send_lightsensor => T1 . require_val
 	connector sim.toMQTT => T1 . MQTT
 }

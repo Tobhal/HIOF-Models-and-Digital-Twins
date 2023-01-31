@@ -55,15 +55,29 @@ private final Iamalive2MessageType iamalive2Type = new Iamalive2MessageType();
 private final PromptMessageType promptType = new PromptMessageType();
 final Port port_Energy_saver_send_temp;
 public Port getSend_temp_port(){return port_Energy_saver_send_temp;}
+final Port port_Energy_saver_send_lightsensor;
+public Port getSend_lightsensor_port(){return port_Energy_saver_send_lightsensor;}
 final Port port_Energy_saver_get_cmd;
 public Port getGet_cmd_port(){return port_Energy_saver_get_cmd;}
+public java.util.List<IEnergy_saver_send_lightsensorClient> send_lightsensor_listeners = new java.util.LinkedList<IEnergy_saver_send_lightsensorClient>();
 public java.util.List<IEnergy_saver_send_tempClient> send_temp_listeners = new java.util.LinkedList<IEnergy_saver_send_tempClient>();
 private SimpleDateFormat dateFormat=new SimpleDateFormat("dd MMM yyy 'at' HH:mm:ss.SSS");
 
 private JTabbedPane tabbedPane=new JTabbedPane();
 private JFrame frame;
 
-        //Attributes related to set_temperature via send_temp
+        //Attributes related to add_lightsensor via send_lightsensor
+public JButton sendadd_lightsensor_via_send_lightsensor;
+private JTextField fieldadd_lightsensor_via_send_lightsensor_Id;
+public JTextField getFieldadd_lightsensor_via_send_lightsensor_Id() {
+return fieldadd_lightsensor_via_send_lightsensor_Id;
+}
+
+public JButton getSendadd_lightsensor_via_send_lightsensor() {
+return sendadd_lightsensor_via_send_lightsensor;
+}
+
+//Attributes related to set_temperature via send_temp
 public JButton sendset_temperature_via_send_temp;
 private JTextField fieldset_temperature_via_send_temp_T;
 public JTextField getFieldset_temperature_via_send_temp_T() {
@@ -75,10 +89,12 @@ return sendset_temperature_via_send_temp;
 }
 
 public void disableAll() {
+sendadd_lightsensor_via_send_lightsensor.setEnabled(false);
 sendset_temperature_via_send_temp.setEnabled(false);
 }
 
 public void enableAll() {
+sendadd_lightsensor_via_send_lightsensor.setEnabled(true);
 sendset_temperature_via_send_temp.setEnabled(true);
 }
 
@@ -106,6 +122,7 @@ public Energy_saverMock(String name){
         super(name);
         init();
         port_Energy_saver_send_temp = new Port("send_temp", this);
+port_Energy_saver_send_lightsensor = new Port("send_lightsensor", this);
 port_Energy_saver_get_cmd = new Port("get_cmd", this);
 
         initGUI(name);
@@ -137,7 +154,25 @@ public Component buildBehavior(String session,Component root){
         return this;
 }
 
-        public JPanel createset_temperature_via_send_tempPanel(){
+        public JPanel createadd_lightsensor_via_send_lightsensorPanel(){
+GridBagConstraints c = new GridBagConstraints();
+c.fill = GridBagConstraints.HORIZONTAL;
+c.weightx = 0.5;
+JPanel panel = new JPanel(new GridBagLayout());
+JLabel labelid = new JLabel();
+labelid.setText("id");
+c.gridx = 0;
+c.gridy = 0;
+panel.add(labelid, c);
+fieldadd_lightsensor_via_send_lightsensor_Id = new JTextField();
+fieldadd_lightsensor_via_send_lightsensor_Id.setText("int");
+c.gridx = 1;
+c.gridy = 0
+;panel.add(fieldadd_lightsensor_via_send_lightsensor_Id, c);
+return panel;
+}
+
+public JPanel createset_temperature_via_send_tempPanel(){
 GridBagConstraints c = new GridBagConstraints();
 c.fill = GridBagConstraints.HORIZONTAL;
 c.weightx = 0.5;
@@ -170,6 +205,7 @@ public void print(String id,String data){
         }
 
         public void addListener(ActionListener l){
+sendadd_lightsensor_via_send_lightsensor.addActionListener(l);
 sendset_temperature_via_send_temp.addActionListener(l);
 }
 
@@ -191,8 +227,23 @@ private void initGUI(String name){
         frame.setLayout(new GridBagLayout());
         frame.add(tabbedPane,c);
 
-        JPanel frame_send_temp = new JPanel();
+        JPanel frame_send_lightsensor = new JPanel();
+frame_send_lightsensor.setLayout(new GridBagLayout());
+JPanel frame_send_temp = new JPanel();
 frame_send_temp.setLayout(new GridBagLayout());
+//GUI related to send_lightsensor_via_send_lightsensor => add_lightsensor
+c.gridy = 0;
+c.gridx = 0;
+frame_send_lightsensor.add(createLabel("add_lightsensor"), c);
+c.gridy = 1;
+c.gridx = 0;
+frame_send_lightsensor.add(createadd_lightsensor_via_send_lightsensorPanel(), c);
+c.gridy = 2;
+c.gridx = 0;
+c.weighty = 0;
+sendadd_lightsensor_via_send_lightsensor = createSendButton("send_lightsensor => add_lightsensor");
+frame_send_lightsensor.add(sendadd_lightsensor_via_send_lightsensor, c);
+tabbedPane.addTab("send_lightsensor", frame_send_lightsensor);
 //GUI related to send_temp_via_send_temp => set_temperature
 c.gridy = 0;
 c.gridx = 0;
@@ -305,7 +356,33 @@ private void parseAndExecute(String command){
         return;
         }
 
-        if(params[0].equals("send_temp")) {
+        if(params[0].equals("send_lightsensor")) {
+if (params[1].startsWith("add_lightsensor")) {
+params[1] = params[1].substring("add_lightsensor".length(), params[1].length());
+if (!(params[1].startsWith("(") && params[1].endsWith(")"))) {
+cliButton.setForeground(alertColor);
+cli.setText("port!message(param1, param2, param3)");
+return;
+}
+params = params[1].substring(1,params[1].length()-1).split(",");
+if (!(params.length == 1)) {
+cliButton.setForeground(alertColor);
+cli.setText("port!message(param1, param2, param3)");
+return;
+}
+try {
+Map<String, Object> param = new HashMap<String, Object>();
+param.put("id", StringHelper.toObject (int.class, params[0].trim()));
+Command c = new Command(port_Energy_saver_send_lightsensor, add_lightsensorType, param);c.execute();
+((DefaultListModel)commands.getModel()).addElement(c);
+cliButton.setForeground(Color.BLACK);
+} catch(IllegalArgumentException iae) {
+System.err.println("Cannot parse arguments for message add_lightsensor on port send_lightsensor. Please try again with proper parameters");
+cliButton.setForeground(alertColor);
+}
+}
+}
+if(params[0].equals("send_temp")) {
 if (params[1].startsWith("set_temperature")) {
 params[1] = params[1].substring("set_temperature".length(), params[1].length());
 if (!(params[1].startsWith("(") && params[1].endsWith(")"))) {
@@ -347,7 +424,21 @@ public void actionPerformed(ActionEvent ae){
         else if(ae.getSource()==clearButton){
         screen.setText("");
         }
-        else if ( ae.getSource() == getSendset_temperature_via_send_temp()) {
+        else if ( ae.getSource() == getSendadd_lightsensor_via_send_lightsensor()) {
+try{
+Map<String, Object> param = new HashMap<String, Object>();
+param.put("id", StringHelper.toObject (int.class, getFieldadd_lightsensor_via_send_lightsensor_Id().getText()));
+Command c = new Command(port_Energy_saver_send_lightsensor, add_lightsensorType, param);c.execute();
+((DefaultListModel)commands.getModel()).addElement(c);
+for(IEnergy_saver_send_lightsensorClient l : send_lightsensor_listeners)
+l.add_lightsensor_from_send_lightsensor((Integer)StringHelper.toObject (int.class, getFieldadd_lightsensor_via_send_lightsensor_Id().getText()));
+getSendadd_lightsensor_via_send_lightsensor().setForeground(Color.BLACK);
+} catch(IllegalArgumentException iae) {
+System.err.println("Cannot parse arguments for message add_lightsensor on port send_lightsensor. Please try again with proper parameters");
+getSendadd_lightsensor_via_send_lightsensor().setForeground(alertColor);
+}
+}
+else if ( ae.getSource() == getSendset_temperature_via_send_temp()) {
 try{
 Map<String, Object> param = new HashMap<String, Object>();
 param.put("t", StringHelper.toObject (double.class, getFieldset_temperature_via_send_temp_T().getText()));

@@ -45,9 +45,14 @@ private void sendSet_temperature_via_send_temp(double TemperatureMsg_set_tempera
 send_temp_port.send(set_temperatureType.instantiate(TemperatureMsg_set_temperature_t_var));
 }
 
+private void sendAdd_lightsensor_via_send_lightsensor(int LuminanceMsg_add_lightsensor_id_var){
+send_lightsensor_port.send(add_lightsensorType.instantiate(LuminanceMsg_add_lightsensor_id_var));
+}
+
 //Attributes
 //Ports
 private Port send_temp_port;
+private Port send_lightsensor_port;
 private Port get_cmd_port;
 //Message types
 protected final TemperatureMessageType temperatureType = new TemperatureMessageType();
@@ -71,6 +76,9 @@ super();
 public Port getSend_temp_port() {
 return send_temp_port;
 }
+public Port getSend_lightsensor_port() {
+return send_lightsensor_port;
+}
 public Port getGet_cmd_port() {
 return get_cmd_port;
 }
@@ -78,9 +86,11 @@ public Component buildBehavior(String session, Component root) {
 if (root == null) {
 //Init ports
 send_temp_port = new Port("send_temp", this);
+send_lightsensor_port = new Port("send_lightsensor", this);
 get_cmd_port = new Port("get_cmd", this);
 } else {
 send_temp_port = ((Energy_saver)root).send_temp_port;
+send_lightsensor_port = ((Energy_saver)root).send_lightsensor_port;
 get_cmd_port = ((Energy_saver)root).get_cmd_port;
 }
 if (session == null){

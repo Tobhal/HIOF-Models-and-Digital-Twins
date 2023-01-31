@@ -5,25 +5,21 @@ import "pim_messages.thingml"
 thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
     
     // Sends
-    required port set_temperature {
-        sends set_temperature 
+    required port provide_cmd {
+        sends set_temperature, add_lightsensor 
     }
     
 	// Receives
-    provided port get_temp {
-        receives temperature
+    provided port get_cmd {
+        receives temperature,
+        		luminance
 	}
 	
-	provided port get_luminance {
-		receives luminance
-	}
-	
-
     property temp:Double = 20           // Store comfort temprature
     property last_lum: Double = 1000    // Last recored luminence value
 
-    property lights_off_temp:Double = 2 // Store temprature offsett for when lights are off
-    property night:Double = 8           // Store temprature offsett for when there is night
+    property lights_off_temp:Double = 2 // Store temperature offsett for when lights are off
+    property night:Double = 8           // Store temperature offsett for when there is night
 
     property lum_thres: Double = 1000   // Threshold for when the room is dart or not
 
@@ -33,36 +29,29 @@ thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
         end
 
         state present {
+        	
             // Get temperature from human
             // and set it for pim
             transition -> present
-            event get_temp:get_temp?temperature
+            event get_temp:get_cmd?temperature
             action do
                 temp = get_temp.t
 				print("This is the temp now: " + temp)
-                if (last_lum > lum_thres) do 
-                    set_temperature!set_temperature(temp)
-                end
-
-                if (last_lum <= lum_thres) do
-                    set_temperature!set_temperature(temp - lights_off_temp)
-                end
-            end
-            
-            // Check Luminance				
+           		end
+           		
+            // Check luminance towards temperature				
 			transition -> present
-			event get_lum: get_luminance?luminance
+			event get_lum: get_cmd?luminance
 			action do
 					last_lum = get_lum.lum
 					if (last_lum <= lum_thres) do
-						set_temperature!set_temperature(temp-lights_off_temp)
+						provide_cmd!set_temperature(temp-lights_off_temp)
 					end
 					if (last_lum > lum_thres) do
-						set_temperature!set_temperature(temp)
+						provide_cmd!set_temperature(temp)
 					end			
 						
 				end 
-
         }
         state night{}
         state day {}

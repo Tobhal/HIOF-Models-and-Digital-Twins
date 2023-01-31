@@ -135,10 +135,10 @@ guard_human_port.send(timer_cancelType.instantiate());
 }
 
 //Attributes
-private double PIM_tmrature_var;
 private double PIM_lasttemp_var;
 private int PIM_switch_id_var;
 private double PIM_delta_var;
+private double PIM_tmrature_var;
 private int PIM_thermo_id_var;
 //Ports
 private Port get_sensor_port;
@@ -170,19 +170,6 @@ super();
 }
 
 //Getters and Setters for non readonly/final attributes
-public double getPIM_tmrature_var() {
-return PIM_tmrature_var;
-}
-
-public void setPIM_tmrature_var(double PIM_tmrature_var) {
-this.PIM_tmrature_var = PIM_tmrature_var;
-}
-
-public PIM initPIM_tmrature_var(double PIM_tmrature_var) {
-this.PIM_tmrature_var = PIM_tmrature_var;
-return this;
-}
-
 public double getPIM_lasttemp_var() {
 return PIM_lasttemp_var;
 }
@@ -219,6 +206,19 @@ this.PIM_delta_var = PIM_delta_var;
 
 public PIM initPIM_delta_var(double PIM_delta_var) {
 this.PIM_delta_var = PIM_delta_var;
+return this;
+}
+
+public double getPIM_tmrature_var() {
+return PIM_tmrature_var;
+}
+
+public void setPIM_tmrature_var(double PIM_tmrature_var) {
+this.PIM_tmrature_var = PIM_tmrature_var;
+}
+
+public PIM initPIM_tmrature_var(double PIM_tmrature_var) {
+this.PIM_tmrature_var = PIM_tmrature_var;
 return this;
 }
 
@@ -260,115 +260,115 @@ return guard_human_port;
 private CompositeState buildPIM_PIM_behavior(){
 final CompositeState state_PIM_PIM_behavior_Build = buildPIM_PIM_behavior_Build();
 final CompositeState state_PIM_PIM_behavior_Running = buildPIM_PIM_behavior_Running();
-Handler h601233136 = new Handler();
-h601233136.from(state_PIM_PIM_behavior_Build);
-h601233136.event(set_deltaType);
-h601233136.port(human_input_port);
-h601233136.action((Event e)->{
+Handler h558373486 = new Handler();
+h558373486.from(state_PIM_PIM_behavior_Build);
+h558373486.event(set_deltaType);
+h558373486.port(human_input_port);
+h558373486.action((Event e)->{
 final Set_deltaMessageType.Set_deltaMessage set_delta = (Set_deltaMessageType.Set_deltaMessage) e;
 PIM_delta_var = (double) (set_delta.dlta);
 });
 
-Handler h1310665986 = new Handler();
-h1310665986.from(state_PIM_PIM_behavior_Build);
-h1310665986.event(fetch_tempType);
-h1310665986.port(human_input_port);
-h1310665986.action((Event e)->{
+Handler h501754627 = new Handler();
+h501754627.from(state_PIM_PIM_behavior_Build);
+h501754627.event(fetch_tempType);
+h501754627.port(human_input_port);
+h501754627.action((Event e)->{
 sendTemperature_via_human_output((int) (getPIM_thermo_id_var()), (String) ("temperature "), (double) (getPIM_lasttemp_var()));
 });
 
-Handler h823782613 = new Handler();
-h823782613.from(state_PIM_PIM_behavior_Build);
-h823782613.event(temperatureType);
-h823782613.port(get_sensor_port);
-h823782613.action((Event e)->{
+Handler h1161838385 = new Handler();
+h1161838385.from(state_PIM_PIM_behavior_Build);
+h1161838385.event(temperatureType);
+h1161838385.port(get_sensor_port);
+h1161838385.action((Event e)->{
 final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
 PIM_lasttemp_var = (double) (temperature.t);
 });
 
-Handler h420178125 = new Handler();
-h420178125.from(state_PIM_PIM_behavior_Build);
-h420178125.event(iamalive1Type);
-h420178125.port(get_sensor_port);
-h420178125.action((Event e)->{
+Handler h1934827406 = new Handler();
+h1934827406.from(state_PIM_PIM_behavior_Build);
+h1934827406.event(iamalive1Type);
+h1934827406.port(get_sensor_port);
+h1934827406.action((Event e)->{
 sendPrompt_via_human_output((String) ("INTERNAL ERROR: iamalive1 is covered inside Build"));
 });
 
-Handler h1104446873 = new Handler();
-h1104446873.from(state_PIM_PIM_behavior_Build);
-h1104446873.event(iamalive2Type);
-h1104446873.port(get_sensor_port);
-h1104446873.action((Event e)->{
+Handler h693726344 = new Handler();
+h693726344.from(state_PIM_PIM_behavior_Build);
+h693726344.event(iamalive2Type);
+h693726344.port(get_sensor_port);
+h693726344.action((Event e)->{
 sendPrompt_via_human_output((String) ("INTERNAL ERROR: iamalive2 is covered inside Build"));
 });
 
-Transition h1449471956 = new Transition();
-h1449471956.from(state_PIM_PIM_behavior_Build).to(state_PIM_PIM_behavior_Running);
-h1449471956.event(set_temperatureType);
-h1449471956.port(human_input_port);
-h1449471956.action((Event e)->{
+Transition h158390629 = new Transition();
+h158390629.from(state_PIM_PIM_behavior_Build).to(state_PIM_PIM_behavior_Running);
+h158390629.event(set_temperatureType);
+h158390629.port(human_input_port);
+h158390629.action((Event e)->{
 final Set_temperatureMessageType.Set_temperatureMessage set_temperature = (Set_temperatureMessageType.Set_temperatureMessage) e;
 PIM_tmrature_var = (double) (set_temperature.t);
 sendPrompt_via_human_output((String) ("Now entering thermostat. Please give temperature observations"));
 });
 
-Transition h1458120372 = new Transition();
-h1458120372.from(state_PIM_PIM_behavior_Build).to(state_PIM_PIM_behavior_Build);
-h1458120372.event(timer_timeoutType);
-h1458120372.port(guard_human_port);
-h1458120372.action((Event e)->{
+Transition h2077969855 = new Transition();
+h2077969855.from(state_PIM_PIM_behavior_Build).to(state_PIM_PIM_behavior_Build);
+h2077969855.event(timer_timeoutType);
+h2077969855.port(guard_human_port);
+h2077969855.action((Event e)->{
 sendPrompt_via_human_output((String) ("Please continue doing the build of the temperature control"));
 });
 
-Handler h1635824446 = new Handler();
-h1635824446.from(state_PIM_PIM_behavior_Running);
-h1635824446.event(fetch_tempType);
-h1635824446.port(human_input_port);
-h1635824446.action((Event e)->{
+Handler h223318461 = new Handler();
+h223318461.from(state_PIM_PIM_behavior_Running);
+h223318461.event(fetch_tempType);
+h223318461.port(human_input_port);
+h223318461.action((Event e)->{
 sendTemperature_via_human_output((int) (getPIM_thermo_id_var()), (String) ("temperature "), (double) (getPIM_lasttemp_var()));
 });
 
-Transition h457835844 = new Transition();
-h457835844.from(state_PIM_PIM_behavior_Running).to(state_PIM_PIM_behavior_Running);
-h457835844.event(set_deltaType);
-h457835844.port(human_input_port);
-h457835844.action((Event e)->{
+Transition h1231599573 = new Transition();
+h1231599573.from(state_PIM_PIM_behavior_Running).to(state_PIM_PIM_behavior_Running);
+h1231599573.event(set_deltaType);
+h1231599573.port(human_input_port);
+h1231599573.action((Event e)->{
 final Set_deltaMessageType.Set_deltaMessage set_delta = (Set_deltaMessageType.Set_deltaMessage) e;
 PIM_delta_var = (double) (set_delta.dlta);
 });
 
-Transition h1232044984 = new Transition();
-h1232044984.from(state_PIM_PIM_behavior_Running).to(state_PIM_PIM_behavior_Running);
-h1232044984.event(SwitchOnType);
-h1232044984.port(human_input_port);
-h1232044984.action((Event e)->{
+Transition h1473814820 = new Transition();
+h1473814820.from(state_PIM_PIM_behavior_Running).to(state_PIM_PIM_behavior_Running);
+h1473814820.event(SwitchOnType);
+h1473814820.port(human_input_port);
+h1473814820.action((Event e)->{
 final SwitchOnMessageType.SwitchOnMessage SwitchOn = (SwitchOnMessageType.SwitchOnMessage) e;
 sendPrompt_via_human_output((String) ("INTERNAL ERROR: Impossible SwitchOn at PIM.Running"));
 });
 
-Transition h741538723 = new Transition();
-h741538723.from(state_PIM_PIM_behavior_Running).to(state_PIM_PIM_behavior_Running);
-h741538723.event(SwitchOffType);
-h741538723.port(human_input_port);
-h741538723.action((Event e)->{
+Transition h337942205 = new Transition();
+h337942205.from(state_PIM_PIM_behavior_Running).to(state_PIM_PIM_behavior_Running);
+h337942205.event(SwitchOffType);
+h337942205.port(human_input_port);
+h337942205.action((Event e)->{
 final SwitchOffMessageType.SwitchOffMessage SwitchOff = (SwitchOffMessageType.SwitchOffMessage) e;
 sendPrompt_via_human_output((String) ("INTERNAL ERROR: Impossible SwitchOff at PIM.Running"));
 });
 
-Transition h661584693 = new Transition();
-h661584693.from(state_PIM_PIM_behavior_Running).to(state_PIM_PIM_behavior_Running);
-h661584693.event(set_temperatureType);
-h661584693.port(human_input_port);
-h661584693.action((Event e)->{
+Transition h1244292350 = new Transition();
+h1244292350.from(state_PIM_PIM_behavior_Running).to(state_PIM_PIM_behavior_Running);
+h1244292350.event(set_temperatureType);
+h1244292350.port(human_input_port);
+h1244292350.action((Event e)->{
 final Set_temperatureMessageType.Set_temperatureMessage set_temperature = (Set_temperatureMessageType.Set_temperatureMessage) e;
 sendPrompt_via_human_output((String) ("INTERNAL ERROR: Impossible set_temperature at PIM.Running"));
 });
 
-Transition h2006503550 = new Transition();
-h2006503550.from(state_PIM_PIM_behavior_Running).to(state_PIM_PIM_behavior_Running);
-h2006503550.event(temperatureType);
-h2006503550.port(get_sensor_port);
-h2006503550.action((Event e)->{
+Transition h700638556 = new Transition();
+h700638556.from(state_PIM_PIM_behavior_Running).to(state_PIM_PIM_behavior_Running);
+h700638556.event(temperatureType);
+h700638556.port(get_sensor_port);
+h700638556.action((Event e)->{
 final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
 sendPrompt_via_human_output((String) ("INTERNAL ERROR: temperature received at PIM.Running"));
 PIM_lasttemp_var = (double) (temperature.t);
@@ -390,20 +390,20 @@ state_PIM_PIM_behavior_Build_SetThermostat.onEntry(()->{
 sendAdd_thermometer_via_request_sensor((int) (getPIM_thermo_id_var()), (String) ("t"));
 sendAdd_device_via_request_actuator((int) (getPIM_switch_id_var()));
 });
-Transition h657292144 = new Transition();
-h657292144.from(state_PIM_PIM_behavior_Build_SetThermostat).to(state_PIM_PIM_behavior_Build_SetThermostat);
-h657292144.event(SwitchOnType);
-h657292144.port(human_input_port);
-h657292144.action((Event e)->{
+Transition h124027926 = new Transition();
+h124027926.from(state_PIM_PIM_behavior_Build_SetThermostat).to(state_PIM_PIM_behavior_Build_SetThermostat);
+h124027926.event(SwitchOnType);
+h124027926.port(human_input_port);
+h124027926.action((Event e)->{
 final SwitchOnMessageType.SwitchOnMessage SwitchOn = (SwitchOnMessageType.SwitchOnMessage) e;
 sendPrompt_via_human_output((String) ("Please set temperature for Thermostat"));
 });
 
-Transition h2043825664 = new Transition();
-h2043825664.from(state_PIM_PIM_behavior_Build_SetThermostat).to(state_PIM_PIM_behavior_Build_SetThermostat);
-h2043825664.event(SwitchOffType);
-h2043825664.port(human_input_port);
-h2043825664.action((Event e)->{
+Transition h417463574 = new Transition();
+h417463574.from(state_PIM_PIM_behavior_Build_SetThermostat).to(state_PIM_PIM_behavior_Build_SetThermostat);
+h417463574.event(SwitchOffType);
+h417463574.port(human_input_port);
+h417463574.action((Event e)->{
 final SwitchOffMessageType.SwitchOffMessage SwitchOff = (SwitchOffMessageType.SwitchOffMessage) e;
 sendPrompt_via_human_output((String) ("Please set temperature for Thermostat"));
 });
@@ -426,65 +426,65 @@ private CompositeState buildPIM_PIM_behavior_Running(){
 final CompositeState state_PIM_PIM_behavior_Running_Thermostat = buildPIM_PIM_behavior_Running_Thermostat();
 final AtomicState state_PIM_PIM_behavior_Running_On = new AtomicState("On");
 final AtomicState state_PIM_PIM_behavior_Running_Off = new AtomicState("Off");
-Transition h87617732 = new Transition();
-h87617732.from(state_PIM_PIM_behavior_Running_Thermostat).to(state_PIM_PIM_behavior_Running_On);
-h87617732.event(SwitchOnType);
-h87617732.port(human_input_port);
-h87617732.action((Event e)->{
+Transition h1836935274 = new Transition();
+h1836935274.from(state_PIM_PIM_behavior_Running_Thermostat).to(state_PIM_PIM_behavior_Running_On);
+h1836935274.event(SwitchOnType);
+h1836935274.port(human_input_port);
+h1836935274.action((Event e)->{
 final SwitchOnMessageType.SwitchOnMessage SwitchOn = (SwitchOnMessageType.SwitchOnMessage) e;
 sendSwitchOn_via_request_actuator((int) (SwitchOn.did));
 });
 
-Transition h1335559172 = new Transition();
-h1335559172.from(state_PIM_PIM_behavior_Running_Thermostat).to(state_PIM_PIM_behavior_Running_Off);
-h1335559172.event(SwitchOffType);
-h1335559172.port(human_input_port);
-h1335559172.action((Event e)->{
+Transition h1608533351 = new Transition();
+h1608533351.from(state_PIM_PIM_behavior_Running_Thermostat).to(state_PIM_PIM_behavior_Running_Off);
+h1608533351.event(SwitchOffType);
+h1608533351.port(human_input_port);
+h1608533351.action((Event e)->{
 final SwitchOffMessageType.SwitchOffMessage SwitchOff = (SwitchOffMessageType.SwitchOffMessage) e;
 sendSwitchOff_via_request_actuator((int) (SwitchOff.did));
 });
 
-Transition h141144626 = new Transition();
-h141144626.from(state_PIM_PIM_behavior_Running_Thermostat).to(state_PIM_PIM_behavior_Running_Thermostat);
-h141144626.event(set_temperatureType);
-h141144626.port(human_input_port);
-h141144626.action((Event e)->{
+Transition h2049647947 = new Transition();
+h2049647947.from(state_PIM_PIM_behavior_Running_Thermostat).to(state_PIM_PIM_behavior_Running_Thermostat);
+h2049647947.event(set_temperatureType);
+h2049647947.port(human_input_port);
+h2049647947.action((Event e)->{
 final Set_temperatureMessageType.Set_temperatureMessage set_temperature = (Set_temperatureMessageType.Set_temperatureMessage) e;
 PIM_tmrature_var = (double) (set_temperature.t);
 });
 
-Transition h2053900499 = new Transition();
-h2053900499.from(state_PIM_PIM_behavior_Running_On).to(state_PIM_PIM_behavior_Running_Off);
-h2053900499.event(SwitchOffType);
-h2053900499.port(human_input_port);
-h2053900499.action((Event e)->{
+Transition h853248818 = new Transition();
+h853248818.from(state_PIM_PIM_behavior_Running_On).to(state_PIM_PIM_behavior_Running_Off);
+h853248818.event(SwitchOffType);
+h853248818.port(human_input_port);
+h853248818.action((Event e)->{
 final SwitchOffMessageType.SwitchOffMessage SwitchOff = (SwitchOffMessageType.SwitchOffMessage) e;
 sendSwitchOff_via_request_actuator((int) (SwitchOff.did));
 });
 
-Transition h348783638 = new Transition();
-h348783638.from(state_PIM_PIM_behavior_Running_On).to(state_PIM_PIM_behavior_Running_On);
-h348783638.event(SwitchOnType);
-h348783638.port(human_input_port);
-h348783638.action((Event e)->{
+Transition h361237902 = new Transition();
+h361237902.from(state_PIM_PIM_behavior_Running_On).to(state_PIM_PIM_behavior_Running_On);
+h361237902.event(SwitchOnType);
+h361237902.port(human_input_port);
+h361237902.action((Event e)->{
 final SwitchOnMessageType.SwitchOnMessage SwitchOn = (SwitchOnMessageType.SwitchOnMessage) e;
 sendSwitchOn_via_request_actuator((int) (SwitchOn.did));
 });
 
-Transition h780418521 = new Transition();
-h780418521.from(state_PIM_PIM_behavior_Running_On).to(state_PIM_PIM_behavior_Running_Thermostat);
-h780418521.event(set_temperatureType);
-h780418521.port(human_input_port);
-h780418521.action((Event e)->{
+Transition h140056058 = new Transition();
+h140056058.from(state_PIM_PIM_behavior_Running_On).to(state_PIM_PIM_behavior_Running_Thermostat);
+h140056058.event(set_temperatureType);
+h140056058.port(human_input_port);
+h140056058.action((Event e)->{
 final Set_temperatureMessageType.Set_temperatureMessage set_temperature = (Set_temperatureMessageType.Set_temperatureMessage) e;
 PIM_tmrature_var = (double) (set_temperature.t);
 });
 
-Transition h1146910322 = new Transition();
-h1146910322.from(state_PIM_PIM_behavior_Running_On).to(state_PIM_PIM_behavior_Running_On);
-h1146910322.event(temperatureType);
-h1146910322.port(get_sensor_port);
-h1146910322.action((Event e)->{
+Transition h2082238767 = new Transition();
+h2082238767.from(state_PIM_PIM_behavior_Running_On).to(state_PIM_PIM_behavior_Running_On);
+h2082238767.event(temperatureType);
+h2082238767.port(get_sensor_port);
+h2082238767.action((Event e)->{
 final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
 if(getPIM_lasttemp_var() > temperature.t) {
 sendSwitchOn_via_request_actuator((int) (getPIM_switch_id_var()));
@@ -493,38 +493,38 @@ sendSwitchOn_via_request_actuator((int) (getPIM_switch_id_var()));
 PIM_lasttemp_var = (double) (temperature.t);
 });
 
-Transition h1608717864 = new Transition();
-h1608717864.from(state_PIM_PIM_behavior_Running_Off).to(state_PIM_PIM_behavior_Running_Off);
-h1608717864.event(SwitchOffType);
-h1608717864.port(human_input_port);
-h1608717864.action((Event e)->{
+Transition h462959392 = new Transition();
+h462959392.from(state_PIM_PIM_behavior_Running_Off).to(state_PIM_PIM_behavior_Running_Off);
+h462959392.event(SwitchOffType);
+h462959392.port(human_input_port);
+h462959392.action((Event e)->{
 final SwitchOffMessageType.SwitchOffMessage SwitchOff = (SwitchOffMessageType.SwitchOffMessage) e;
 sendSwitchOff_via_request_actuator((int) (SwitchOff.did));
 });
 
-Transition h414470466 = new Transition();
-h414470466.from(state_PIM_PIM_behavior_Running_Off).to(state_PIM_PIM_behavior_Running_On);
-h414470466.event(SwitchOnType);
-h414470466.port(human_input_port);
-h414470466.action((Event e)->{
+Transition h1354846101 = new Transition();
+h1354846101.from(state_PIM_PIM_behavior_Running_Off).to(state_PIM_PIM_behavior_Running_On);
+h1354846101.event(SwitchOnType);
+h1354846101.port(human_input_port);
+h1354846101.action((Event e)->{
 final SwitchOnMessageType.SwitchOnMessage SwitchOn = (SwitchOnMessageType.SwitchOnMessage) e;
 sendSwitchOn_via_request_actuator((int) (SwitchOn.did));
 });
 
-Transition h1184812965 = new Transition();
-h1184812965.from(state_PIM_PIM_behavior_Running_Off).to(state_PIM_PIM_behavior_Running_Thermostat);
-h1184812965.event(set_temperatureType);
-h1184812965.port(human_input_port);
-h1184812965.action((Event e)->{
+Transition h212180312 = new Transition();
+h212180312.from(state_PIM_PIM_behavior_Running_Off).to(state_PIM_PIM_behavior_Running_Thermostat);
+h212180312.event(set_temperatureType);
+h212180312.port(human_input_port);
+h212180312.action((Event e)->{
 final Set_temperatureMessageType.Set_temperatureMessage set_temperature = (Set_temperatureMessageType.Set_temperatureMessage) e;
 PIM_tmrature_var = (double) (set_temperature.t);
 });
 
-Transition h858116337 = new Transition();
-h858116337.from(state_PIM_PIM_behavior_Running_Off).to(state_PIM_PIM_behavior_Running_Off);
-h858116337.event(temperatureType);
-h858116337.port(get_sensor_port);
-h858116337.action((Event e)->{
+Transition h1689934638 = new Transition();
+h1689934638.from(state_PIM_PIM_behavior_Running_Off).to(state_PIM_PIM_behavior_Running_Off);
+h1689934638.event(temperatureType);
+h1689934638.port(get_sensor_port);
+h1689934638.action((Event e)->{
 final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
 if(getPIM_lasttemp_var() < temperature.t) {
 sendSwitchOff_via_request_actuator((int) (getPIM_switch_id_var()));
@@ -560,36 +560,36 @@ state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease.onExit(()->{
 sendTimer_cancel_via_guard_temperature();
 });
 
-Transition h697159478 = new Transition();
-h697159478.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecide).to(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease);
-h697159478.guard((Event e)->{
+Transition h16622630 = new Transition();
+h16622630.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecide).to(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease);
+h16622630.guard((Event e)->{
 return getPIM_lasttemp_var() >= getPIM_tmrature_var() - getPIM_delta_var();
 });
 
-h697159478.action((Event e)->{
+h16622630.action((Event e)->{
 sendSwitchOff_via_request_actuator((int) (getPIM_switch_id_var()));
 });
 
-Transition h803884290 = new Transition();
-h803884290.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecide).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
-h803884290.guard((Event e)->{
+Transition h353762386 = new Transition();
+h353762386.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecide).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
+h353762386.guard((Event e)->{
 return getPIM_lasttemp_var() < getPIM_tmrature_var() - getPIM_delta_var();
 });
 
-h803884290.action((Event e)->{
+h353762386.action((Event e)->{
 sendSwitchOn_via_request_actuator((int) (getPIM_switch_id_var()));
 });
 
-Transition h1698711391 = new Transition();
-h1698711391.from(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
-h1698711391.event(temperatureType);
-h1698711391.guard((Event e)->{
+Transition h1074647310 = new Transition();
+h1074647310.from(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
+h1074647310.event(temperatureType);
+h1074647310.guard((Event e)->{
 final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
 return temperature.t <= getPIM_tmrature_var() + getPIM_delta_var();
 });
 
-h1698711391.port(get_sensor_port);
-h1698711391.action((Event e)->{
+h1074647310.port(get_sensor_port);
+h1074647310.action((Event e)->{
 final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
 if(getPIM_lasttemp_var() > temperature.t) {
 sendSwitchOn_via_request_actuator((int) (getPIM_switch_id_var()));
@@ -598,56 +598,56 @@ sendSwitchOn_via_request_actuator((int) (getPIM_switch_id_var()));
 PIM_lasttemp_var = (double) (temperature.t);
 });
 
-Transition h1339065806 = new Transition();
-h1339065806.from(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease);
-h1339065806.event(temperatureType);
-h1339065806.guard((Event e)->{
+Transition h187964884 = new Transition();
+h187964884.from(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease);
+h187964884.event(temperatureType);
+h187964884.guard((Event e)->{
 final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
 return temperature.t > getPIM_tmrature_var() + getPIM_delta_var();
 });
 
-h1339065806.port(get_sensor_port);
-h1339065806.action((Event e)->{
+h187964884.port(get_sensor_port);
+h187964884.action((Event e)->{
 final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
 sendSwitchOff_via_request_actuator((int) (getPIM_switch_id_var()));
 PIM_lasttemp_var = (double) (temperature.t);
 });
 
-Transition h559500469 = new Transition();
-h559500469.from(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
-h559500469.event(timer_timeoutType);
-h559500469.port(guard_temperature_port);
-h559500469.action((Event e)->{
+Transition h109324014 = new Transition();
+h109324014.from(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
+h109324014.event(timer_timeoutType);
+h109324014.port(guard_temperature_port);
+h109324014.action((Event e)->{
 sendPrompt_via_human_output((String) ("WARNING: @TemprIncrease - temperature measurement is delayed"));
 });
 
-Transition h716459274 = new Transition();
-h716459274.from(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
-h716459274.event(set_deltaType);
-h716459274.port(human_input_port);
-h716459274.action((Event e)->{
+Transition h2067253392 = new Transition();
+h2067253392.from(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
+h2067253392.event(set_deltaType);
+h2067253392.port(human_input_port);
+h2067253392.action((Event e)->{
 final Set_deltaMessageType.Set_deltaMessage set_delta = (Set_deltaMessageType.Set_deltaMessage) e;
 PIM_delta_var = (double) (set_delta.dlta);
 });
 
-Transition h269621714 = new Transition();
-h269621714.from(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
-h269621714.event(fetch_tempType);
-h269621714.port(human_input_port);
-h269621714.action((Event e)->{
+Transition h73855979 = new Transition();
+h73855979.from(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
+h73855979.event(fetch_tempType);
+h73855979.port(human_input_port);
+h73855979.action((Event e)->{
 sendTemperature_via_human_output((int) (getPIM_thermo_id_var()), (String) ("temperature "), (double) (getPIM_lasttemp_var()));
 });
 
-Transition h2134406437 = new Transition();
-h2134406437.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease);
-h2134406437.event(temperatureType);
-h2134406437.guard((Event e)->{
+Transition h1911766989 = new Transition();
+h1911766989.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease);
+h1911766989.event(temperatureType);
+h1911766989.guard((Event e)->{
 final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
 return temperature.t >= getPIM_tmrature_var() - getPIM_delta_var();
 });
 
-h2134406437.port(get_sensor_port);
-h2134406437.action((Event e)->{
+h1911766989.port(get_sensor_port);
+h1911766989.action((Event e)->{
 final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
 if(getPIM_lasttemp_var() < temperature.t) {
 sendSwitchOff_via_request_actuator((int) (getPIM_switch_id_var()));
@@ -656,43 +656,43 @@ sendSwitchOff_via_request_actuator((int) (getPIM_switch_id_var()));
 PIM_lasttemp_var = (double) (temperature.t);
 });
 
-Transition h322021805 = new Transition();
-h322021805.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
-h322021805.event(temperatureType);
-h322021805.guard((Event e)->{
+Transition h1276816777 = new Transition();
+h1276816777.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
+h1276816777.event(temperatureType);
+h1276816777.guard((Event e)->{
 final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
 return temperature.t < getPIM_tmrature_var() - getPIM_delta_var();
 });
 
-h322021805.port(get_sensor_port);
-h322021805.action((Event e)->{
+h1276816777.port(get_sensor_port);
+h1276816777.action((Event e)->{
 final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
 sendSwitchOn_via_request_actuator((int) (getPIM_switch_id_var()));
 PIM_lasttemp_var = (double) (temperature.t);
 });
 
-Transition h493288849 = new Transition();
-h493288849.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease);
-h493288849.event(timer_timeoutType);
-h493288849.port(guard_temperature_port);
-h493288849.action((Event e)->{
+Transition h1695935423 = new Transition();
+h1695935423.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease);
+h1695935423.event(timer_timeoutType);
+h1695935423.port(guard_temperature_port);
+h1695935423.action((Event e)->{
 sendPrompt_via_human_output((String) ("WARNING: @TemprDecrease - temperature measurement is delayed"));
 });
 
-Transition h820439619 = new Transition();
-h820439619.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
-h820439619.event(set_deltaType);
-h820439619.port(human_input_port);
-h820439619.action((Event e)->{
+Transition h1789907105 = new Transition();
+h1789907105.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
+h1789907105.event(set_deltaType);
+h1789907105.port(human_input_port);
+h1789907105.action((Event e)->{
 final Set_deltaMessageType.Set_deltaMessage set_delta = (Set_deltaMessageType.Set_deltaMessage) e;
 PIM_delta_var = (double) (set_delta.dlta);
 });
 
-Transition h307818101 = new Transition();
-h307818101.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
-h307818101.event(fetch_tempType);
-h307818101.port(human_input_port);
-h307818101.action((Event e)->{
+Transition h645054615 = new Transition();
+h645054615.from(state_PIM_PIM_behavior_Running_Thermostat_TemprDecrease).to(state_PIM_PIM_behavior_Running_Thermostat_TemprIncrease);
+h645054615.event(fetch_tempType);
+h645054615.port(human_input_port);
+h645054615.action((Event e)->{
 sendTemperature_via_human_output((int) (getPIM_thermo_id_var()), (String) ("temperature "), (double) (getPIM_lasttemp_var()));
 });
 

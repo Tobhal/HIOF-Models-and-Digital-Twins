@@ -44,6 +44,7 @@ org\thingml\generated\Main$1.class
 org\thingml\generated\TimerJava.class
 org\thingml\generated\api\ITimerJava_timer.class
 org\thingml\generated\api\IMQTTDriver_MQTTClient.class
+org\thingml\generated\api\IEnergy_saver_send_lightsensorClient.class
 org\thingml\generated\messages\Add_lightsensorMessageType.class
 org\thingml\generated\api\IPIM_human_input.class
 org\thingml\generated\messages\TimeMessageType$TimeMessage.class
