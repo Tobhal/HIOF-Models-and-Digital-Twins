@@ -1,5 +1,7 @@
 import "datatypes.thingml" from stl
 
+
+
 thing fragment TimeStuff 
 @java_import "import java.time.LocalTime;"
 {	

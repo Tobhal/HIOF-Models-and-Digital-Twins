@@ -1,14 +1,11 @@
 @startuml X3D2_MQTT_SIM
+mainframe set name here
 
 'HUMAN
 rectangle myself:Human {
     port send_cmd
     
     portin get_values
-}
-
-rectangle timer:T {
-    portout time
 }
 
 'PIM
@@ -41,25 +38,21 @@ rectangle simulation:sim {
 }
 
 'energy saver
-rectangle energy_saver:ES {
+rectangle enerty_saver:ES {
     portin send_temp
-    portin get_time
 
-    portout get_es_cmd
-    portout get_luminance
+    portout get_temp
 }
  
 provide_temp --> get_sensor
-provide_luminence --> get_luminance
+provide_luminence --> get_sensor
 
-send_cmd --> get_es_cmd
-send_temp ---> tempratue_input
+send_cmd --> get_temp
+send_temp -> tempratue_input
  
 request_sensor --> require_val
 request_actuator --> require_val
 human_output -----> get_values
  
-time --> get_time
-
 toMQTT <--> MQTT
 @enduml

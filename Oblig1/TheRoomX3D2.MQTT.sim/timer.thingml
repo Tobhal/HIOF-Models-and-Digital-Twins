@@ -11,10 +11,7 @@ thing fragment TimerMsgs {
 	// Cancel the Timer
 	message timer_cancel()@debug "false"; 
 	// Notification that the timer has expired
-	message timer_timeout();
-
-	// Set a time
-	message time(t:Long)
+	message timer_timeout();  
 }
 
 thing fragment Timer includes TimerMsgs
@@ -38,10 +35,5 @@ thing fragment TimerClient includes TimerMsgs
 
 thing TimerClientMock includes TimerClient
 @mock "true"
-{
-	sends timer_start,
-		  timer_cancel,
-		  timer_timeout,
-		  time
-}
+{}
 
