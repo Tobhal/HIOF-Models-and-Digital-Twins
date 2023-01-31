@@ -1,0 +1,17 @@
+@startuml
+caption Instances and Connectors in configuration X3D_MQTT_SIM
+component [myself : Human]<<GUI>>
+component [g_temp : TimerJava]<<PSM>>
+component [T1 : MQTTDriver]<<PIM>>
+component [g_humn : TimerJava]<<PSM>>
+component [pim : PIM]<<PIM>>
+component [sim : Simulation]<<GUI>>
+[pim : PIM] -(0- [myself : Human] : human_output => get_values
+[pim : PIM] -(0- [g_humn : TimerJava] : guard_human => timer
+[myself : Human] -(0- [pim : PIM] : send_cmd => human_input
+[pim : PIM] -(0- [T1 : MQTTDriver] : request_actuator => require_val
+[pim : PIM] -(0- [T1 : MQTTDriver] : request_sensor => require_val
+[T1 : MQTTDriver] -(0- [pim : PIM] : provide_temp => get_sensor
+[pim : PIM] -(0- [g_temp : TimerJava] : guard_temperature => timer
+[sim : Simulation] -(0- [T1 : MQTTDriver] : toMQTT => MQTT
+@enduml

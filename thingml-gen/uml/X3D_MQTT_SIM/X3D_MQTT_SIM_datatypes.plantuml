@@ -1,0 +1,21 @@
+@startuml
+caption Datatypes used in configuration X3D_MQTT_SIM
+class JTimer <<(O,#E5D224)>> {
+}
+note bottom of JTimer : <b>@java_type</b> <color:royalBlue>"java.util.Timer"</color>\n
+class Boolean <<(D,#D2E524)1>> {
+}
+note bottom of Boolean : <b>@type_checker</b> <color:royalBlue>"Boolean"</color>\n<b>@c_type</b> <color:royalBlue>"bool"</color>\n<b>@java_type</b> <color:royalBlue>"boolean"</color>\n<b>@js_type</b> <color:royalBlue>"boolean"</color>\n<b>@go_type</b> <color:royalBlue>"bool"</color>\n
+class String <<(O,#E5D224)>> {
+}
+note bottom of String : <b>@serializable</b><b>@c_type</b> <color:royalBlue>"char *"</color>\n<b>@arduino_type</b> <color:royalBlue>"String"</color>\n<b>@java_type</b> <color:royalBlue>"String"</color>\n<b>@js_type</b> <color:royalBlue>"String"</color>\n<b>@go_type</b> <color:royalBlue>"string"</color>\n
+class Double <<(D,#D2E524)8>> {
+}
+note bottom of Double : <b>@type_checker</b> <color:royalBlue>"Real"</color>\n<b>@c_type</b> <color:royalBlue>"double"</color>\n<b>@java_type</b> <color:royalBlue>"double"</color>\n<b>@js_type</b> <color:royalBlue>"double"</color>\n<b>@go_type</b> <color:royalBlue>"float64"</color>\n
+class Integer <<(D,#D2E524)2>> {
+}
+note bottom of Integer : <b>@type_checker</b> <color:royalBlue>"Integer"</color>\n<b>@c_type</b> <color:royalBlue>"int16_t"</color>\n<b>@java_type</b> <color:royalBlue>"int"</color>\n<b>@js_type</b> <color:royalBlue>"short"</color>\n<b>@go_type</b> <color:royalBlue>"int16"</color>\n
+class JTimerTask <<(O,#E5D224)>> {
+}
+note bottom of JTimerTask : <b>@java_type</b> <color:royalBlue>"..."</color>\n
+@enduml
