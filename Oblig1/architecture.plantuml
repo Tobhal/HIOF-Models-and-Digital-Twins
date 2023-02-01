@@ -1,5 +1,5 @@
-@startuml Temprature controll
-mainframe Temprature controll
+@startuml Temperature controll
+mainframe Temperature controll
 
 'HUMAN
 rectangle Myself:Human {
