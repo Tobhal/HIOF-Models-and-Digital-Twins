@@ -1,0 +1,63 @@
+@startuml
+mainframe Temprature controll
+
+'PIM
+rectangle pim:PIM {
+    'left
+    portout get_sensor
+    portout request_sensor
+    portout request_actuator
+
+    'right
+    portout human_output
+    portout human_input
+}
+
+'PSM
+rectangle psm:PSM {
+    'left
+    portin provide_temp
+    portin require_val
+
+    'right
+    portout MQTT
+}
+
+'Energy saver
+rectangle es:Energy_saver {
+    portin comfort_temp
+    portin get_config
+    
+    portout send_temp
+}
+
+'Test thing
+rectangle test:Test {
+    portin t_send_es_config
+    portin t_get_values
+    portin t_send_cmd
+
+    portout t_toMQTT
+}
+
+'Human
+t_send_cmd --> human_input
+
+t_send_cmd ---> comfort_temp
+t_send_es_config ---> get_config
+
+'PIM
+human_output --> t_get_values
+request_sensor --> require_val
+request_actuator --> require_val
+
+'PSM
+provide_temp --> get_sensor
+
+'MQTT
+t_toMQTT <--> MQTT
+
+'Energy saver
+send_temp ---> human_input
+
+@enduml
