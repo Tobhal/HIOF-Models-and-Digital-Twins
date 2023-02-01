@@ -1,58 +1,67 @@
-@startuml X3D2_MQTT_SIM
-mainframe set name here
+@startuml Temprature controll
+mainframe Temprature controll
 
 'HUMAN
-rectangle myself:Human {
+rectangle Myself:Human {
     port send_cmd
+    port send_es_config
     
     portin get_values
 }
 
 'PIM
 rectangle pim:PIM {
+    'left
     portout get_sensor
     portout request_sensor
     portout request_actuator
-    portout tempratue_input
-    portout human_output
 
-    'guards
-    port guard_temperature
-    port guard_luminance
-    port guard_human
+    'right
+    portout human_output
+    portout human_input
 }
 
 'PSM
 rectangle psm:PSM {
+    'left
     portin provide_temp
-    portin provide_luminence
-    portin require_val
     portin require_val
 
+    'right
     portout MQTT
 }
 
 'SIM
-rectangle simulation:sim {
+rectangle sim:simulation {
     port toMQTT
 }
 
-'energy saver
-rectangle enerty_saver:ES {
-    portin send_temp
-
-    portout get_temp
+'Energy saver
+rectangle es:Energy_saver {
+    portin comfort_temp
+    portin get_config
+    
+    portout send_temp
 }
- 
-provide_temp --> get_sensor
-provide_luminence --> get_sensor
 
-send_cmd --> get_temp
-send_temp -> tempratue_input
- 
+'Human
+send_cmd --> human_input
+
+send_cmd ---> comfort_temp
+send_es_config ---> get_config
+
+'PIM
+human_output --> get_values
 request_sensor --> require_val
 request_actuator --> require_val
-human_output -----> get_values
- 
+
+'PSM
+provide_temp --> get_sensor
+
+'MQTT
 toMQTT <--> MQTT
+
+'Energy saver
+send_temp ---> human_input
+
 @enduml
