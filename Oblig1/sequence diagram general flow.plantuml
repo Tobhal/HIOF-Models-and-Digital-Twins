@@ -28,7 +28,7 @@ loop luminance change
     end
 end
 
-loop regulate temprature
+loop regulate temperature
     sim -> pim: temperature(id1, txt1, temp2)
 
     alt 

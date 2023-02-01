@@ -21,7 +21,7 @@ pim -> human: prompt("Now entering thermostat")
 hnote across: day and light on
 'setup compleat
 
-sim -> pim: temprature(1, "", 15)
+sim -> pim: temperature(1, "", 15)
 sim -> es: luminence(1, "", 20_000)
 sim <- pim: switch_on(1)
 

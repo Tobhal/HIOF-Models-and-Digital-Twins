@@ -1,13 +1,5 @@
-@startuml Temperature controll
-mainframe Temperature controll
-
-'HUMAN
-rectangle Myself:Human {
-    port send_cmd
-    port send_es_config
-    
-    portin get_values
-}
+@startuml Temprature controll
+mainframe Temprature controll
 
 'PIM
 rectangle pim:PIM {
@@ -31,11 +23,6 @@ rectangle psm:PSM {
     portout MQTT
 }
 
-'SIM
-rectangle sim:simulation {
-    port toMQTT
-}
-
 'Energy saver
 rectangle es:Energy_saver {
     portin comfort_temp
@@ -44,14 +31,23 @@ rectangle es:Energy_saver {
     portout send_temp
 }
 
-'Human
-send_cmd --> human_input
+'Test thing
+rectangle test:Test {
+    portin t_send_es_config
+    portin t_get_values
+    portin t_send_cmd
 
-send_cmd ---> comfort_temp
-send_es_config ---> get_config
+    portout t_toMQTT
+}
+
+'Human
+t_send_cmd --> human_input
+
+t_send_cmd ---> comfort_temp
+t_send_es_config ---> get_config
 
 'PIM
-human_output --> get_values
+human_output --> t_get_values
 request_sensor --> require_val
 request_actuator --> require_val
 
@@ -59,7 +55,7 @@ request_actuator --> require_val
 provide_temp --> get_sensor
 
 'MQTT
-toMQTT <--> MQTT
+t_toMQTT <--> MQTT
 
 'Energy saver
 send_temp ---> human_input
