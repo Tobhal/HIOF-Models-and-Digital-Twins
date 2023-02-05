@@ -1,1 +1,8 @@
+/* The energy_saver thing should seen as an optional feature of our thermostat
+system and should therefore be defined as a separate entity with its own interface to the user */ 
+
 import "datatypes.thingml" from stl
+import "pim_messages.thingml"
+
+thing EnergySaver includes LuminanceMsg{
+}
