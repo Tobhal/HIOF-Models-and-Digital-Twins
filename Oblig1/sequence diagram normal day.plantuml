@@ -46,7 +46,7 @@ sim -> pim: temperature(1, "", 20)
 sim -> es: luminence(1, "", 100)
 sim <- pim: switch_on(1)
 
-hnote across: night start, unchure how to do this...
+hnote across: night start, unsure how to do this...
 
 sim -> pim: temperature(1, "", 20)
 sim -> es: luminence(1, "", 100)
@@ -61,7 +61,7 @@ sim -> es: luminence(1, "", 100)
 
 sim <- pim: switch_on(1)
 
-hnote across: day start, unchure how to do this...
+hnote across: day start, unsure how to do this...
 
 sim -> pim: temperature(1, "", 15)
 sim -> es: luminence(1, "", 100)
