@@ -4,5 +4,8 @@ system and should therefore be defined as a separate entity with its own interfa
 import "datatypes.thingml" from stl
 import "pim_messages.thingml"
 
-thing EnergySaver includes LuminanceMsg{
+thing EnergySaver includes TemperatureMsg, LuminanceMsg{
+    required port provide_temp {
+        sends set_temperature
+    }
 }

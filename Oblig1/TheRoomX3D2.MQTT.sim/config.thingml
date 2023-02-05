@@ -14,7 +14,7 @@ configuration X3D_MQTT_SIM {
 	
 	// PSM	
 	connector T1.provide_temp => pim.get_sensor
-		
+	
 	// HMI
 	connector myself.send_cmd => pim.human_input
 	
@@ -25,6 +25,9 @@ configuration X3D_MQTT_SIM {
 	
 	connector pim.guard_temperature =>g_temp.timer
 	connector pim.guard_human => g_humn.timer
+	
+	//ES
+	connector es.provide_temp => pim.human_input
 	
 	// Simulation
 	instance sim:Simulation
