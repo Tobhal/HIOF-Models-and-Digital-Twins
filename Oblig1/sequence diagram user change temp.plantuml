@@ -32,8 +32,4 @@ pim <- es: set_temperature(prefered_temp{20})
 
 sim <- pim: switch_off(1)
 
-
-
-
-
 @enduml

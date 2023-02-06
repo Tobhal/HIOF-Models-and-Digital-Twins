@@ -1,5 +1,5 @@
 @startuml sequense diagram
-mainframe set name here
+mainframe Normal day
 
 participant "simulation:sim" as sim
 participant "psm:PSM" as psm
@@ -22,18 +22,15 @@ hnote across: day and light on
 'setup compleat
 
 sim -> pim: temperature(1, "", 15)
-sim -> es: luminence(1, "", 20_000)
 sim <- pim: switch_on(1)
 
 hnote across: some time later
 
 sim -> pim: temperature(1, "", 25)
-sim -> es: luminence(1, "", 20_000)
 sim <- pim: switch_off(1)
 
 hnote across: lights off
 
-sim -> pim: temperature(1, "", 23)
 sim -> es: luminence(1, "", 100)
 
 pim <- es: set_temperature(prefered_temp{23} - temp_diff{2})
@@ -43,13 +40,10 @@ sim <- pim: switch_off(1)
 hnote across: some time later
 
 sim -> pim: temperature(1, "", 20)
-sim -> es: luminence(1, "", 100)
 sim <- pim: switch_on(1)
 
 hnote across: night start, unchure how to do this...
-
-sim -> pim: temperature(1, "", 20)
-sim -> es: luminence(1, "", 100)
+hnote over es: Timer day/night toggle
 
 pim <- es: set_temperature(prefered_temp{23} - temp_night_diff{8})
 sim <- pim: switch_off(1)
@@ -57,19 +51,12 @@ sim <- pim: switch_off(1)
 hnote across: some time later
 
 sim -> pim: temperature(1, "", 14)
-sim -> es: luminence(1, "", 100)
-
 sim <- pim: switch_on(1)
 
 hnote across: day start, unchure how to do this...
+hnote over es: Timer day/night toggle
 
-sim -> pim: temperature(1, "", 15)
-sim -> es: luminence(1, "", 100)
-
-pim <- es: set_temperature(prefered_temp{23} - temp_night_diff{8})
+pim <- es: set_temperature(prefered_temp{23} - temp_diff{2})
 sim <- pim: switch_on(1)
-
-
-
 
 @enduml
