@@ -1,0 +1,68 @@
+@startuml X3D2_MQTT_SIM
+
+'HUMAN
+rectangle myself:Human {
+    port send_cmd
+    portout send_lumSensor
+    portin get_values
+}
+
+rectangle timer:T {
+    portout time
+}
+
+'PIM
+rectangle pim:PIM {
+    portout get_sensor
+    portout request_sensor
+    portout request_actuator
+    portout human_input
+    portout human_output
+
+    'guards
+    port guard_temperature
+    port guard_luminance
+    port guard_human
+}
+
+'PSM
+rectangle psm:PSM {
+    portin provide_temp
+    portin provide_luminence
+    portin require_val
+    portin require_val
+
+    portout MQTT
+}
+
+'SIM
+rectangle simulation:sim {
+    port toMQTT
+}
+
+'energy saver
+rectangle energy_saver:ES {
+    portin send_temp
+    portin get_time
+
+    portout get_es_cmd
+    portout get_luminance
+    portin request_lumSensor
+}
+ 
+provide_temp --> get_sensor
+provide_luminence --> get_luminance
+
+send_lumSensor --> request_lumSensor
+
+send_cmd --> get_es_cmd
+send_temp ---> human_input
+ 
+request_sensor --> require_val
+request_actuator --> require_val
+human_output -----> get_values
+ 
+time --> get_time
+
+toMQTT <--> MQTT
+@enduml

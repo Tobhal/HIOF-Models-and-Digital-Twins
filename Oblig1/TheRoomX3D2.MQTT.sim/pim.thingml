@@ -29,9 +29,8 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			  prompt
 	}
 	required port request_sensor {
-		sends iamalive1, 
-			  iamalive2, 
-			  add_thermometer
+
+		sends add_thermometer
 	}
 	required port request_actuator{
 		sends add_device, 
@@ -357,6 +356,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			action do 
 				human_output!prompt("INTERNAL ERROR: iamalive2 received at PIM.Running")
 			end
+
 		} // end Running
 	} // end PIM_behavior
 } // end PIM thing

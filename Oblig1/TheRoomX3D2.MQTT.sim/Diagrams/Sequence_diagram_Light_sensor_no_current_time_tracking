@@ -1,0 +1,38 @@
+@startuml
+mainframe sd SimpleThermostat
+
+participant "simulation:SIM" as sim
+participant "psm:PSM" as psm
+participant "pim:PIM" as pim
+participant "energy_saver:ES" as es
+
+actor "Myself:human" as h
+
+h -> es: set_temperature(23)
+es -> pim : set_temperature(23)
+pim-> psm: add_thermometer(1, termometer 1)
+pim-> psm: add_device(1, sensor)
+pim -> h : prompt("Now entering thermostat")
+loop
+	sim-> es: Lightval(id1, lightval)
+	alt
+	|||
+	else
+	hnote across: Lights off
+	es -> pim: set_temperature(23-2)      
+	pim -> sim: SwitchOff(id1)
+
+	else
+	hnote across: Check if light is on or off
+		alt
+		|||
+		else
+		hnote across: Turn light on
+		sim -> pim: SwitchOn(id1)
+		es -> pim: set_temperature(23)
+		else
+		hnote across: Keep light on 
+		end
+	end
+end
+@enduml
