@@ -1,0 +1,149 @@
+@startuml
+caption Things used in configuration X3D_MQTT_SIM
+class Human <<(G,#5394FC)GUI>> {
+..▼ Port send_cmd ▼..
+◀ SwitchOn
+◀ SwitchOff
+◀ set_temperature
+◀ set_delta
+◀ fetch_temp
+..▲ Port get_values ▲..
+▶ temperature
+▶ prompt
+}
+class TemperatureMsg <<(F,#BC74ED)Fragment>> {
+..Messages..
+-temperature(id : Integer, txt : String, t : Double)
+-add_thermometer(id : Integer, txt : String)
+-set_temperature(t : Double)
+-set_delta(dlta : Double)
+-fetch_temp()
+}
+class GeneralMsg <<(F,#BC74ED)Fragment>> {
+..Messages..
+-iamalive1()
+-iamalive2()
+-prompt(txt : String)
+}
+class OnOffMsg <<(F,#BC74ED)Fragment>> {
+..Messages..
+-SwitchOn(did : Integer)
+-SwitchOff(did : Integer)
+}
+class DeviceGeneral <<(F,#BC74ED)Fragment>> {
+..Messages..
+-add_device(did : Integer)
+}
+class TimerJava <<(T,#F94918)PSM>> {
+..Properties..
+-timer : JTimer
+-timer_task : JTimerTask
+..Functions..
+-startTimer(delay : Integer) : void
+-cancel() : void
+}
+class Timer <<(F,#BC74ED)Fragment>> {
+..▲ Port timer ▲..
+▶ timer_start
+▶ timer_cancel
+◀ timer_timeout
+}
+class TimerMsgs <<(F,#BC74ED)Fragment>> {
+..Messages..
+-timer_start(delay : Integer)
+-timer_cancel()
+-timer_timeout()
+}
+class MQTTDriver <<(T,#5BBF09)PIM>> {
+..Properties..
+-thermometers : Integer
+-thermotext : String
+-thermoval : Double
+-lightsensors : Integer
+-lightval : Double
+-motionsensors : Integer
+-last_mo : Integer = 0
+-last_light : Integer = 0
+-last_thermo : Integer = 0
+-foundL : Boolean
+-i : Integer
+-id_s : Integer
+-found : Boolean
+-onoffswitches : Integer
+-last_onoff : Integer = 0
+-did : Integer
+..▼ Port provide_temp ▼..
+◀ temperature
+◀ iamalive1
+◀ iamalive2
+..▲ Port require_val ▲..
+▶ add_thermometer
+▶ add_device
+▶ SwitchOn
+▶ SwitchOff
+▶ iamalive1
+▶ iamalive2
+..▲ Port MQTT ▲..
+▶ temperature
+◀ SwitchOn
+◀ SwitchOff
+}
+class PIM <<(T,#5BBF09)PIM>> {
+..Properties..
+-tmrature : Double = 20
+-thermo_id : Integer = 1
+-switch_id : Integer = 1
+-delta : Double = 0.10
+-lasttemp : Double = 0
+..▲ Port get_sensor ▲..
+▶ iamalive1
+▶ iamalive2
+▶ temperature
+..▼ Port request_sensor ▼..
+◀ iamalive1
+◀ iamalive2
+◀ add_thermometer
+..▼ Port request_actuator ▼..
+◀ add_device
+◀ SwitchOn
+◀ SwitchOff
+..▲ Port human_input ▲..
+▶ SwitchOn
+▶ SwitchOff
+▶ set_temperature
+▶ set_delta
+▶ fetch_temp
+..▼ Port human_output ▼..
+◀ temperature
+◀ prompt
+..▼ Port guard_temperature ▼..
+▶ timer_timeout
+◀ timer_start
+◀ timer_cancel
+..▼ Port guard_human ▼..
+▶ timer_timeout
+◀ timer_start
+◀ timer_cancel
+}
+class Simulation <<(G,#5394FC)GUI>> {
+..▼ Port toMQTT ▼..
+▶ SwitchOn
+▶ SwitchOff
+◀ temperature
+}
+TemperatureMsg <|-- Human
+GeneralMsg <|-- Human
+OnOffMsg <|-- Human
+DeviceGeneral <|-- OnOffMsg
+Timer <|-- TimerJava
+TimerMsgs <|-- Timer
+TemperatureMsg <|-- MQTTDriver
+OnOffMsg <|-- MQTTDriver
+GeneralMsg <|-- MQTTDriver
+GeneralMsg <|-- PIM
+TemperatureMsg <|-- PIM
+OnOffMsg <|-- PIM
+TimerMsgs <|-- PIM
+TemperatureMsg <|-- Simulation
+OnOffMsg <|-- Simulation
+@enduml

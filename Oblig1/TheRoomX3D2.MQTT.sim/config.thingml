@@ -1,7 +1,4 @@
-import "psm.thingml"
-import "pim.thingml"
-import "io.thingml"
-import "energy-saver.thingml"
+import "energy_saver.thingml"
 import "javatimer.thingml"
 import "timer.thingml"
 
@@ -11,7 +8,7 @@ configuration X3D_MQTT_SIM {
 	instance myself:Human
 	instance g_temp:TimerJava
 	instance g_humn:TimerJava
-	instance es:Energy_saver
+  instance es:Energy_saver
 	
 	// PSM	
 	connector T1.provide_temp => pim.get_sensor
@@ -31,6 +28,9 @@ configuration X3D_MQTT_SIM {
 	// ES
 	connector es.send_temp => pim.human_input
 	connector es.send_lightsensor => T1.require_val
+	
+	//ES
+	connector es.provide_temp => pim.human_input
 	
 	// Simulation
 	instance sim:Simulation

@@ -16,6 +16,7 @@ protocol MQTT @serializer "JSON"
   @mqtt_subscribe_topic "CPS2021/tempoutput";
  */
 
+
 thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 	// Receives
 	provided port require_val {
@@ -32,7 +33,6 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 	required port provide_temp {
 		sends temperature
 	}
-
 	required port provice_lum_motion {
 		sends luminance
 	}
@@ -41,7 +41,6 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 	provided port MQTT {
 		receives temperature,
 				 luminance
-
 		sends SwitchOn,
 			  SwitchOff
 	}
@@ -54,12 +53,13 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 	property lightval:Double[25] 		// values to report from the corresponding lightsensor
 
 	property lumval:Double[25]
-	
+
 	property motionsensors:Integer[25] // Identifiers of the thermometers in the set
 	
 	property last_mo:Integer = 0 		// number of motion sensors in the set  
 	property last_light:Integer = 0 	// number of light sensors in the set  
 	property last_thermo:Integer = 0 	// number of thermometers in the set 
+
 	property last_lum:Integer = 0
 
 	property foundL:Boolean 	// temporary - true when item found in loop
@@ -71,7 +71,8 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 	property last_onoff:Integer = 0 	// number of onoff switches in the set 		
 	property did:Integer 				// temporary device id
 	
-	statechart behaviorMQTTDriver init Idle {
+	statechart behaviorMQTTDriver init Idle{
+
 		state Idle {
 			transition -> Idle
 			event put_t:MQTT?temperature
