@@ -1,0 +1,26 @@
+@startuml sequense diagram
+mainframe Test normal day
+
+participant "psm:PSM" as psm
+participant "pim:PIM" as pim
+participant "enerty_saver:ES" as es
+participant "test:Test" as test
+
+'Set preferred temp
+es <- human: set_temperature(prefered_temp{23})
+pim <- es: set_temperature(prefered_temp{23})
+
+psm <- es: add_light_sensor(1, "")
+
+psm <- pim: add_thermometer(1, "")
+psm <- pim: add_device(didid1, didtxt1)
+
+pim -> human: prompt("Now entering thermostat")
+
+hnote across: day and light on
+'setup compleat
+
+
+
+
+@enduml
