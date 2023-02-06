@@ -23,6 +23,7 @@ thing fragment LuminanceMsg {
     message luminance(id:Integer, lum:Double); //luminance
     message add_lightsensor(id:Integer);
     message set_luminance(lum:Double); // for setting the threshold
+    message lum_threshold()
 }
 
 //Motion
