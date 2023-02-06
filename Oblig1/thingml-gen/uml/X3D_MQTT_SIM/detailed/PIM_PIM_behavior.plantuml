@@ -1,0 +1,121 @@
+@startuml
+skinparam defaultTextAlignment left
+caption Behavior of thing PIM
+[*] --> PIM_behavior
+state PIM_behavior{
+state Build{
+state Alive1_1{
+	Alive1_1 : entry / do\n	request_sensor!iamalive1()\nend\n
+
+Alive1_1 --> Alive2_1 : alv:get_sensor?iamalive1\naction do\n	request_sensor!iamalive2()\nend\n
+
+Alive1_1 --> SetThermostat : alv:get_sensor?iamalive2\naction do\n	request_sensor!iamalive2()\nend\n
+}
+state Alive2_1{
+
+Alive2_1 --> SetThermostat : alv:get_sensor?iamalive2
+}
+state SetThermostat{
+	SetThermostat : entry / do\n	request_sensor!add_thermometer(thermo_id, "t") // We have only one thermometer in this system\n	request_actuator!add_device(switch_id)\nend\n
+
+SetThermostat --> SetThermostat : human_input?SwitchOn\naction do\n	human_output!prompt("Please set temperature for Thermostat")\nend\n
+
+SetThermostat --> SetThermostat : human_input?SwitchOff\naction do\n	human_output!prompt("Please set temperature for Thermostat")\nend\n
+}
+[*] --> Alive1_1
+
+Build --> Running : set_temp:human_input?set_temperature\naction do\n	tmrature = set_temp.t\n	human_output!prompt("Now entering thermostat. Please give temperature observations")\nend\n
+
+Build --> Build : tmout:guard_human?timer_timeout\naction do\n	human_output!prompt("Please continue doing the build of the temperature control")\nend\n
+	Build : givedelta:human_input?set_delta / \naction do\n	delta = givedelta.dlta\nend\n
+	Build : fetch:human_input?fetch_temp / \naction do\n	// reporting the temperature value\n	human_output!temperature(thermo_id, "temperature ", lasttemp)\nend\n
+	Build : temp:get_sensor?temperature / \naction do\n	// just record, the thermostat is not running, yet \n	lasttemp = temp.t\nend\n
+	Build : get_sensor?iamalive1 / \naction do\n	human_output!prompt("INTERNAL ERROR: iamalive1 is covered inside Build")\nend\n
+	Build : get_sensor?iamalive2 / \naction do\n	human_output!prompt("INTERNAL ERROR: iamalive2 is covered inside Build")\nend\n
+	Build : entry / guard_human!timer_start(30000)\n
+	Build : exit / guard_human!timer_cancel()\n
+}
+state Running{
+state Thermostat{
+state TemprDecide{
+
+TemprDecide --> TemprDecrease : [lasttemp >= tmrature - delta]\naction do\n	request_actuator!SwitchOff(switch_id)\nend\n
+
+TemprDecide --> TemprIncrease : [lasttemp < tmrature - delta]\naction do\n	request_actuator!SwitchOn(switch_id)\nend\n
+}
+state TemprIncrease{
+	TemprIncrease : entry / guard_temperature!timer_start(65000)\n
+	TemprIncrease : exit / guard_temperature!timer_cancel()\n
+
+TemprIncrease --> TemprIncrease : temp:get_sensor?temperature[temp.t <= tmrature + delta]\naction do\n	if (lasttemp > temp.t) request_actuator!SwitchOn(switch_id) // the temperature is still falling even though switch should be ON, reactivate\n	lasttemp = temp.t\nend\n
+
+TemprIncrease --> TemprDecrease : temp2:get_sensor?temperature[temp2.t > tmrature + delta]\naction do\n	request_actuator!SwitchOff(switch_id)\n	lasttemp = temp2.t\nend\n
+
+TemprIncrease --> TemprIncrease : timout:guard_temperature?timer_timeout\naction do\n	human_output!prompt("WARNING: @TemprIncrease - temperature measurement is delayed")\nend\n
+
+TemprIncrease --> TemprIncrease : givedelta:human_input?set_delta\naction do\n	delta = givedelta.dlta\nend\n
+
+TemprIncrease --> TemprIncrease : fetch:human_input?fetch_temp\naction do\n	// reporting the temperature value\n	human_output!temperature(thermo_id, "temperature ", lasttemp)\nend\n
+}
+state TemprDecrease{
+	TemprDecrease : entry / guard_temperature!timer_start(65000)\n
+	TemprDecrease : exit / guard_temperature!timer_cancel()\n
+
+TemprDecrease --> TemprDecrease : temp:get_sensor?temperature[temp.t >= tmrature - delta]\naction do\n	if (lasttemp < temp.t) request_actuator!SwitchOff(switch_id) // the temperature is still rising even though switch should be OFF, reactivate\n	lasttemp = temp.t\nend\n
+
+TemprDecrease --> TemprIncrease : temp2:get_sensor?temperature[temp2.t < tmrature - delta]\naction do\n	request_actuator!SwitchOn(switch_id)\n	lasttemp = temp2.t\nend\n
+
+TemprDecrease --> TemprDecrease : timout:guard_temperature?timer_timeout\naction do\n	human_output!prompt("WARNING: @TemprDecrease - temperature measurement is delayed")\nend\n
+
+TemprDecrease --> TemprIncrease : givedelta:human_input?set_delta\naction do\n	// just forward the polling interval instructions to the PSM\n	delta = givedelta.dlta\nend\n
+
+TemprDecrease --> TemprIncrease : fetch:human_input?fetch_temp\naction do\n	// reporting the temperature value\n	human_output!temperature(thermo_id, "temperature ", lasttemp)\nend\n
+}
+[*] --> TemprDecide
+
+Thermostat --> On : swon:human_input?SwitchOn\naction do\n	request_actuator!SwitchOn(swon.did)\nend\n
+
+Thermostat --> Off : swoff:human_input?SwitchOff\naction do\n	request_actuator!SwitchOff(swoff.did)\nend\n
+
+Thermostat --> Thermostat : set_temp:human_input?set_temperature\naction do\n	tmrature = set_temp.t\nend\n
+}
+state On{
+
+On --> Off : swoff:human_input?SwitchOff\naction do\n	request_actuator!SwitchOff(swoff.did)\nend\n
+
+On --> On : swon:human_input?SwitchOn\naction do\n	request_actuator!SwitchOn(swon.did)\nend\n
+
+On --> Thermostat : set_temp:human_input?set_temperature\naction do\n	tmrature = set_temp.t\nend\n
+
+On --> On : temp:get_sensor?temperature\naction do\n	if (lasttemp > temp.t) request_actuator!SwitchOn(switch_id) // temperature is falling even when ON. Reactivate.\n	lasttemp = temp.t\nend\n
+}
+state Off{
+
+Off --> Off : swoff:human_input?SwitchOff\naction do\n	request_actuator!SwitchOff(swoff.did)\nend\n
+
+Off --> On : swon:human_input?SwitchOn\naction do\n	request_actuator!SwitchOn(swon.did)\nend\n
+
+Off --> Thermostat : set_temp:human_input?set_temperature\naction do\n	tmrature = set_temp.t\nend\n
+
+Off --> Off : temp:get_sensor?temperature\naction do\n	if (lasttemp < temp.t) request_actuator!SwitchOff(switch_id) // temperature is rising even when OFF. Reactivate.\n	lasttemp = temp.t\nend\n
+}
+[*] --> Thermostat
+
+Running --> Running : givedelta:human_input?set_delta\naction do\n	// just forward the polling interval instructions to the PSM\n	delta = givedelta.dlta\nend\n
+
+Running --> Running : fetch:human_input?fetch_temp\naction do\n	// reporting the temperature value\n	human_output!temperature(thermo_id, "temperature ", lasttemp)\nend\n
+
+Running --> Running : human_input?SwitchOn\naction do\n	human_output!prompt("INTERNAL ERROR: Impossible SwitchOn at PIM.Running")\nend\n
+
+Running --> Running : human_input?SwitchOff\naction do\n	human_output!prompt("INTERNAL ERROR: Impossible SwitchOff at PIM.Running")\nend\n
+
+Running --> Running : human_input?set_temperature\naction do\n	human_output!prompt("INTERNAL ERROR: Impossible set_temperature at PIM.Running")\nend\n
+
+Running --> Running : temp:get_sensor?temperature\naction do\n	human_output!prompt("INTERNAL ERROR: temperature received at PIM.Running")\n	lasttemp = temp.t\nend\n
+	Running : get_sensor?iamalive1 / \naction do\n	human_output!prompt("INTERNAL ERROR: iamalive1 received at PIM.Running")\nend\n
+	Running : get_sensor?iamalive2 / \naction do\n	human_output!prompt("INTERNAL ERROR: iamalive2 received at PIM.Running")\nend\n
+}
+[*] --> Build
+	PIM_behavior : entry / do\n	print ("Running The Room X3D.MQTT.sim\n")\nend\n
+}
+@enduml
