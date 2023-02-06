@@ -8,7 +8,7 @@ thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
     required port provide_cmd {
         sends set_temperature, 
         	add_lightsensor,
-        	set_luminance, prompt 
+        	set_luminance 
     }
     
 	// Receives

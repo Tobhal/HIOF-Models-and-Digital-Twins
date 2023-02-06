@@ -25,6 +25,12 @@ public boolean isDebug() {return debug;}
 public void setDebug(boolean debug) {this.debug = debug;}
 public String toString() {
 String result = "instance " + getName() + "\n";
+result += "\ttemp = " + Energy_saver_temp_var;
+result += "\tlast_lum = " + Energy_saver_last_lum_var;
+result += "\tlights_off_temp = " + Energy_saver_lights_off_temp_var;
+result += "\tnight = " + Energy_saver_night_var;
+result += "\tlum_threshold = " + Energy_saver_lum_threshold_var;
+result += "\tlumSens_id = " + Energy_saver_lumSens_id_var;
 result += "";
 return result;
 }
@@ -41,18 +47,33 @@ _msg.setPort(get_cmd_port);
 receive(_msg);
 }
 
-private void sendSet_temperature_via_send_temp(double TemperatureMsg_set_temperature_t_var){
-send_temp_port.send(set_temperatureType.instantiate(TemperatureMsg_set_temperature_t_var));
+public synchronized void lum_threshold_via_get_cmd(){
+final Event _msg = lum_thresholdType.instantiate();
+_msg.setPort(get_cmd_port);
+receive(_msg);
 }
 
-private void sendAdd_lightsensor_via_send_lightsensor(int LuminanceMsg_add_lightsensor_id_var){
-send_lightsensor_port.send(add_lightsensorType.instantiate(LuminanceMsg_add_lightsensor_id_var));
+private void sendSet_temperature_via_provide_cmd(double TemperatureMsg_set_temperature_t_var){
+provide_cmd_port.send(set_temperatureType.instantiate(TemperatureMsg_set_temperature_t_var));
+}
+
+private void sendAdd_lightsensor_via_provide_cmd(int LuminanceMsg_add_lightsensor_id_var){
+provide_cmd_port.send(add_lightsensorType.instantiate(LuminanceMsg_add_lightsensor_id_var));
+}
+
+private void sendSet_luminance_via_provide_cmd(double LuminanceMsg_set_luminance_lum_var){
+provide_cmd_port.send(set_luminanceType.instantiate(LuminanceMsg_set_luminance_lum_var));
 }
 
 //Attributes
+private double Energy_saver_temp_var;
+private double Energy_saver_lights_off_temp_var;
+private double Energy_saver_last_lum_var;
+private double Energy_saver_lum_threshold_var;
+private double Energy_saver_night_var;
+private int Energy_saver_lumSens_id_var;
 //Ports
-private Port send_temp_port;
-private Port send_lightsensor_port;
+private Port provide_cmd_port;
 private Port get_cmd_port;
 //Message types
 protected final TemperatureMessageType temperatureType = new TemperatureMessageType();
@@ -63,6 +84,7 @@ protected final Fetch_tempMessageType fetch_tempType = new Fetch_tempMessageType
 protected final LuminanceMessageType luminanceType = new LuminanceMessageType();
 protected final Add_lightsensorMessageType add_lightsensorType = new Add_lightsensorMessageType();
 protected final Set_luminanceMessageType set_luminanceType = new Set_luminanceMessageType();
+protected final Lum_thresholdMessageType lum_thresholdType = new Lum_thresholdMessageType();
 protected final Iamalive1MessageType iamalive1Type = new Iamalive1MessageType();
 protected final Iamalive2MessageType iamalive2Type = new Iamalive2MessageType();
 protected final PromptMessageType promptType = new PromptMessageType();
@@ -72,29 +94,164 @@ super();
 }
 
 //Getters and Setters for non readonly/final attributes
-//Getters for Ports
-public Port getSend_temp_port() {
-return send_temp_port;
+public double getEnergy_saver_temp_var() {
+return Energy_saver_temp_var;
 }
-public Port getSend_lightsensor_port() {
-return send_lightsensor_port;
+
+public void setEnergy_saver_temp_var(double Energy_saver_temp_var) {
+this.Energy_saver_temp_var = Energy_saver_temp_var;
+}
+
+public Energy_saver initEnergy_saver_temp_var(double Energy_saver_temp_var) {
+this.Energy_saver_temp_var = Energy_saver_temp_var;
+return this;
+}
+
+public double getEnergy_saver_lights_off_temp_var() {
+return Energy_saver_lights_off_temp_var;
+}
+
+public void setEnergy_saver_lights_off_temp_var(double Energy_saver_lights_off_temp_var) {
+this.Energy_saver_lights_off_temp_var = Energy_saver_lights_off_temp_var;
+}
+
+public Energy_saver initEnergy_saver_lights_off_temp_var(double Energy_saver_lights_off_temp_var) {
+this.Energy_saver_lights_off_temp_var = Energy_saver_lights_off_temp_var;
+return this;
+}
+
+public double getEnergy_saver_last_lum_var() {
+return Energy_saver_last_lum_var;
+}
+
+public void setEnergy_saver_last_lum_var(double Energy_saver_last_lum_var) {
+this.Energy_saver_last_lum_var = Energy_saver_last_lum_var;
+}
+
+public Energy_saver initEnergy_saver_last_lum_var(double Energy_saver_last_lum_var) {
+this.Energy_saver_last_lum_var = Energy_saver_last_lum_var;
+return this;
+}
+
+public double getEnergy_saver_lum_threshold_var() {
+return Energy_saver_lum_threshold_var;
+}
+
+public void setEnergy_saver_lum_threshold_var(double Energy_saver_lum_threshold_var) {
+this.Energy_saver_lum_threshold_var = Energy_saver_lum_threshold_var;
+}
+
+public Energy_saver initEnergy_saver_lum_threshold_var(double Energy_saver_lum_threshold_var) {
+this.Energy_saver_lum_threshold_var = Energy_saver_lum_threshold_var;
+return this;
+}
+
+public double getEnergy_saver_night_var() {
+return Energy_saver_night_var;
+}
+
+public void setEnergy_saver_night_var(double Energy_saver_night_var) {
+this.Energy_saver_night_var = Energy_saver_night_var;
+}
+
+public Energy_saver initEnergy_saver_night_var(double Energy_saver_night_var) {
+this.Energy_saver_night_var = Energy_saver_night_var;
+return this;
+}
+
+public int getEnergy_saver_lumSens_id_var() {
+return Energy_saver_lumSens_id_var;
+}
+
+public void setEnergy_saver_lumSens_id_var(int Energy_saver_lumSens_id_var) {
+this.Energy_saver_lumSens_id_var = Energy_saver_lumSens_id_var;
+}
+
+public Energy_saver initEnergy_saver_lumSens_id_var(int Energy_saver_lumSens_id_var) {
+this.Energy_saver_lumSens_id_var = Energy_saver_lumSens_id_var;
+return this;
+}
+
+//Getters for Ports
+public Port getProvide_cmd_port() {
+return provide_cmd_port;
 }
 public Port getGet_cmd_port() {
 return get_cmd_port;
 }
+private CompositeState buildEnergy_saver_ES_behavior(){
+final AtomicState state_Energy_saver_ES_behavior_present = new AtomicState("present");
+final AtomicState state_Energy_saver_ES_behavior_day = new AtomicState("day");
+final AtomicState state_Energy_saver_ES_behavior_night = new AtomicState("night");
+Transition h1022264341 = new Transition();
+h1022264341.from(state_Energy_saver_ES_behavior_present).to(state_Energy_saver_ES_behavior_present);
+h1022264341.event(temperatureType);
+h1022264341.port(get_cmd_port);
+h1022264341.action((Event e)->{
+final TemperatureMessageType.TemperatureMessage temperature = (TemperatureMessageType.TemperatureMessage) e;
+Energy_saver_temp_var = (double) (temperature.t);
+System.out.print(""+(("This is the temp now: " + getEnergy_saver_temp_var())));
+});
+
+Transition h710780406 = new Transition();
+h710780406.from(state_Energy_saver_ES_behavior_present).to(state_Energy_saver_ES_behavior_present);
+h710780406.event(lum_thresholdType);
+h710780406.port(get_cmd_port);
+h710780406.action((Event e)->{
+sendSet_luminance_via_provide_cmd((double) (getEnergy_saver_lum_threshold_var()));
+});
+
+Transition h144417573 = new Transition();
+h144417573.from(state_Energy_saver_ES_behavior_present).to(state_Energy_saver_ES_behavior_present);
+h144417573.event(luminanceType);
+h144417573.port(get_cmd_port);
+h144417573.action((Event e)->{
+final LuminanceMessageType.LuminanceMessage luminance = (LuminanceMessageType.LuminanceMessage) e;
+Energy_saver_last_lum_var = (double) (luminance.lum);
+System.out.print(""+(("Last lum recorded: " + getEnergy_saver_last_lum_var())));
+if(getEnergy_saver_last_lum_var() <= getEnergy_saver_lum_threshold_var()) {
+sendSet_temperature_via_provide_cmd((double) (getEnergy_saver_temp_var() - getEnergy_saver_lights_off_temp_var()));
+
+}
+if(getEnergy_saver_last_lum_var() > getEnergy_saver_lum_threshold_var()) {
+sendSet_temperature_via_provide_cmd((double) (getEnergy_saver_temp_var()));
+
+}
+});
+
+final CompositeState state_Energy_saver_ES_behavior = new CompositeState("ES_behavior");
+state_Energy_saver_ES_behavior.onEntry(()->{
+System.out.print(""+(("Running Energy saver (ES) \n")));
+sendAdd_lightsensor_via_provide_cmd((int) (getEnergy_saver_lumSens_id_var()));
+});
+Handler h1888566405 = new Handler();
+h1888566405.from(state_Energy_saver_ES_behavior);
+h1888566405.event(luminanceType);
+h1888566405.port(get_cmd_port);
+h1888566405.action((Event e)->{
+final LuminanceMessageType.LuminanceMessage luminance = (LuminanceMessageType.LuminanceMessage) e;
+Energy_saver_last_lum_var = (double) (luminance.lum);
+});
+
+state_Energy_saver_ES_behavior.add(state_Energy_saver_ES_behavior_present);
+state_Energy_saver_ES_behavior.add(state_Energy_saver_ES_behavior_day);
+state_Energy_saver_ES_behavior.add(state_Energy_saver_ES_behavior_night);
+state_Energy_saver_ES_behavior.initial(state_Energy_saver_ES_behavior_present);
+return state_Energy_saver_ES_behavior;
+}
+
 public Component buildBehavior(String session, Component root) {
 if (root == null) {
 //Init ports
-send_temp_port = new Port("send_temp", this);
-send_lightsensor_port = new Port("send_lightsensor", this);
+provide_cmd_port = new Port("provide_cmd", this);
 get_cmd_port = new Port("get_cmd", this);
 } else {
-send_temp_port = ((Energy_saver)root).send_temp_port;
-send_lightsensor_port = ((Energy_saver)root).send_lightsensor_port;
+provide_cmd_port = ((Energy_saver)root).provide_cmd_port;
 get_cmd_port = ((Energy_saver)root).get_cmd_port;
 }
 if (session == null){
 //Init state machine
+behavior = buildEnergy_saver_ES_behavior();
 }
 return this;
 }

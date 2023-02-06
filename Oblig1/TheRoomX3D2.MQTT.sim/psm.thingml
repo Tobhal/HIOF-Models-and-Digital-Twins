@@ -33,7 +33,8 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 	required port provide_temp {
 		sends temperature
 	}
-	required port provice_lum_motion {
+	
+	required port provide_lum_motion {
 		sends luminance
 	}
 	
@@ -108,7 +109,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 
 				if (found) do 
 					lumval[i-1] = put_t.lum
-					provice_lum_motion!luminance(id_s, put_t.lum)
+					provide_lum_motion!luminance(id_s, put_t.lum)
 				end
 
 			end
@@ -193,7 +194,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 
 				if (foundL) do 
 					lightval[i-1] = put_lum.lum
-					provice_lum_motion!luminance(id_s, put_lum.lum)
+					provide_lum_motion!luminance(id_s, put_lum.lum)
 				end
 			end
 		}
