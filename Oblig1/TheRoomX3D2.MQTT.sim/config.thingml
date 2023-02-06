@@ -43,7 +43,7 @@ configuration X3D_MQTT_SIM {
 	connector sim.toMQTT => T1.MQTT // but it also works the other way 
 
 	// Timer
-	instance t:TimerClientMock
+	//instance t:TimerClientMock
 	// connector t.timer => 
 
 }
