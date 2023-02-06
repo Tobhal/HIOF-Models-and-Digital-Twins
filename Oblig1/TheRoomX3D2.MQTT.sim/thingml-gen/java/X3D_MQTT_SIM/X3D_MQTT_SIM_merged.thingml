@@ -1,57 +1,3 @@
-thing Energy_saver includes TemperatureMsg , LuminanceMsg , GeneralMsg {
-	required port provide_cmd {
-		sends set_temperature sends add_lightsensor sends set_luminance
-	}
-	provided port get_cmd {
-		receives temperature receives luminance receives lum_threshold
-	}
-	property temp : Double = 20
-	property last_lum : Double = 1000
-	property lights_off_temp : Double = 2
-	property night : Double = 8
-	property lum_threshold : Double = 1000
-	property lumSens_id : Integer
-	statechart ES_behavior init present {
-		on entry do
-			print ("Running Energy saver (ES) \n")
-			provide_cmd!add_lightsensor(lumSens_id)
-		end
-		state present {
-			transition -> present
-			event get_temp : get_cmd?temperature
-			action do
-				temp = get_temp.t
-				print ("This is the temp now: " + temp)
-			end
-			transition -> present
-			event fetch : get_cmd?lum_threshold
-			action do
-				provide_cmd!set_luminance(lum_threshold)
-			end
-			transition -> present
-			event get_lum : get_cmd?luminance
-			action do
-				last_lum = get_lum.lum
-				print ("Last lum recorded: " + last_lum)
-				if (last_lum <= lum_threshold) do
-					provide_cmd!set_temperature(temp - lights_off_temp)
-				end
-				if (last_lum > lum_threshold) do
-					provide_cmd!set_temperature(temp)
-				end
-			end
-		}
-		state day {
-		}
-		state night {
-		}
-		internal
-		event lum : get_cmd?luminance
-		action do
-			last_lum = lum.lum
-		end
-	}
-}
 object JTimerTask @java_type "java.util.TimerTask"
 object JTimer @java_type "java.util.Timer"
 thing TimerJava includes Timer @pim "Timer" @platform "java" {
@@ -102,7 +48,7 @@ thing fragment TimerClient includes TimerMsgs {
 		sends timer_start sends timer_cancel receives timer_timeout
 	}
 }
-thing TimerClientMock includes TimerClient {
+thing TimerClientMock includes TimerClient @mock "true" {
 }
 thing PIM includes GeneralMsg , TemperatureMsg , OnOffMsg , TimerMsgs {
 	provided port get_sensor {
@@ -530,7 +476,7 @@ thing Simulation includes TemperatureMsg , OnOffMsg @mock "true" {
 		sends temperature receives SwitchOn receives SwitchOff
 	}
 }
-thing Energy_saver includes TemperatureMsg , LuminanceMsg , GeneralMsg @mock "true" {
+thing EnergySaver includes TemperatureMsg , LuminanceMsg , GeneralMsg @mock "true" {
 	required port send_cmd {
 		sends set_temperature sends lum_threshold
 	}
@@ -678,7 +624,7 @@ configuration X3D_MQTT_SIM {
 	instance myself : Human
 	instance g_temp : TimerJava
 	instance g_humn : TimerJava
-	instance es : Energy_saver
+	instance es : EnergySaver
 	instance sim : Simulation
 	instance t : TimerClientMock
 	connector T1.provide_temp => pim . get_sensor
@@ -686,10 +632,10 @@ configuration X3D_MQTT_SIM {
 	connector myself.send_cmd => es . get_cmd
 	connector pim.request_sensor => T1 . require_val
 	connector pim.request_actuator => T1 . require_val
-	connector pim.human_output => myself . get_values
 	connector pim.human_output => es . get_cmd
 	connector pim.guard_temperature => g_temp . timer
 	connector pim.guard_human => g_humn . timer
-	connector es.provide_cmd => pim . human_input
+	connector es.send_cmd => pim . human_input
+	connector es.send_lightsensor => T1 . require_val
 	connector sim.toMQTT => T1 . MQTT
 }

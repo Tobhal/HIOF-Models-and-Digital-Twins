@@ -37,9 +37,8 @@ thing fragment TimerClient includes TimerMsgs
 }
 
 thing TimerClientMock includes TimerClient
-//@mock "true"
+@mock "true"
 {
 	
 }
-
 

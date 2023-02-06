@@ -26,7 +26,7 @@ thing Simulation includes TemperatureMsg, OnOffMsg
 }
 
 // Energy saver
-thing Energy_saver includes TemperatureMsg, LuminanceMsg, GeneralMsg 
+thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg 
 @mock "true" 
 {
 	// Sends

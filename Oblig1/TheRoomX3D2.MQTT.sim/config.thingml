@@ -1,10 +1,7 @@
-import "Energy_saver.thingml"
 import "javatimer.thingml"
 import "timer.thingml"
-
 import "pim.thingml"
 import "psm.thingml"
-
 import "io.thingml"
 
 configuration X3D_MQTT_SIM {
@@ -13,7 +10,8 @@ configuration X3D_MQTT_SIM {
 	instance myself:Human
 	instance g_temp:TimerJava
 	instance g_humn:TimerJava
-    instance es:Energy_saver
+	
+    instance es:EnergySaver
     
 	
 	// PSM	
@@ -22,23 +20,23 @@ configuration X3D_MQTT_SIM {
 		
 	// HUMAN
 	
-	connector myself.send_cmd => es.get_cmd
 	//connector myself.send_cmd => pim.human_input
+	connector myself.send_cmd => es.get_cmd
 	
 	
 	// PIM outwards 
 	connector pim.request_sensor => T1.require_val
 	connector pim.request_actuator => T1.require_val
 	
-	connector pim.human_output => myself.get_values
+	//connector pim.human_output => myself.get_values
 	connector pim.human_output => es.get_cmd
 	
 	connector pim.guard_temperature =>g_temp.timer
 	connector pim.guard_human => g_humn.timer
 	
 	//ES
-	connector es.provide_cmd => pim.human_input
-	//connector es.provide_cmd => T1.require_val
+	connector es.send_cmd => pim.human_input
+	connector es.send_lightsensor => T1.require_val
 	
 	// Simulation
 	instance sim:Simulation
@@ -47,4 +45,5 @@ configuration X3D_MQTT_SIM {
 	// Timer
 	instance t:TimerClientMock
 	// connector t.timer => 
+
 }
