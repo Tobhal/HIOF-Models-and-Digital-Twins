@@ -7,7 +7,7 @@ rectangle pim:PIM {
     portout get_sensor
     portout request_sensor
     portout request_actuator
-
+    
     'right
     portout human_output
     portout human_input
@@ -47,9 +47,9 @@ t_send_cmd ---> comfort_temp
 t_send_es_config ---> get_config
 
 'PIM
-human_output --> t_get_values
-request_sensor --> require_val
-request_actuator --> require_val
+human_output ---> t_get_values
+request_sensor ---> require_val
+request_actuator ---> require_val
 
 'PSM
 provide_temp --> get_sensor

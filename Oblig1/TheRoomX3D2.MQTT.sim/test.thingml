@@ -1,0 +1,7 @@
+import "datatypes.thingml" from stl
+import "pim.thingml"
+import "timer.thingml"
+
+thing test includes TemperatureMsg, GeneralMsg, OnOffMsg {
+    
+}
