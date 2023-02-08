@@ -13,7 +13,7 @@
 
 ### Lights on or off
 
-![Thermostate in different states](https://github.com/Tobhal/HIOF-Models-and-Digital-Twins/blob/AleksanderE/Oblig1/Bilder/Sequence_diagram_light_sensor_no_current_time_tracking.PNG)
+![Thermostate in different states](Bilder/Sequence_diagram_light_sensor_no_current_time_tracking.PNG)
 
 ```
 @startuml
@@ -58,7 +58,7 @@ end
 
 ### General flow
 
-![General flow](https://github.com/Tobhal/HIOF-Models-and-Digital-Twins/blob/AleksanderE/Oblig1/Bilder/General_flow_sequence.PNG)
+![General flow](Bilder/General_flow_sequence.PNG)
 
 ```
 @startuml sequense diagram
@@ -109,9 +109,9 @@ sim <- human: SwitchOff(did1)
 
 ### Normal day
 
-![Normal day](https://github.com/Tobhal/HIOF-Models-and-Digital-Twins/blob/AleksanderE/Oblig1/Bilder/sequence_normal_day_p1.PNG)
+![Normal day](Bilder/sequence_normal_day_p1.PNG)
 
-![Normal day](https://github.com/Tobhal/HIOF-Models-and-Digital-Twins/blob/AleksanderE/Oblig1/Bilder/sequence_normal_day_p2.PNG)
+![Normal day](Bilder/sequence_normal_day_p2.PNG)
 
 
 ```
@@ -192,7 +192,7 @@ sim <- pim: switch_on(1)
 
 ### User change temp
 
-![User change temp](https://github.com/Tobhal/HIOF-Models-and-Digital-Twins/blob/AleksanderE/Oblig1/Bilder/sequence_user_change_temp.PNG)
+![User change temp](Bilder/sequence_user_change_temp.PNG)
 
 ```
 @startuml sequense diagram
@@ -237,7 +237,7 @@ sim <- pim: switch_off(1)
 
 ## Composite diagram
 
-![Composite diagram](https://github.com/Tobhal/HIOF-Models-and-Digital-Twins/blob/AleksanderE/Oblig1/Bilder/composite_diagram.PNG)
+![Composite diagram](Bilder/composite_diagram.PNG)
 
 ```
 @startuml X3D2_MQTT_SIM
