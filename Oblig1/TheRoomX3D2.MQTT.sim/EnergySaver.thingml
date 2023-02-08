@@ -68,7 +68,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
 					if (last_lum <= lum_threshold) do
 						provide_cmd!temperature(temp_ID,"temperature",temp-lights_off_temp)
 					end
-					if (last_lum > lum_threshold) do
+					else do
 						provide_cmd!temperature(temp_ID,"temperature",temp)
 					end					
 				end
