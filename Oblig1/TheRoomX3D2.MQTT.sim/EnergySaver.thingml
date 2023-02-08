@@ -6,24 +6,33 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
      
     // Sends
     required port provide_cmd {
-        sends set_temperature, 
+        sends temperature,
         	add_lightsensor,
-        	set_luminance 
+        	prompt,
+        	luminance 
+        	
+        	 
     }
     
 	// Receives
     provided port get_cmd {
         receives temperature,
         		luminance,
-        		lum_threshold
+        		set_luminance,
+        		set_temperature,
+        		fetch_lum
+        		
+        	
 	}
 	
     property temp:Double = 20           // Store comfort temprature
-    property last_lum: Double = 1000    // Last recored luminence value
-
+    property temp_ID:Integer
+    	
     property lights_off_temp:Double = 2 // Store temperature offsett for when lights are off
     property night:Double = 8           // Store temperature offsett for when there is night
 
+	property lum_ID:Integer
+    property last_lum: Double = 1000    // Last recored luminence value
     property lum_threshold: Double = 1000   // Threshold for when the room is dart or not
 	property lumSens_id:Integer
 
@@ -36,17 +45,18 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
             // Get temperature from human
             // and set it for pim
             transition -> present
-            event get_temp:get_cmd?temperature
+            event get_temp:get_cmd?set_temperature
             action do
                 temp = get_temp.t
-				print("This is the temp now: " + temp)
+				provide_cmd!prompt("Temperature is received")
            		end
            	// Fetch luminance threshold	
            	transition -> present
-        	event fetch:get_cmd?lum_threshold
+        	event fetch:get_cmd?set_luminance
 			action do
 				// reporting the luminence value
-				provide_cmd!set_luminance(lum_threshold)
+				lum_threshold = fetch.lum
+				provide_cmd!prompt("Luminence is received")
 			end
 			
             // Check luminance towards temperature				
@@ -56,17 +66,17 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
 					last_lum = get_lum.lum
 					print("Last lum recorded: " + last_lum)
 					if (last_lum <= lum_threshold) do
-						provide_cmd!set_temperature(temp-lights_off_temp)
+						provide_cmd!temperature(temp_ID,"temperature",temp-lights_off_temp)
 					end
 					if (last_lum > lum_threshold) do
-						provide_cmd!set_temperature(temp)
+						provide_cmd!temperature(temp_ID,"temperature",temp)
 					end					
 				end
         }
-        internal event lum:get_cmd?luminance
-			action do 
-				// just record, the thermostat is not running, yet 
-				last_lum = lum.lum
+        internal event fetch:get_cmd?fetch_lum
+			action do
+				// reporting the temperature value
+				provide_cmd!luminance(lum_ID,last_lum)
 			end
        
         state day {}

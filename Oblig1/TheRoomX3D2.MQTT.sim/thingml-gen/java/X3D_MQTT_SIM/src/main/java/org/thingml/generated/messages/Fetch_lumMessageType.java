@@ -13,25 +13,25 @@ import no.sintef.jasm.ext.*;
 import java.util.*;
 import java.nio.*;
 
-public class Lum_thresholdMessageType extends EventType {
-public Lum_thresholdMessageType(short code) {super("lum_threshold", code);
+public class Fetch_lumMessageType extends EventType {
+public Fetch_lumMessageType(short code) {super("fetch_lum", code);
 }
 
-public Lum_thresholdMessageType() {
-super("lum_threshold", (short) 0);
+public Fetch_lumMessageType() {
+super("fetch_lum", (short) 0);
 }
 
-public Event instantiate() { return new Lum_thresholdMessage(this); }
+public Event instantiate() { return new Fetch_lumMessage(this); }
 public Event instantiate(Map<String, Object> params) {return instantiate();
 }
 
-public class Lum_thresholdMessage extends Event implements java.io.Serializable {
+public class Fetch_lumMessage extends Event implements java.io.Serializable {
 
 public String toString(){
-return "lum_threshold (" + ")";
+return "fetch_lum (" + ")";
 }
 
-protected Lum_thresholdMessage(EventType type) {
+protected Fetch_lumMessage(EventType type) {
 super(type);
 }
 public Event clone() {

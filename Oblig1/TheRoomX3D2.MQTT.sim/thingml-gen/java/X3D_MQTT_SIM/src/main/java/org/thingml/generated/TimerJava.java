@@ -48,8 +48,8 @@ timer_port.send(timer_timeoutType.instantiate());
 }
 
 //Attributes
-private java.util.Timer TimerJava_timer_var;
 private java.util.TimerTask TimerJava_timer_task_var;
+private java.util.Timer TimerJava_timer_var;
 //Ports
 private Port timer_port;
 //Message types
@@ -63,19 +63,6 @@ super();
 }
 
 //Getters and Setters for non readonly/final attributes
-public java.util.Timer getTimerJava_timer_var() {
-return TimerJava_timer_var;
-}
-
-public void setTimerJava_timer_var(java.util.Timer TimerJava_timer_var) {
-this.TimerJava_timer_var = TimerJava_timer_var;
-}
-
-public TimerJava initTimerJava_timer_var(java.util.Timer TimerJava_timer_var) {
-this.TimerJava_timer_var = TimerJava_timer_var;
-return this;
-}
-
 public java.util.TimerTask getTimerJava_timer_task_var() {
 return TimerJava_timer_task_var;
 }
@@ -89,22 +76,35 @@ this.TimerJava_timer_task_var = TimerJava_timer_task_var;
 return this;
 }
 
+public java.util.Timer getTimerJava_timer_var() {
+return TimerJava_timer_var;
+}
+
+public void setTimerJava_timer_var(java.util.Timer TimerJava_timer_var) {
+this.TimerJava_timer_var = TimerJava_timer_var;
+}
+
+public TimerJava initTimerJava_timer_var(java.util.Timer TimerJava_timer_var) {
+this.TimerJava_timer_var = TimerJava_timer_var;
+return this;
+}
+
 //Getters for Ports
 public Port getTimer_port() {
 return timer_port;
 }
 private CompositeState buildTimerJava_SoftTimer(){
 final AtomicState state_TimerJava_SoftTimer_default = new AtomicState("default");
-Handler h2093703169 = new Handler();
-h2093703169.from(state_TimerJava_SoftTimer_default);
-h2093703169.event(timer_startType);
-h2093703169.guard((Event e)->{
+Handler h1364260824 = new Handler();
+h1364260824.from(state_TimerJava_SoftTimer_default);
+h1364260824.event(timer_startType);
+h1364260824.guard((Event e)->{
 final Timer_startMessageType.Timer_startMessage timer_start = (Timer_startMessageType.Timer_startMessage) e;
 return timer_start.delay > 0;
 });
 
-h2093703169.port(timer_port);
-h2093703169.action((Event e)->{
+h1364260824.port(timer_port);
+h1364260824.action((Event e)->{
 final Timer_startMessageType.Timer_startMessage timer_start = (Timer_startMessageType.Timer_startMessage) e;
 startTimer((int) (timer_start.delay));
 });

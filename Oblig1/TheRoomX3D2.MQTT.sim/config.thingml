@@ -36,7 +36,6 @@ configuration X3D_MQTT_SIM {
 	
 	//ES
 	connector es.send_cmd => pim.human_input
-	connector es.send_lightsensor => T1.require_val
 	
 	// Simulation
 	instance sim:Simulation

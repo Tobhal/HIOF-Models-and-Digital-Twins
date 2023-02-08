@@ -50,18 +50,15 @@ private final Fetch_tempMessageType fetch_tempType = new Fetch_tempMessageType()
 private final LuminanceMessageType luminanceType = new LuminanceMessageType();
 private final Add_lightsensorMessageType add_lightsensorType = new Add_lightsensorMessageType();
 private final Set_luminanceMessageType set_luminanceType = new Set_luminanceMessageType();
-private final Lum_thresholdMessageType lum_thresholdType = new Lum_thresholdMessageType();
+private final Fetch_lumMessageType fetch_lumType = new Fetch_lumMessageType();
 private final Iamalive1MessageType iamalive1Type = new Iamalive1MessageType();
 private final Iamalive2MessageType iamalive2Type = new Iamalive2MessageType();
 private final PromptMessageType promptType = new PromptMessageType();
 final Port port_EnergySaver_send_cmd;
 public Port getSend_cmd_port(){return port_EnergySaver_send_cmd;}
-final Port port_EnergySaver_send_lightsensor;
-public Port getSend_lightsensor_port(){return port_EnergySaver_send_lightsensor;}
 final Port port_EnergySaver_get_cmd;
 public Port getGet_cmd_port(){return port_EnergySaver_get_cmd;}
 public java.util.List<IEnergySaver_send_cmdClient> send_cmd_listeners = new java.util.LinkedList<IEnergySaver_send_cmdClient>();
-public java.util.List<IEnergySaver_send_lightsensorClient> send_lightsensor_listeners = new java.util.LinkedList<IEnergySaver_send_lightsensorClient>();
 private SimpleDateFormat dateFormat=new SimpleDateFormat("dd MMM yyy 'at' HH:mm:ss.SSS");
 
 private JTabbedPane tabbedPane=new JTabbedPane();
@@ -78,33 +75,41 @@ public JButton getSendset_temperature_via_send_cmd() {
 return sendset_temperature_via_send_cmd;
 }
 
-//Attributes related to lum_threshold via send_cmd
-public JButton sendlum_threshold_via_send_cmd;
-public JButton getSendlum_threshold_via_send_cmd() {
-return sendlum_threshold_via_send_cmd;
+//Attributes related to set_luminance via send_cmd
+public JButton sendset_luminance_via_send_cmd;
+private JTextField fieldset_luminance_via_send_cmd_Lum;
+public JTextField getFieldset_luminance_via_send_cmd_Lum() {
+return fieldset_luminance_via_send_cmd_Lum;
 }
 
-//Attributes related to add_lightsensor via send_lightsensor
-public JButton sendadd_lightsensor_via_send_lightsensor;
-private JTextField fieldadd_lightsensor_via_send_lightsensor_Id;
-public JTextField getFieldadd_lightsensor_via_send_lightsensor_Id() {
-return fieldadd_lightsensor_via_send_lightsensor_Id;
+public JButton getSendset_luminance_via_send_cmd() {
+return sendset_luminance_via_send_cmd;
 }
 
-public JButton getSendadd_lightsensor_via_send_lightsensor() {
-return sendadd_lightsensor_via_send_lightsensor;
+//Attributes related to fetch_temp via send_cmd
+public JButton sendfetch_temp_via_send_cmd;
+public JButton getSendfetch_temp_via_send_cmd() {
+return sendfetch_temp_via_send_cmd;
+}
+
+//Attributes related to fetch_lum via send_cmd
+public JButton sendfetch_lum_via_send_cmd;
+public JButton getSendfetch_lum_via_send_cmd() {
+return sendfetch_lum_via_send_cmd;
 }
 
 public void disableAll() {
 sendset_temperature_via_send_cmd.setEnabled(false);
-sendlum_threshold_via_send_cmd.setEnabled(false);
-sendadd_lightsensor_via_send_lightsensor.setEnabled(false);
+sendset_luminance_via_send_cmd.setEnabled(false);
+sendfetch_temp_via_send_cmd.setEnabled(false);
+sendfetch_lum_via_send_cmd.setEnabled(false);
 }
 
 public void enableAll() {
 sendset_temperature_via_send_cmd.setEnabled(true);
-sendlum_threshold_via_send_cmd.setEnabled(true);
-sendadd_lightsensor_via_send_lightsensor.setEnabled(true);
+sendset_luminance_via_send_cmd.setEnabled(true);
+sendfetch_temp_via_send_cmd.setEnabled(true);
+sendfetch_lum_via_send_cmd.setEnabled(true);
 }
 
 
@@ -131,7 +136,6 @@ public EnergySaverMock(String name){
         super(name);
         init();
         port_EnergySaver_send_cmd = new Port("send_cmd", this);
-port_EnergySaver_send_lightsensor = new Port("send_lightsensor", this);
 port_EnergySaver_get_cmd = new Port("get_cmd", this);
 
         initGUI(name);
@@ -181,7 +185,25 @@ c.gridy = 0
 return panel;
 }
 
-public JPanel createlum_threshold_via_send_cmdPanel(){
+public JPanel createset_luminance_via_send_cmdPanel(){
+GridBagConstraints c = new GridBagConstraints();
+c.fill = GridBagConstraints.HORIZONTAL;
+c.weightx = 0.5;
+JPanel panel = new JPanel(new GridBagLayout());
+JLabel labellum = new JLabel();
+labellum.setText("lum");
+c.gridx = 0;
+c.gridy = 0;
+panel.add(labellum, c);
+fieldset_luminance_via_send_cmd_Lum = new JTextField();
+fieldset_luminance_via_send_cmd_Lum.setText("double");
+c.gridx = 1;
+c.gridy = 0
+;panel.add(fieldset_luminance_via_send_cmd_Lum, c);
+return panel;
+}
+
+public JPanel createfetch_temp_via_send_cmdPanel(){
 GridBagConstraints c = new GridBagConstraints();
 c.fill = GridBagConstraints.HORIZONTAL;
 c.weightx = 0.5;
@@ -189,21 +211,11 @@ JPanel panel = new JPanel(new GridBagLayout());
 return panel;
 }
 
-public JPanel createadd_lightsensor_via_send_lightsensorPanel(){
+public JPanel createfetch_lum_via_send_cmdPanel(){
 GridBagConstraints c = new GridBagConstraints();
 c.fill = GridBagConstraints.HORIZONTAL;
 c.weightx = 0.5;
 JPanel panel = new JPanel(new GridBagLayout());
-JLabel labelid = new JLabel();
-labelid.setText("id");
-c.gridx = 0;
-c.gridy = 0;
-panel.add(labelid, c);
-fieldadd_lightsensor_via_send_lightsensor_Id = new JTextField();
-fieldadd_lightsensor_via_send_lightsensor_Id.setText("int");
-c.gridx = 1;
-c.gridy = 0
-;panel.add(fieldadd_lightsensor_via_send_lightsensor_Id, c);
 return panel;
 }
 
@@ -223,8 +235,9 @@ public void print(String id,String data){
 
         public void addListener(ActionListener l){
 sendset_temperature_via_send_cmd.addActionListener(l);
-sendlum_threshold_via_send_cmd.addActionListener(l);
-sendadd_lightsensor_via_send_lightsensor.addActionListener(l);
+sendset_luminance_via_send_cmd.addActionListener(l);
+sendfetch_temp_via_send_cmd.addActionListener(l);
+sendfetch_lum_via_send_cmd.addActionListener(l);
 }
 
 
@@ -247,8 +260,6 @@ private void initGUI(String name){
 
         JPanel frame_send_cmd = new JPanel();
 frame_send_cmd.setLayout(new GridBagLayout());
-JPanel frame_send_lightsensor = new JPanel();
-frame_send_lightsensor.setLayout(new GridBagLayout());
 //GUI related to send_cmd_via_send_cmd => set_temperature
 c.gridy = 0;
 c.gridx = 0;
@@ -262,32 +273,45 @@ c.weighty = 0;
 sendset_temperature_via_send_cmd = createSendButton("send_cmd => set_temperature");
 frame_send_cmd.add(sendset_temperature_via_send_cmd, c);
 tabbedPane.addTab("send_cmd", frame_send_cmd);
-//GUI related to send_cmd_via_send_cmd => lum_threshold
+//GUI related to send_cmd_via_send_cmd => set_luminance
 c.gridy = 0;
 c.gridx = 1;
-frame_send_cmd.add(createLabel("lum_threshold"), c);
+frame_send_cmd.add(createLabel("set_luminance"), c);
 c.gridy = 1;
 c.gridx = 1;
-frame_send_cmd.add(createlum_threshold_via_send_cmdPanel(), c);
+frame_send_cmd.add(createset_luminance_via_send_cmdPanel(), c);
 c.gridy = 2;
 c.gridx = 1;
 c.weighty = 0;
-sendlum_threshold_via_send_cmd = createSendButton("send_cmd => lum_threshold");
-frame_send_cmd.add(sendlum_threshold_via_send_cmd, c);
+sendset_luminance_via_send_cmd = createSendButton("send_cmd => set_luminance");
+frame_send_cmd.add(sendset_luminance_via_send_cmd, c);
 tabbedPane.addTab("send_cmd", frame_send_cmd);
-//GUI related to send_lightsensor_via_send_lightsensor => add_lightsensor
+//GUI related to send_cmd_via_send_cmd => fetch_temp
 c.gridy = 0;
-c.gridx = 0;
-frame_send_lightsensor.add(createLabel("add_lightsensor"), c);
+c.gridx = 2;
+frame_send_cmd.add(createLabel("fetch_temp"), c);
 c.gridy = 1;
-c.gridx = 0;
-frame_send_lightsensor.add(createadd_lightsensor_via_send_lightsensorPanel(), c);
+c.gridx = 2;
+frame_send_cmd.add(createfetch_temp_via_send_cmdPanel(), c);
 c.gridy = 2;
-c.gridx = 0;
+c.gridx = 2;
 c.weighty = 0;
-sendadd_lightsensor_via_send_lightsensor = createSendButton("send_lightsensor => add_lightsensor");
-frame_send_lightsensor.add(sendadd_lightsensor_via_send_lightsensor, c);
-tabbedPane.addTab("send_lightsensor", frame_send_lightsensor);
+sendfetch_temp_via_send_cmd = createSendButton("send_cmd => fetch_temp");
+frame_send_cmd.add(sendfetch_temp_via_send_cmd, c);
+tabbedPane.addTab("send_cmd", frame_send_cmd);
+//GUI related to send_cmd_via_send_cmd => fetch_lum
+c.gridy = 0;
+c.gridx = 3;
+frame_send_cmd.add(createLabel("fetch_lum"), c);
+c.gridy = 1;
+c.gridx = 3;
+frame_send_cmd.add(createfetch_lum_via_send_cmdPanel(), c);
+c.gridy = 2;
+c.gridx = 3;
+c.weighty = 0;
+sendfetch_lum_via_send_cmd = createSendButton("send_cmd => fetch_lum");
+frame_send_cmd.add(sendfetch_lum_via_send_cmd, c);
+tabbedPane.addTab("send_cmd", frame_send_cmd);
 
 
         c.gridy=1;
@@ -412,8 +436,32 @@ System.err.println("Cannot parse arguments for message set_temperature on port s
 cliButton.setForeground(alertColor);
 }
 }
-else if (params[1].startsWith("lum_threshold")) {
-params[1] = params[1].substring("lum_threshold".length(), params[1].length());
+else if (params[1].startsWith("set_luminance")) {
+params[1] = params[1].substring("set_luminance".length(), params[1].length());
+if (!(params[1].startsWith("(") && params[1].endsWith(")"))) {
+cliButton.setForeground(alertColor);
+cli.setText("port!message(param1, param2, param3)");
+return;
+}
+params = params[1].substring(1,params[1].length()-1).split(",");
+if (!(params.length == 1)) {
+cliButton.setForeground(alertColor);
+cli.setText("port!message(param1, param2, param3)");
+return;
+}
+try {
+Map<String, Object> param = new HashMap<String, Object>();
+param.put("lum", StringHelper.toObject (double.class, params[0].trim()));
+Command c = new Command(port_EnergySaver_send_cmd, set_luminanceType, param);c.execute();
+((DefaultListModel)commands.getModel()).addElement(c);
+cliButton.setForeground(Color.BLACK);
+} catch(IllegalArgumentException iae) {
+System.err.println("Cannot parse arguments for message set_luminance on port send_cmd. Please try again with proper parameters");
+cliButton.setForeground(alertColor);
+}
+}
+else if (params[1].startsWith("fetch_temp")) {
+params[1] = params[1].substring("fetch_temp".length(), params[1].length());
 if (!(params[1].startsWith("(") && params[1].endsWith(")"))) {
 cliButton.setForeground(alertColor);
 cli.setText("port!message(param1, param2, param3)");
@@ -429,37 +477,36 @@ return;
 }
 try {
 Map<String, Object> param = new HashMap<String, Object>();
-Command c = new Command(port_EnergySaver_send_cmd, lum_thresholdType, param);c.execute();
+Command c = new Command(port_EnergySaver_send_cmd, fetch_tempType, param);c.execute();
 ((DefaultListModel)commands.getModel()).addElement(c);
 cliButton.setForeground(Color.BLACK);
 } catch(IllegalArgumentException iae) {
-System.err.println("Cannot parse arguments for message lum_threshold on port send_cmd. Please try again with proper parameters");
+System.err.println("Cannot parse arguments for message fetch_temp on port send_cmd. Please try again with proper parameters");
 cliButton.setForeground(alertColor);
 }
 }
-}
-if(params[0].equals("send_lightsensor")) {
-if (params[1].startsWith("add_lightsensor")) {
-params[1] = params[1].substring("add_lightsensor".length(), params[1].length());
+else if (params[1].startsWith("fetch_lum")) {
+params[1] = params[1].substring("fetch_lum".length(), params[1].length());
 if (!(params[1].startsWith("(") && params[1].endsWith(")"))) {
 cliButton.setForeground(alertColor);
 cli.setText("port!message(param1, param2, param3)");
 return;
 }
 params = params[1].substring(1,params[1].length()-1).split(",");
-if (!(params.length == 1)) {
+if (params[0].equals(""))
+params = new String[0];
+if (!(params.length == 0)) {
 cliButton.setForeground(alertColor);
 cli.setText("port!message(param1, param2, param3)");
 return;
 }
 try {
 Map<String, Object> param = new HashMap<String, Object>();
-param.put("id", StringHelper.toObject (int.class, params[0].trim()));
-Command c = new Command(port_EnergySaver_send_lightsensor, add_lightsensorType, param);c.execute();
+Command c = new Command(port_EnergySaver_send_cmd, fetch_lumType, param);c.execute();
 ((DefaultListModel)commands.getModel()).addElement(c);
 cliButton.setForeground(Color.BLACK);
 } catch(IllegalArgumentException iae) {
-System.err.println("Cannot parse arguments for message add_lightsensor on port send_lightsensor. Please try again with proper parameters");
+System.err.println("Cannot parse arguments for message fetch_lum on port send_cmd. Please try again with proper parameters");
 cliButton.setForeground(alertColor);
 }
 }
@@ -494,31 +541,44 @@ System.err.println("Cannot parse arguments for message set_temperature on port s
 getSendset_temperature_via_send_cmd().setForeground(alertColor);
 }
 }
-else if ( ae.getSource() == getSendlum_threshold_via_send_cmd()) {
+else if ( ae.getSource() == getSendset_luminance_via_send_cmd()) {
 try{
 Map<String, Object> param = new HashMap<String, Object>();
-Command c = new Command(port_EnergySaver_send_cmd, lum_thresholdType, param);c.execute();
+param.put("lum", StringHelper.toObject (double.class, getFieldset_luminance_via_send_cmd_Lum().getText()));
+Command c = new Command(port_EnergySaver_send_cmd, set_luminanceType, param);c.execute();
 ((DefaultListModel)commands.getModel()).addElement(c);
 for(IEnergySaver_send_cmdClient l : send_cmd_listeners)
-l.lum_threshold_from_send_cmd();
-getSendlum_threshold_via_send_cmd().setForeground(Color.BLACK);
+l.set_luminance_from_send_cmd((Double)StringHelper.toObject (double.class, getFieldset_luminance_via_send_cmd_Lum().getText()));
+getSendset_luminance_via_send_cmd().setForeground(Color.BLACK);
 } catch(IllegalArgumentException iae) {
-System.err.println("Cannot parse arguments for message lum_threshold on port send_cmd. Please try again with proper parameters");
-getSendlum_threshold_via_send_cmd().setForeground(alertColor);
+System.err.println("Cannot parse arguments for message set_luminance on port send_cmd. Please try again with proper parameters");
+getSendset_luminance_via_send_cmd().setForeground(alertColor);
 }
 }
-else if ( ae.getSource() == getSendadd_lightsensor_via_send_lightsensor()) {
+else if ( ae.getSource() == getSendfetch_temp_via_send_cmd()) {
 try{
 Map<String, Object> param = new HashMap<String, Object>();
-param.put("id", StringHelper.toObject (int.class, getFieldadd_lightsensor_via_send_lightsensor_Id().getText()));
-Command c = new Command(port_EnergySaver_send_lightsensor, add_lightsensorType, param);c.execute();
+Command c = new Command(port_EnergySaver_send_cmd, fetch_tempType, param);c.execute();
 ((DefaultListModel)commands.getModel()).addElement(c);
-for(IEnergySaver_send_lightsensorClient l : send_lightsensor_listeners)
-l.add_lightsensor_from_send_lightsensor((Integer)StringHelper.toObject (int.class, getFieldadd_lightsensor_via_send_lightsensor_Id().getText()));
-getSendadd_lightsensor_via_send_lightsensor().setForeground(Color.BLACK);
+for(IEnergySaver_send_cmdClient l : send_cmd_listeners)
+l.fetch_temp_from_send_cmd();
+getSendfetch_temp_via_send_cmd().setForeground(Color.BLACK);
 } catch(IllegalArgumentException iae) {
-System.err.println("Cannot parse arguments for message add_lightsensor on port send_lightsensor. Please try again with proper parameters");
-getSendadd_lightsensor_via_send_lightsensor().setForeground(alertColor);
+System.err.println("Cannot parse arguments for message fetch_temp on port send_cmd. Please try again with proper parameters");
+getSendfetch_temp_via_send_cmd().setForeground(alertColor);
+}
+}
+else if ( ae.getSource() == getSendfetch_lum_via_send_cmd()) {
+try{
+Map<String, Object> param = new HashMap<String, Object>();
+Command c = new Command(port_EnergySaver_send_cmd, fetch_lumType, param);c.execute();
+((DefaultListModel)commands.getModel()).addElement(c);
+for(IEnergySaver_send_cmdClient l : send_cmd_listeners)
+l.fetch_lum_from_send_cmd();
+getSendfetch_lum_via_send_cmd().setForeground(Color.BLACK);
+} catch(IllegalArgumentException iae) {
+System.err.println("Cannot parse arguments for message fetch_lum on port send_cmd. Please try again with proper parameters");
+getSendfetch_lum_via_send_cmd().setForeground(alertColor);
 }
 }
 
