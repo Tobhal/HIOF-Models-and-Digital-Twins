@@ -1,5 +1,14 @@
 # Overview of mandatory assignement 1 in Models and digital twins
 
+## Architechture diagrams
+
+![Architechure of the system](Bilder/architechure.svg)
+
+### Test diagram
+
+![Architechure of test system](Bilder/architecure%20test.svg)
+
+
 ## Sequence diagrams
 
 ### Lights on or off
