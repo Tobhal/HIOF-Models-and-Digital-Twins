@@ -34,7 +34,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
 				provide_cmd!add_lightsensor(lumSens_id) // We have only one light sensor in this system
         end
         state present {
-            // Get temperature from human
+            // Get comfort temperature from human
             // and set it for pim
             transition -> present
             event get_temp:get_cmd?temperature
