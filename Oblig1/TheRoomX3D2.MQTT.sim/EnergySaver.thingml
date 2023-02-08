@@ -1,5 +1,6 @@
 import "datatypes.thingml" from stl
 import "pim_messages.thingml"
+import "timestuff.thingml"
 
 
 thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
