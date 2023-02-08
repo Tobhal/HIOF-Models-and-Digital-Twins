@@ -45,6 +45,10 @@ private void sendTemperature_via_toMQTT(int TemperatureMsg_temperature_id_var, S
 toMQTT_port.send(temperatureType.instantiate(TemperatureMsg_temperature_id_var, TemperatureMsg_temperature_txt_var, TemperatureMsg_temperature_t_var));
 }
 
+private void sendLuminance_via_toMQTT(int LuminanceMsg_luminance_id_var, double LuminanceMsg_luminance_lum_var){
+toMQTT_port.send(luminanceType.instantiate(LuminanceMsg_luminance_id_var, LuminanceMsg_luminance_lum_var));
+}
+
 //Attributes
 //Ports
 private Port toMQTT_port;
@@ -57,6 +61,10 @@ protected final Fetch_tempMessageType fetch_tempType = new Fetch_tempMessageType
 protected final Add_deviceMessageType add_deviceType = new Add_deviceMessageType();
 protected final SwitchOnMessageType SwitchOnType = new SwitchOnMessageType();
 protected final SwitchOffMessageType SwitchOffType = new SwitchOffMessageType();
+protected final LuminanceMessageType luminanceType = new LuminanceMessageType();
+protected final Add_lightsensorMessageType add_lightsensorType = new Add_lightsensorMessageType();
+protected final Set_luminanceMessageType set_luminanceType = new Set_luminanceMessageType();
+protected final Fetch_lumMessageType fetch_lumType = new Fetch_lumMessageType();
 //Empty Constructor
 public Simulation() {
 super();

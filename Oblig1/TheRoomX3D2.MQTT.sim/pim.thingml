@@ -93,7 +93,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			event set_temp:human_input?set_temperature
 			action do
 				tmrature = set_temp.t
-				human_output!prompt("Now entering thermostat. Please give temperature observations") // SIMULATION: prompting on console for the user to react properly
+				human_output!prompt("Now entering thermostat. Please give temperature observations ") // SIMULATION: prompting on console for the user to react properly
 			end
 			
 			//Escape situations

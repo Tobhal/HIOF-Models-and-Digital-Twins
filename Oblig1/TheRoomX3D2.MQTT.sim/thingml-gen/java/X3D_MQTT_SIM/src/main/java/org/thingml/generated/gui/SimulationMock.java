@@ -50,6 +50,10 @@ private final Fetch_tempMessageType fetch_tempType = new Fetch_tempMessageType()
 private final Add_deviceMessageType add_deviceType = new Add_deviceMessageType();
 private final SwitchOnMessageType SwitchOnType = new SwitchOnMessageType();
 private final SwitchOffMessageType SwitchOffType = new SwitchOffMessageType();
+private final LuminanceMessageType luminanceType = new LuminanceMessageType();
+private final Add_lightsensorMessageType add_lightsensorType = new Add_lightsensorMessageType();
+private final Set_luminanceMessageType set_luminanceType = new Set_luminanceMessageType();
+private final Fetch_lumMessageType fetch_lumType = new Fetch_lumMessageType();
 final Port port_Simulation_toMQTT;
 public Port getToMQTT_port(){return port_Simulation_toMQTT;}
 public java.util.List<ISimulation_toMQTTClient> toMQTT_listeners = new java.util.LinkedList<ISimulation_toMQTTClient>();
@@ -79,12 +83,30 @@ public JButton getSendtemperature_via_toMQTT() {
 return sendtemperature_via_toMQTT;
 }
 
+//Attributes related to luminance via toMQTT
+public JButton sendluminance_via_toMQTT;
+private JTextField fieldluminance_via_toMQTT_Id;
+public JTextField getFieldluminance_via_toMQTT_Id() {
+return fieldluminance_via_toMQTT_Id;
+}
+
+private JTextField fieldluminance_via_toMQTT_Lum;
+public JTextField getFieldluminance_via_toMQTT_Lum() {
+return fieldluminance_via_toMQTT_Lum;
+}
+
+public JButton getSendluminance_via_toMQTT() {
+return sendluminance_via_toMQTT;
+}
+
 public void disableAll() {
 sendtemperature_via_toMQTT.setEnabled(false);
+sendluminance_via_toMQTT.setEnabled(false);
 }
 
 public void enableAll() {
 sendtemperature_via_toMQTT.setEnabled(true);
+sendluminance_via_toMQTT.setEnabled(true);
 }
 
 
@@ -179,6 +201,34 @@ c.gridy = 2
 return panel;
 }
 
+public JPanel createluminance_via_toMQTTPanel(){
+GridBagConstraints c = new GridBagConstraints();
+c.fill = GridBagConstraints.HORIZONTAL;
+c.weightx = 0.5;
+JPanel panel = new JPanel(new GridBagLayout());
+JLabel labelid = new JLabel();
+labelid.setText("id");
+c.gridx = 0;
+c.gridy = 0;
+panel.add(labelid, c);
+fieldluminance_via_toMQTT_Id = new JTextField();
+fieldluminance_via_toMQTT_Id.setText("int");
+c.gridx = 1;
+c.gridy = 0
+;panel.add(fieldluminance_via_toMQTT_Id, c);
+JLabel labellum = new JLabel();
+labellum.setText("lum");
+c.gridx = 0;
+c.gridy = 1;
+panel.add(labellum, c);
+fieldluminance_via_toMQTT_Lum = new JTextField();
+fieldluminance_via_toMQTT_Lum.setText("double");
+c.gridx = 1;
+c.gridy = 1
+;panel.add(fieldluminance_via_toMQTT_Lum, c);
+return panel;
+}
+
 
 
 public void print(String id,String data){
@@ -195,6 +245,7 @@ public void print(String id,String data){
 
         public void addListener(ActionListener l){
 sendtemperature_via_toMQTT.addActionListener(l);
+sendluminance_via_toMQTT.addActionListener(l);
 }
 
 
@@ -229,6 +280,19 @@ c.gridx = 0;
 c.weighty = 0;
 sendtemperature_via_toMQTT = createSendButton("toMQTT => temperature");
 frame_toMQTT.add(sendtemperature_via_toMQTT, c);
+tabbedPane.addTab("toMQTT", frame_toMQTT);
+//GUI related to toMQTT_via_toMQTT => luminance
+c.gridy = 0;
+c.gridx = 1;
+frame_toMQTT.add(createLabel("luminance"), c);
+c.gridy = 1;
+c.gridx = 1;
+frame_toMQTT.add(createluminance_via_toMQTTPanel(), c);
+c.gridy = 2;
+c.gridx = 1;
+c.weighty = 0;
+sendluminance_via_toMQTT = createSendButton("toMQTT => luminance");
+frame_toMQTT.add(sendluminance_via_toMQTT, c);
 tabbedPane.addTab("toMQTT", frame_toMQTT);
 
 
@@ -356,6 +420,31 @@ System.err.println("Cannot parse arguments for message temperature on port toMQT
 cliButton.setForeground(alertColor);
 }
 }
+else if (params[1].startsWith("luminance")) {
+params[1] = params[1].substring("luminance".length(), params[1].length());
+if (!(params[1].startsWith("(") && params[1].endsWith(")"))) {
+cliButton.setForeground(alertColor);
+cli.setText("port!message(param1, param2, param3)");
+return;
+}
+params = params[1].substring(1,params[1].length()-1).split(",");
+if (!(params.length == 2)) {
+cliButton.setForeground(alertColor);
+cli.setText("port!message(param1, param2, param3)");
+return;
+}
+try {
+Map<String, Object> param = new HashMap<String, Object>();
+param.put("id", StringHelper.toObject (int.class, params[0].trim()));
+param.put("lum", StringHelper.toObject (double.class, params[1].trim()));
+Command c = new Command(port_Simulation_toMQTT, luminanceType, param);c.execute();
+((DefaultListModel)commands.getModel()).addElement(c);
+cliButton.setForeground(Color.BLACK);
+} catch(IllegalArgumentException iae) {
+System.err.println("Cannot parse arguments for message luminance on port toMQTT. Please try again with proper parameters");
+cliButton.setForeground(alertColor);
+}
+}
 }
 
 
@@ -387,6 +476,21 @@ getSendtemperature_via_toMQTT().setForeground(Color.BLACK);
 } catch(IllegalArgumentException iae) {
 System.err.println("Cannot parse arguments for message temperature on port toMQTT. Please try again with proper parameters");
 getSendtemperature_via_toMQTT().setForeground(alertColor);
+}
+}
+else if ( ae.getSource() == getSendluminance_via_toMQTT()) {
+try{
+Map<String, Object> param = new HashMap<String, Object>();
+param.put("id", StringHelper.toObject (int.class, getFieldluminance_via_toMQTT_Id().getText()));
+param.put("lum", StringHelper.toObject (double.class, getFieldluminance_via_toMQTT_Lum().getText()));
+Command c = new Command(port_Simulation_toMQTT, luminanceType, param);c.execute();
+((DefaultListModel)commands.getModel()).addElement(c);
+for(ISimulation_toMQTTClient l : toMQTT_listeners)
+l.luminance_from_toMQTT((Integer)StringHelper.toObject (int.class, getFieldluminance_via_toMQTT_Id().getText()), (Double)StringHelper.toObject (double.class, getFieldluminance_via_toMQTT_Lum().getText()));
+getSendluminance_via_toMQTT().setForeground(Color.BLACK);
+} catch(IllegalArgumentException iae) {
+System.err.println("Cannot parse arguments for message luminance on port toMQTT. Please try again with proper parameters");
+getSendluminance_via_toMQTT().setForeground(alertColor);
 }
 }
 

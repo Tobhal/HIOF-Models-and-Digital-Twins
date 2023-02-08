@@ -45,18 +45,21 @@ private void sendSet_temperature_via_send_cmd(double TemperatureMsg_set_temperat
 send_cmd_port.send(set_temperatureType.instantiate(TemperatureMsg_set_temperature_t_var));
 }
 
-private void sendLum_threshold_via_send_cmd(){
-send_cmd_port.send(lum_thresholdType.instantiate());
+private void sendSet_luminance_via_send_cmd(double LuminanceMsg_set_luminance_lum_var){
+send_cmd_port.send(set_luminanceType.instantiate(LuminanceMsg_set_luminance_lum_var));
 }
 
-private void sendAdd_lightsensor_via_send_lightsensor(int LuminanceMsg_add_lightsensor_id_var){
-send_lightsensor_port.send(add_lightsensorType.instantiate(LuminanceMsg_add_lightsensor_id_var));
+private void sendFetch_temp_via_send_cmd(){
+send_cmd_port.send(fetch_tempType.instantiate());
+}
+
+private void sendFetch_lum_via_send_cmd(){
+send_cmd_port.send(fetch_lumType.instantiate());
 }
 
 //Attributes
 //Ports
 private Port send_cmd_port;
-private Port send_lightsensor_port;
 private Port get_cmd_port;
 //Message types
 protected final TemperatureMessageType temperatureType = new TemperatureMessageType();
@@ -67,7 +70,7 @@ protected final Fetch_tempMessageType fetch_tempType = new Fetch_tempMessageType
 protected final LuminanceMessageType luminanceType = new LuminanceMessageType();
 protected final Add_lightsensorMessageType add_lightsensorType = new Add_lightsensorMessageType();
 protected final Set_luminanceMessageType set_luminanceType = new Set_luminanceMessageType();
-protected final Lum_thresholdMessageType lum_thresholdType = new Lum_thresholdMessageType();
+protected final Fetch_lumMessageType fetch_lumType = new Fetch_lumMessageType();
 protected final Iamalive1MessageType iamalive1Type = new Iamalive1MessageType();
 protected final Iamalive2MessageType iamalive2Type = new Iamalive2MessageType();
 protected final PromptMessageType promptType = new PromptMessageType();
@@ -81,9 +84,6 @@ super();
 public Port getSend_cmd_port() {
 return send_cmd_port;
 }
-public Port getSend_lightsensor_port() {
-return send_lightsensor_port;
-}
 public Port getGet_cmd_port() {
 return get_cmd_port;
 }
@@ -91,11 +91,9 @@ public Component buildBehavior(String session, Component root) {
 if (root == null) {
 //Init ports
 send_cmd_port = new Port("send_cmd", this);
-send_lightsensor_port = new Port("send_lightsensor", this);
 get_cmd_port = new Port("get_cmd", this);
 } else {
 send_cmd_port = ((EnergySaver)root).send_cmd_port;
-send_lightsensor_port = ((EnergySaver)root).send_lightsensor_port;
 get_cmd_port = ((EnergySaver)root).get_cmd_port;
 }
 if (session == null){
