@@ -3,31 +3,33 @@ mainframe Temperature controll
 
 'HUMAN
 rectangle Myself:Human {
-    port send_cmd
-    port send_es_config
+    portin send_cmd
     
-    portin get_values
+    portout get_values
 }
 
 'PIM
 rectangle pim:PIM {
-    'left
     portout get_sensor
+
     portout request_sensor
     portout request_actuator
 
-    'right
     portout human_output
     portout human_input
+
+    'guards
+    port guard_temperature
+    port guard_human
 }
 
 'PSM
 rectangle psm:PSM {
-    'left
-    portin provide_temp
     portin require_val
 
-    'right
+    portin provide_temp
+    portin provide_lum_motion
+
     portout MQTT
 }
 
@@ -38,30 +40,26 @@ rectangle sim:simulation {
 
 'Energy saver
 rectangle es:Energy_saver {
-    portin comfort_temp
-    portin get_config
+    portin get_cmd
     
-    portout send_temp
+    portout provide_cmd
 }
 
-'Human
-send_cmd --> human_input
+'HUMAN
+send_cmd -> human_input
+send_cmd -> get_cmd
 
-send_cmd ---> comfort_temp
-send_es_config ---> get_config
-
-'PIM
+'pim
 human_output --> get_values
-request_sensor --> require_val
 request_actuator --> require_val
+request_sensor --> require_val
 
-'PSM
+'psm
 provide_temp --> get_sensor
-
-'MQTT
-toMQTT <--> MQTT
+provide_lum_motion --> get_cmd
+MQTT <--> toMQTT
 
 'Energy saver
-send_temp ---> human_input
+provide_cmd -> human_input
 
 @enduml
