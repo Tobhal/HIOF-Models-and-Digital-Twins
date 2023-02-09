@@ -20,10 +20,9 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
         		fetch_lum  	
 	}
 	
-    property temp:Double = 20           // Store comfort temperature
-    property temp_ID:Integer
+    property comfort_temp:Double = 20           // Store comfort temperature
     	
-    property lights_off_temp:Double = 2 // Store temperature offset for when lights are off
+    property lights_off:Double = 2 // Store temperature offset for when lights are off
     property night_temp_delta:Double = 8           // Store temperature offset for when there is night
 
 	property lum_ID:Integer
@@ -40,20 +39,16 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
             // Get comfort temperature from human
             // and set it for pim
             transition -> present
-            event get_temp:get_cmd?set_temperature
+            event get_temp:get_cmd?temperature
             action do
-                temp = get_temp.t
-				print("This is the target temp now: " + temp)
-
+                comfort_temp = get_temp.t
            		end
            	// Fetch luminance threshold
            	transition -> present
         	event fetch:get_cmd?set_luminance
 			action do
-				// reporting the luminance value
 				lum_threshold = fetch.lum
 			end
-			
             // Check luminance		
 			transition -> present
 			event get_lum: get_cmd?luminance
@@ -65,7 +60,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
 			transition -> present
 			guard last_lum>lum_threshold
 			action do
-				provide_cmd!set_temperature(temp) // if the office is not dark
+				provide_cmd!set_temperature(comfort_temp) // if the office is not dark
 			end
 			
 			// If night and no one is present
@@ -74,7 +69,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
 			action do
 				var isnight:Boolean = Night(Now())	//Check if it's night and no one present
 						if (isnight) do
-							provide_cmd!set_temperature(temp-night_temp_delta)
+							provide_cmd!set_temperature(comfort_temp-night_temp_delta)
 						end
 			end
 			
@@ -84,7 +79,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
 			action do
 				var isnight:Boolean = Night(Now())
 						if (isnight) do
-							provide_cmd!set_temperature(temp-lights_off_temp)
+							provide_cmd!set_temperature(comfort_temp-lights_off)
 						end
 			end
 			
@@ -94,12 +89,16 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
 			action do
 				var isnight:Boolean = Night(Now())	//Check if it's day and people present
 						if (isnight == false) do
-							provide_cmd!set_temperature(temp-lights_off_temp)
+							provide_cmd!set_temperature(comfort_temp)
 						end
 			end
-        }
+        } // end present
+        internal event fetch:get_cmd?fetch_lum
+			action do
+				// reporting the luminance value
+				provide_cmd!set_temperature(comfort_temp)
+			end
         state day {}
         state night{}
     }
-    
 }
