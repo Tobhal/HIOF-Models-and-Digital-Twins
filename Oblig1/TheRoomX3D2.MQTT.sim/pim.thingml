@@ -39,6 +39,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 	}
 
 	//timer ports - it does not hold to include TimerClient since it only has one port and therefore cannot distinguish between two timers
+	
 	required port guard_temperature
     {
 		receives timer_timeout
@@ -52,7 +53,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 		sends timer_start, 
 			  timer_cancel
 	}
-    
+
 	property tmrature:Double = 20 	// the requested temperature for the room
 	property thermo_id:Integer = 1 	// the single thermometer identifier
 	property switch_id:Integer = 1 	// the single on-off switch identifier

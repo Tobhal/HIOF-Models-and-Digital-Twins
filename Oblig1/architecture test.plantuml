@@ -11,6 +11,10 @@ rectangle pim:PIM {
     'right
     portout human_output
     portout human_input
+
+    'guard
+    portin guard_temperature
+    portin guard_human
 }
 
 'PSM
@@ -25,26 +29,31 @@ rectangle psm:PSM {
 
 'Energy saver
 rectangle es:Energy_saver {
-    portin comfort_temp
-    portin get_config
+    portin es_send_cmd
     
-    portout send_temp
+    portout es_get_cmd
 }
 
 'Test thing
 rectangle test:Test {
-    portin t_send_es_config
     portin t_get_values
     portin t_send_cmd
 
-    portout t_toMQTT
+    portout t_MQTT
+}
+
+rectangle g_temp:TimerJava {
+    portout temp_timer
+}
+
+rectangle g_humn:TimerJava {
+    portout humn_timer
 }
 
 'Human
 t_send_cmd --> human_input
 
-t_send_cmd ---> comfort_temp
-t_send_es_config ---> get_config
+t_send_cmd ---> es_get_cmd
 
 'PIM
 human_output ---> t_get_values
@@ -55,9 +64,15 @@ request_actuator ---> require_val
 provide_temp --> get_sensor
 
 'MQTT
-t_toMQTT <--> MQTT
+t_MQTT <--> MQTT
 
 'Energy saver
-send_temp ---> human_input
+es_send_cmd ---> human_input
+
+'Guard temp
+temp_timer --> guard_temperature
+
+'Guard human
+humn_timer --> guard_human
 
 @enduml

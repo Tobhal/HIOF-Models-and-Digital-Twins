@@ -2,12 +2,12 @@ import "datatypes.thingml" from stl
 import "pim.thingml"
 import "timer.thingml"
 
-thing test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
-    provided port MQTT {
-		receives temperature,
-				 luminance
-		sends SwitchOn,
-			  SwitchOff
+thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
+    provided port from_MQTT {
+		receives SwitchOn,
+			  	 SwitchOff
+		sends temperature,
+			  luminance
 	} 
 
     required port send_cmd {
@@ -18,9 +18,119 @@ thing test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 		receives temperature, prompt
 	}
 
-    statechart test_behavior init test_state {
-        state test_state {
-            
+	property prefered_temp: Integer = 23
+	property temp_diff: Integer = 2
+	property temp_night_diff: Integer = 8
+
+	property lum_on: Integer = 100
+	property lum_off: Integer = 5
+
+    statechart test_behavior init prompt_enter {
+		on entry do
+			send_cmd!set_temperature(prefered_temp)
+		end
+
+        state prompt_enter {
+			transition -> day_and_light_on
+			event prompt_value:get_values?prompt
+			action do 
+				if (prompt_value.txt == "Now entering thermostat") do 
+					print("correct value")
+				end
+				else do 
+					print("Wrong value")
+				end
+			end
         }
+
+		state day_and_light_on {
+			on entry do 
+				from_MQTT!temperature(1, "", 15)
+			end
+
+			transition -> some_time_later_1
+			event switch:from_MQTT?SwitchOn
+			action do 
+				print("Switch on")
+			end
+		}
+
+		state some_time_later_1 {
+			on entry do 
+				from_MQTT!temperature(1, "", 25)
+			end
+
+			transition -> day_and_light_off
+			event switch:from_MQTT?SwitchOff
+			action do 
+				print("Switch off")
+			end
+		}
+
+		state day_and_light_off {
+			on entry do 
+				from_MQTT!temperature(1, "", 15)
+				from_MQTT!luminance(1, lum_off)
+			end
+
+			transition -> some_time_later_2
+			event switch:from_MQTT?SwitchOn
+			action do 
+				print("Switch on")
+			end
+		}
+
+		state some_time_later_2 {
+			on entry do 
+				from_MQTT!temperature(1, "", 20)
+			end
+
+			transition -> night_start
+			event switch:from_MQTT?SwitchOff
+			action do 
+				print("Switch off")
+			end
+		}
+
+		state night_start {
+			on entry do
+				// Set to night
+				from_MQTT!temperature(1, "", 10)
+			end
+
+			transition -> some_time_later_3
+			event switch:from_MQTT?SwitchOn
+			action do 
+				print("Switch on")
+			end
+		}
+
+		state some_time_later_3 {
+			on entry do 
+				from_MQTT!temperature(1, "", 14)
+			end
+
+			transition -> day_start
+			event switch:from_MQTT?SwitchOff
+			action do 
+				print("Switch off")
+			end
+		}
+
+		state day_start {
+			on entry do 
+				// Set to day
+			end
+
+			transition -> end_test
+			event switch:from_MQTT?SwitchOn
+			action do 
+				print("Switch on")
+			end
+		}
+
+		state end_test {
+
+		}
     }
 }
