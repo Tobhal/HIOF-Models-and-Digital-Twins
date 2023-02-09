@@ -3,7 +3,7 @@ import "pim_messages.thingml"
 import "timestuff.thingml"
 
 
-thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
+thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
      
     // Sends
     required port provide_cmd {
@@ -61,17 +61,23 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
 				provide_cmd!prompt("Luminance is received")
 			end
 			
-            // Check luminance towards temperature				
+            // Check luminance and timer to choose appropriate temperature			
 			transition -> present
 			event get_lum: get_cmd?luminance
 			action do
 					last_lum = get_lum.lum
-					print("Last lum recorded: " + last_lum)
-					if (last_lum <= lum_threshold) do
-						provide_cmd!temperature(temp_ID,"temperature",temp-lights_off_temp)
+					print("Last luminance recorded: " + last_lum)
+					if (last_lum <= lum_threshold) do	// if the office is dark
+						var isnight:Boolean = Night(456789)	//Check if it's night
+						if (isnight) do
+							provide_cmd!temperature(temp_ID,"temperature",temp-night_temp_delta)
+						end
+						else do
+							provide_cmd!temperature(temp_ID,"temperature",temp-lights_off_temp)
+						end
 					end
 					else do
-						provide_cmd!temperature(temp_ID, "temperature", temp-night_temp_delta) //Did you mean get_cmd?
+						provide_cmd!temperature(temp_ID, "temperature", temp) // if the office is not dark 
 					end					
 				end
 			
