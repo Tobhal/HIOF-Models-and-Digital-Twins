@@ -38,7 +38,7 @@ psm <- test: temperature(1, "", 20)
 psm -> test: switch_off(1)
 
 hnote across: night starts
-es <- test: todo: set time to night
+es <- test: timer.start(delay{0}) ?
 psm <- test: temperature(1, "", 10)
 psm <- es: set_temperature(prefered_temp{23} - temp_night_diff{8})
 psm -> test: switch_on(1)
@@ -48,7 +48,7 @@ psm <- test: temperature(1, "", 14)
 psm -> test: switch_off(1)
 
 hnote across: day start
-es <- test: todo: set time to day
+es <- test: timer.cancel() ?
 psm <- es: set_temperature(prefered_temp{23})
 psm -> test: switch_on(1)
 
