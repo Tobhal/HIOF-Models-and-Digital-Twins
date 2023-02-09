@@ -1,11 +1,5 @@
 @startuml X3D2_MQTT_SIM
 
-'HUMAN
-rectangle myself:Human {
-    port send_cmd
-    portout send_lumSensor
-    portin get_values
-}
 
 rectangle timer:T {
     portout time
@@ -38,25 +32,27 @@ rectangle psm:PSM {
 'SIM
 rectangle simulation:sim {
     port toMQTT
+    port send_cmd
+    portin get_values
 }
 
 'energy saver
 rectangle energy_saver:ES {
-    portin send_temp
+    portin send_es_cmd
     portin get_time
 
     portout get_es_cmd
     portout get_luminance
-    portin request_lumSensor
+    portout send_lumSensor
 }
  
 provide_temp --> get_sensor
 provide_luminence --> get_luminance
 
-send_lumSensor --> request_lumSensor
+send_lumSensor --> get_sensor
 
 send_cmd --> get_es_cmd
-send_temp ---> human_input
+send_es_cmd ---> human_input
  
 request_sensor --> require_val
 request_actuator --> require_val

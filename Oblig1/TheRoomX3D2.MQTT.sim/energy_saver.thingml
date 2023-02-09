@@ -7,12 +7,9 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
      
     // Sends
     required port provide_cmd {
-        sends temperature,
+        sends set_temperature,
         	add_lightsensor,
-        	prompt,
-        	luminance 
-        	
-        	 
+        	fetch_lum  	 
     }
     
 	// Receives
@@ -21,9 +18,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
         		luminance,
         		set_luminance,
         		set_temperature,
-        		fetch_lum
-        		
-        	
+        		fetch_lum  	
 	}
 	
     property temp:Double = 20           // Store comfort temperature
@@ -58,7 +53,6 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
 			action do
 				// reporting the luminance value
 				lum_threshold = fetch.lum
-				provide_cmd!prompt("Luminance is received")
 			end
 			
             // Check luminance and timer to choose appropriate temperature			
@@ -70,23 +64,19 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
 					if (last_lum <= lum_threshold) do	// if the office is dark
 						var isnight:Boolean = Night(Now())	//Check if it's night
 						if (isnight) do
-							provide_cmd!temperature(temp_ID,"temperature",temp-night_temp_delta)
+							provide_cmd!set_temperature(temp-night_temp_delta)
 						end
 						else do
-							provide_cmd!temperature(temp_ID,"temperature",temp-lights_off_temp)
+							provide_cmd!set_temperature(temp-lights_off_temp)
 						end
 					end
 					else do
-						provide_cmd!temperature(temp_ID, "temperature", temp) // if the office is not dark
+						provide_cmd!set_temperature(temp) // if the office is not dark
 					end					
 				end
 			
         }
-        internal event fetch:get_cmd?fetch_lum
-			action do
-				// reporting the temperature value
-				provide_cmd!luminance(lum_ID,last_lum)
-			end
+    
        
         state day {}
         
