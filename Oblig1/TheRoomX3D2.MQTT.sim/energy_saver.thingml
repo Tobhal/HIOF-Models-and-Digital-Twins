@@ -26,14 +26,14 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
         	
 	}
 	
-    property temp:Double = 20           // Store comfort temprature
+    property temp:Double = 20           // Store comfort temperature
     property temp_ID:Integer
     	
-    property lights_off_temp:Double = 2 // Store temperature offsett for when lights are off
-    property night:Double = 8           // Store temperature offsett for when there is night
+    property lights_off_temp:Double = 2 // Store temperature offset for when lights are off
+    property night_temp_delta:Double = 8           // Store temperature offset for when there is night
 
 	property lum_ID:Integer
-    property last_lum: Double = 1000    // Last recored luminence value
+    property last_lum: Double = 1000    // Last recored luminance value
     property lum_threshold: Double = 1000   // Threshold for when the room is dart or not
 	property lumSens_id:Integer
 
@@ -56,9 +56,9 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
            	transition -> present
         	event fetch:get_cmd?set_luminance
 			action do
-				// reporting the luminence value
+				// reporting the luminance value
 				lum_threshold = fetch.lum
-				provide_cmd!prompt("Luminence is received")
+				provide_cmd!prompt("Luminance is received")
 			end
 			
             // Check luminance towards temperature				
@@ -71,7 +71,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg {
 						provide_cmd!temperature(temp_ID,"temperature",temp-lights_off_temp)
 					end
 					else do
-						provide_cmd!set_temperature(temp)
+						provide_cmd!temperature(temp_ID, "temperature", temp-night_temp_delta) //Did you mean get_cmd?
 					end					
 				end
 			
