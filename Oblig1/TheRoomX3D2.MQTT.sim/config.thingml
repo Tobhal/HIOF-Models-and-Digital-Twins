@@ -36,14 +36,13 @@ configuration X3D_MQTT_SIM {
 	
 	//ES
 	connector es.send_cmd => pim.human_input
-	connector es.send_lightsensor => T1.require_val
 	
 	// Simulation
 	instance sim:Simulation
 	connector sim.toMQTT => T1.MQTT // but it also works the other way 
 
 	// Timer
-	instance t:TimerClientMock
+	//instance t:TimerClientMock
 	// connector t.timer => 
 
 }

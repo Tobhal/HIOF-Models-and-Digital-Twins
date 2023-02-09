@@ -1,0 +1,98 @@
+import "datatypes.thingml" from stl
+import "pim_messages.thingml"
+import "timestuff.thingml"
+
+
+thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
+     
+    // Sends
+    required port provide_cmd {
+        sends temperature,
+        	add_lightsensor,
+        	prompt,
+        	luminance 
+        	
+        	 
+    }
+    
+	// Receives
+    provided port get_cmd {
+        receives temperature,
+        		luminance,
+        		set_luminance,
+        		set_temperature,
+        		fetch_lum
+        		
+        	
+	}
+	
+    property temp:Double = 20           // Store comfort temperature
+    property temp_ID:Integer
+    	
+    property lights_off_temp:Double = 2 // Store temperature offset for when lights are off
+    property night_temp_delta:Double = 8           // Store temperature offset for when there is night
+
+	property lum_ID:Integer
+    property last_lum: Double = 1000    // Last recored luminance value
+    property lum_threshold: Double = 1000   // Threshold for when the room is dart or not
+	property lumSens_id:Integer
+
+    statechart ES_behavior init present {
+        on entry do
+            print("Running Energy saver (ES) \n")
+				provide_cmd!add_lightsensor(lumSens_id) // We have only one light sensor in this system
+        end
+        state present {
+            // Get comfort temperature from human
+            // and set it for pim
+            transition -> present
+            event get_temp:get_cmd?set_temperature
+            action do
+                temp = get_temp.t
+				print("This is the target temp now: " + temp)
+
+           		end
+           	// Fetch luminance threshold
+           	transition -> present
+        	event fetch:get_cmd?set_luminance
+			action do
+				// reporting the luminance value
+				lum_threshold = fetch.lum
+				provide_cmd!prompt("Luminance is received")
+			end
+			
+            // Check luminance and timer to choose appropriate temperature			
+			transition -> present
+			event get_lum: get_cmd?luminance
+			action do
+					last_lum = get_lum.lum
+					print("Last luminance recorded: " + last_lum)
+					if (last_lum <= lum_threshold) do	// if the office is dark
+						var isnight:Boolean = Night(456789)	//Check if it's night
+						if (isnight) do
+							provide_cmd!temperature(temp_ID,"temperature",temp-night_temp_delta)
+						end
+						else do
+							provide_cmd!temperature(temp_ID,"temperature",temp-lights_off_temp)
+						end
+					end
+					else do
+						provide_cmd!temperature(temp_ID, "temperature", temp) // if the office is not dark 
+					end					
+				end
+			
+        }
+        internal event fetch:get_cmd?fetch_lum
+			action do
+				// reporting the temperature value
+				provide_cmd!luminance(lum_ID,last_lum)
+			end
+       
+        state day {}
+        
+        state night{}
+        
+        
+    }
+    
+}
