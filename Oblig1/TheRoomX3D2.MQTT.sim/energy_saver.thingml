@@ -29,12 +29,16 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
     property lum_threshold: Double   // Threshold for when the room is dart or not
 	property lumSens_id:Integer
 
-    statechart ES_behavior init present {
+    statechart ES_behavior init Build {
         on entry do
             println("Running Energy saver (ES)")
 				provide_cmd!add_lightsensor(lumSens_id) // We have only one light sensor in this system
         end
-        state present {
+        composite state Build init present keeps history {
+            
+          
+            state present {
+            	
             // Get comfort temperature from human
             // and set it for pim
             transition -> present
@@ -91,13 +95,8 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
 							provide_cmd!set_temperature(comfort_temp)
 						end
 			end
-        } // end present
-        internal event fetch:get_cmd?fetch_lum
-			action do
-				// reporting the luminance value
-				provide_cmd!set_temperature(comfort_temp)
-			end
-        state day {
+        	} // end present
+        	  state day {
         	  on entry do
             println("Entering day time")
         end
@@ -107,5 +106,12 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
             println("Entering night time")
         end
         }
-    }
-}
+        }// end Build
+        internal event fetch:get_cmd?fetch_lum
+			action do
+				// reporting the luminance value
+				provide_cmd!set_temperature(comfort_temp)
+			end
+      
+    }// End statechart
+ } // End thing
