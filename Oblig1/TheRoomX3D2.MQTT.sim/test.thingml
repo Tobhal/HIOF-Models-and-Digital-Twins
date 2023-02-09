@@ -2,6 +2,25 @@ import "datatypes.thingml" from stl
 import "pim.thingml"
 import "timer.thingml"
 
-thing test includes TemperatureMsg, GeneralMsg, OnOffMsg {
-    
+thing test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
+    provided port MQTT {
+		receives temperature,
+				 luminance
+		sends SwitchOn,
+			  SwitchOff
+	} 
+
+    required port send_cmd {
+		sends SwitchOn, SwitchOff, set_temperature, set_delta, fetch_temp
+	}
+
+	provided port get_values {
+		receives temperature, prompt
+	}
+
+    statechart test_behavior init test_state {
+        state test_state {
+            
+        }
+    }
 }
