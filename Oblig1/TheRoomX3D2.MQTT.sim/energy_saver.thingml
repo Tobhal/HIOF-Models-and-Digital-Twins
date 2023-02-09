@@ -68,7 +68,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
 					last_lum = get_lum.lum
 					print("Last luminance recorded: " + last_lum)
 					if (last_lum <= lum_threshold) do	// if the office is dark
-						var isnight:Boolean = Night(456789)	//Check if it's night
+						var isnight:Boolean = Night(Now())	//Check if it's night
 						if (isnight) do
 							provide_cmd!temperature(temp_ID,"temperature",temp-night_temp_delta)
 						end
