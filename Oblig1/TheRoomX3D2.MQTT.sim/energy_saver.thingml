@@ -7,12 +7,8 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
      
     // Sends
     required port provide_cmd {
-        sends temperature,
-        	add_lightsensor,
-        	prompt,
-        	luminance 
-        	
-        	 
+        sends set_temperature,
+        	add_lightsensor  	 
     }
     
 	// Receives
@@ -21,15 +17,12 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
         		luminance,
         		set_luminance,
         		set_temperature,
-        		fetch_lum
-        		
-        	
+        		fetch_lum  	
 	}
 	
-    property temp:Double = 20           // Store comfort temperature
-    property temp_ID:Integer
+    property comfort_temp:Double = 20           // Store comfort temperature
     	
-    property lights_off_temp:Double = 2 // Store temperature offset for when lights are off
+    property lights_off:Double = 2 // Store temperature offset for when lights are off
     property night_temp_delta:Double = 8           // Store temperature offset for when there is night
 
 	property lum_ID:Integer
@@ -39,60 +32,73 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
 
     statechart ES_behavior init present {
         on entry do
-            print("Running Energy saver (ES) \n")
+            println("Running Energy saver (ES)")
 				provide_cmd!add_lightsensor(lumSens_id) // We have only one light sensor in this system
         end
         state present {
             // Get comfort temperature from human
             // and set it for pim
             transition -> present
-            event get_temp:get_cmd?set_temperature
+            event get_temp:get_cmd?temperature
             action do
-                temp = get_temp.t
-				print("This is the target temp now: " + temp)
-
+                comfort_temp = get_temp.t
            		end
            	// Fetch luminance threshold
            	transition -> present
         	event fetch:get_cmd?set_luminance
 			action do
-				// reporting the luminance value
 				lum_threshold = fetch.lum
-				provide_cmd!prompt("Luminance is received")
 			end
-			
-            // Check luminance and timer to choose appropriate temperature			
+            // Check luminance		
 			transition -> present
 			event get_lum: get_cmd?luminance
 			action do
-					last_lum = get_lum.lum
-					print("Last luminance recorded: " + last_lum)
-					if (last_lum <= lum_threshold) do	// if the office is dark
-						var isnight:Boolean = Night(456789)	//Check if it's night
-						if (isnight) do
-							provide_cmd!temperature(temp_ID,"temperature",temp-night_temp_delta)
-						end
-						else do
-							provide_cmd!temperature(temp_ID,"temperature",temp-lights_off_temp)
-						end
-					end
-					else do
-						provide_cmd!temperature(temp_ID, "temperature", temp) // if the office is not dark 
-					end					
+					last_lum = get_lum.lum				
 				end
 			
-        }
+			// If people present, get set to comfort temperature
+			transition -> present
+			guard last_lum>lum_threshold
+			action do
+				provide_cmd!set_temperature(comfort_temp) // if the office is not dark
+			end
+			
+			// If night and no one is present
+			transition -> night
+			guard last_lum<=lum_threshold
+			action do
+				var isnight:Boolean = Night(Now())	//Check if it's night and no one present
+						if (isnight) do
+							provide_cmd!set_temperature(comfort_temp-night_temp_delta)
+						end
+			end
+			
+			// If night and one is present
+			transition -> night
+			guard last_lum>lum_threshold
+			action do
+				var isnight:Boolean = Night(Now())
+						if (isnight) do
+							provide_cmd!set_temperature(comfort_temp-lights_off)
+						end
+			end
+			
+			// If day and one is present
+			transition -> day
+			guard last_lum>lum_threshold
+			action do
+				var isnight:Boolean = Night(Now())	//Check if it's day and people present
+						if (isnight == false) do
+							provide_cmd!set_temperature(comfort_temp)
+						end
+			end
+        } // end present
         internal event fetch:get_cmd?fetch_lum
 			action do
-				// reporting the temperature value
-				provide_cmd!luminance(lum_ID,last_lum)
+				// reporting the luminance value
+				provide_cmd!set_temperature(comfort_temp)
 			end
-       
         state day {}
-        
         state night{}
-        
-        
     }
-    
 }
