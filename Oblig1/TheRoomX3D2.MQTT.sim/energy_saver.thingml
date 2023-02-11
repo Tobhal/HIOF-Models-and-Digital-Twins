@@ -15,7 +15,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
     provided port get_cmd {
         receives temperature,
         		luminance,
-        		set_luminance,
+        		set_luminance_threshold,
         		set_temperature 	
 	}
 	
@@ -62,7 +62,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
            	end
            	// Fetch luminance threshold
            	transition -> present
-        	event fetch:get_cmd?set_luminance
+        	event fetch:get_cmd?set_luminance_threshold
 			action do
 				lum_threshold = fetch.lum
 			end
@@ -100,7 +100,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
            	end
            	// Fetch luminance threshold
            	transition -> day
-        	event fetch:get_cmd?set_luminance
+        	event fetch:get_cmd?set_luminance_threshold
 			action do
 				lum_threshold = fetch.lum
 			end
@@ -138,7 +138,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
            	
            	// Fetch luminance threshold
            	transition -> night
-        	event fetch:get_cmd?set_luminance
+        	event fetch:get_cmd?set_luminance_threshold
 			action do
 				lum_threshold = fetch.lum
 			end
