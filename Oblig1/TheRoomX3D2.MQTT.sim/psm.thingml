@@ -39,7 +39,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 	}
 	
 	//Only one MQTT port to receive the sensor values
-	provided port to_MQTT {
+	provided port MQTT {
 		receives temperature,
 				 luminance
 		sends SwitchOn,
@@ -76,7 +76,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 
 		state Idle {
 			transition -> Idle
-			event put_t:to_MQTT?temperature
+			event put_t:MQTT?temperature
 			action do
 				id_s=put_t.id
 
@@ -95,7 +95,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 			end
 
 			transition -> Idle
-			event put_t:to_MQTT?luminance
+			event put_t:MQTT?luminance
 			action do 
 				id_s = put_t.id
 
@@ -147,7 +147,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 					i=i+1
 				end
 				if (found) do
-					to_MQTT!SwitchOn(did)
+					MQTT!SwitchOn(did)
 				end
 			end
 
@@ -164,7 +164,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 					i=i+1
 				end
 				if (found) do
-					to_MQTT!SwitchOff(did)
+					MQTT!SwitchOff(did)
 				end
 			end
 
@@ -179,7 +179,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 			end
 
 			transition -> Idle
-			event put_lum:to_MQTT?luminance
+			event put_lum:MQTT?luminance
 			action do 
 				id_s=put_lum.id
 
