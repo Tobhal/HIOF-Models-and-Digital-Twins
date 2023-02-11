@@ -1,9 +1,10 @@
 import "datatypes.thingml" from stl
 import "pim_messages.thingml"
 import "timestuff.thingml"
+import "timer.thingml"
 
 
-thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
+thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, TimerMsgs{
      
     // Sends
     required port provide_cmd {
