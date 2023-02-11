@@ -33,17 +33,17 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
     statechart ES_behavior init Build {
         on entry do
             println("Running Energy saver (ES)")
-				provide_cmd!add_lightsensor(lumSens_id) // We have only one light sensor in this system
-				var is_night:Boolean = Night(Now()) // Checking if it's night.
-				var time_left:Long = 0
-				if (is_night) do
-					time_left = LeftOfNight()
-				end
-				else do
-					time_left = LeftOfDay()
-				end
-				
-				// TODO: Set Timer based on time_left
+			provide_cmd!add_lightsensor(lumSens_id) // We have only one light sensor in this system
+			var is_night:Boolean = Night(Now()) // Checking if it's night.
+			var time_left:Long = 0
+			if (is_night) do
+				time_left = LeftOfNight()
+			end
+			else do
+				time_left = LeftOfDay()
+			end
+			
+			// TODO: Set Timer based on time_left
         end
         composite state Build init setup keeps history {
             	
