@@ -476,7 +476,7 @@ thing Simulation includes TemperatureMsg , OnOffMsg , LuminanceMsg , GeneralMsg 
 }
 thing EnergySaver includes TemperatureMsg , LuminanceMsg , GeneralMsg @mock "true" {
 	required port send_es_cmd {
-		sends set_temperature sends set_luminance sends fetch_temp sends fetch_lum
+		sends set_temperature sends set_luminance sends fetch_temp
 	}
 	required port send_lumsensor {
 		sends add_lightsensor
@@ -605,7 +605,6 @@ thing fragment LuminanceMsg {
 	message luminance(id : Integer, lum : Double)
 	message add_lightsensor(id : Integer)
 	message set_luminance(lum : Double)
-	message fetch_lum()
 }
 thing fragment MotionMsg {
 	message motion(id : Integer)

@@ -1,6 +1,5 @@
 org\thingml\generated\TimerJava$1.class
 org\thingml\generated\api\IMQTTDriver_require_val.class
-org\thingml\generated\messages\Fetch_lumMessageType$Fetch_lumMessage.class
 org\thingml\generated\messages\TemperatureMessageType.class
 org\thingml\generated\api\IPIM_human_outputClient.class
 org\thingml\generated\messages\Add_thermometerMessageType.class
@@ -15,7 +14,6 @@ org\thingml\generated\api\ISimulation_get_values.class
 org\thingml\generated\PIM.class
 org\thingml\generated\api\IMQTTDriver_MQTT.class
 org\thingml\generated\gui\Command.class
-org\thingml\generated\messages\Fetch_lumMessageType.class
 org\thingml\generated\messages\Timer_timeoutMessageType.class
 org\thingml\generated\api\ITimerJava_timerClient.class
 org\thingml\generated\api\IPIM_request_sensorClient.class
