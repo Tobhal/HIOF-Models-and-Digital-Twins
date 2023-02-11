@@ -20,22 +20,27 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
         		fetch_lum  	
 	}
 	
-    property comfort_temp:Double = 20           // Store comfort temperature
+    property comfort_temp:Double           // Store comfort temperature
     	
     property lights_off:Double = 2 // Store temperature offset for when lights are off
     property night_temp_delta:Double = 8           // Store temperature offset for when there is night
 
-	property lum_ID:Integer
-    property last_lum: Double = 1000    // Last recored luminance value
-    property lum_threshold: Double = 1000   // Threshold for when the room is dart or not
+    property last_lum: Double   // Last recored luminance value
+    property lum_threshold: Double   // Threshold for when the room is dart or not
 	property lumSens_id:Integer
 
-    statechart ES_behavior init present {
+    statechart ES_behavior init Build {
         on entry do
             println("Running Energy saver (ES)")
 				provide_cmd!add_lightsensor(lumSens_id) // We have only one light sensor in this system
         end
-        state present {
+        composite state Build init present keeps history {
+            on entry do
+          			// sjekk tid igjen av døgn og sett timer
+          			// sjekk luminense
+          	end
+            state present {
+            	
             // Get comfort temperature from human
             // and set it for pim
             transition -> present
@@ -92,13 +97,23 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
 							provide_cmd!set_temperature(comfort_temp)
 						end
 			end
-        } // end present
+        	} // end present
+        	  state day {
+        	  on entry do
+            println("Entering day time")
+        end
+        }
+        state night{
+        	  on entry do
+            println("Entering night time")
+        end
+        }
+        }// end Build
         internal event fetch:get_cmd?fetch_lum
 			action do
 				// reporting the luminance value
 				provide_cmd!set_temperature(comfort_temp)
 			end
-        state day {}
-        state night{}
-    }
-}
+      
+    }// End statechart
+ } // End thing
