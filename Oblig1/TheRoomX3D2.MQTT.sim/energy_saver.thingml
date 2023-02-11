@@ -25,7 +25,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
     property night_temp_delta:Double = 8           // Store temperature offset for when there is night
 
     property last_lum: Double   // Last recored luminance value
-    property lum_threshold: Double   // Threshold for when the room is dart or not
+    property lum_threshold: Double = 50 // Threshold for when the room is dart or not. Hardcoded for now.
 	property lumSens_id:Integer
 	
 	property isnight:Boolean = Night(Now())	//Check if it's night and no one present
