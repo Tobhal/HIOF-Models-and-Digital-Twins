@@ -90,9 +90,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
         	} // end present
         	
         	state day {
-        	 on entry do
-            	println("Entering day time")
-        	end
+        		
         	transition -> day
             event get_temp:get_cmd?temperature
             action do
@@ -126,10 +124,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
         	} // end day
         	
         state night{
-        	on entry do
-           	 	println("Entering night time")
-        	end
-        	
+      
          	transition -> night
             event get_temp:get_cmd?temperature
             action do
