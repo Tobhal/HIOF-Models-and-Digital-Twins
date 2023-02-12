@@ -3,6 +3,7 @@ import "timer.thingml"
 import "pim.thingml"
 import "psm.thingml"
 import "io.thingml"
+import "energy_saver.thingml"
 
 configuration X3D_MQTT_SIM {
 	instance T1:MQTTDriver
@@ -26,7 +27,7 @@ configuration X3D_MQTT_SIM {
 	connector pim.request_sensor => T1.require_val
 	connector pim.request_actuator => T1.require_val
 
-	
+	// I think this connection should now be to sim instead of myself right?
 	//connector pim.human_output => myself.get_values
 	connector pim.human_output => es.get_es_cmd
 	
