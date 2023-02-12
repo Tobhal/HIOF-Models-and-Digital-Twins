@@ -372,22 +372,6 @@ thing MQTTDriver includes TemperatureMsg , OnOffMsg , GeneralMsg , LuminanceMsg 
 				end
 			end
 			transition -> Idle
-			event put_t : MQTT?luminance
-			action do
-				id_s = put_t.id
-				i = 0
-				found = false
-				while (i < last_lum and (not found)) do
-					if (id_s == lightsensors [i]) do
-						found = true
-					end
-				end
-				if (found) do
-					lumval[i - 1] = put_t.lum
-					provide_lum_motion!luminance(id_s, put_t.lum)
-				end
-			end
-			transition -> Idle
 			event addt : require_val?add_thermometer
 			action do
 				id_s = addt.id
@@ -458,49 +442,37 @@ thing MQTTDriver includes TemperatureMsg , OnOffMsg , GeneralMsg , LuminanceMsg 
 				if (foundL) do
 					lightval[i - 1] = put_lum.lum
 					provide_lum_motion!luminance(id_s, put_lum.lum)
+					println ("lum is in psm")
 				end
 			end
 		}
+	}
+}
+thing Human includes TemperatureMsg , GeneralMsg , OnOffMsg , LuminanceMsg @mock "true" {
+	required port send_cmd {
+		sends SwitchOn sends SwitchOff sends set_luminance sends set_temperature sends set_delta sends fetch_temp
+	}
+	provided port get_values {
+		receives temperature receives prompt
 	}
 }
 thing Simulation includes TemperatureMsg , OnOffMsg , LuminanceMsg , GeneralMsg @mock "true" {
 	required port toMQTT {
 		sends temperature sends luminance receives SwitchOn receives SwitchOff
 	}
-	required port send_cmd {
-		sends SwitchOn sends SwitchOff sends set_temperature sends set_delta
-	}
-	provided port get_values {
-		receives temperature receives prompt
-	}
-}
-thing EnergySaverMock includes TemperatureMsg , LuminanceMsg , GeneralMsg @mock "true" {
-	required port send_es_cmd {
-		sends set_temperature sends set_luminance sends fetch_temp
-	}
-	required port send_lumsensor {
-		sends add_lightsensor
-	}
-	provided port get_es_cmd {
-		receives temperature
-	}
-	provided port get_luminance {
-		receives luminance
-	}
 }
 thing EnergySaver includes TemperatureMsg , LuminanceMsg , GeneralMsg , TimeStuff {
-	required port provide_cmd {
-		sends set_temperature sends add_lightsensor
+	required port send_es_cmd {
+		sends set_temperature
 	}
-	provided port get_cmd {
-		receives temperature receives luminance receives set_luminance receives set_temperature
+	provided port get_es_cmd {
+		receives temperature receives luminance receives set_luminance
 	}
 	property comfort_temp : Double
 	property lights_off : Double = 2
 	property night_temp_delta : Double = 8
 	property last_lum : Double
 	property lum_threshold : Double
-	property lumSens_id : Integer
 	property isnight : Boolean = Night(Now())
 	statechart ES_behavior init Build {
 		on entry do
@@ -510,89 +482,110 @@ thing EnergySaver includes TemperatureMsg , LuminanceMsg , GeneralMsg , TimeStuf
 			state setup {
 				transition -> night guard isnight == true
 				action do
-					println ("It is night time now")
+					println ("Night time")
 				end
 				transition -> day guard isnight == false
 				action do
-					println ("It is day time now")
+					println ("day time")
 				end
 			}
 			state present {
-				on entry do
-					println ("People are present")
-				end
-				transition -> present
-				event get_temp : get_cmd?temperature
+				on entry println ("People are present")
+				on exit println ("People are not present anymore")
+				internal
+				event get_temp : get_es_cmd?temperature
+				guard get_temp.t > 0
 				action do
 					comfort_temp = get_temp.t
 				end
-				transition -> present
-				event fetch : get_cmd?set_luminance
+				internal
+				event fetch : get_es_cmd?set_luminance
+				guard fetch.lum > 0
 				action do
 					lum_threshold = fetch.lum
 				end
-				transition -> present
-				event get_lum : get_cmd?luminance
+				internal
+				event get_lum : get_es_cmd?luminance
+				guard get_lum.lum > 0
 				action do
 					last_lum = get_lum.lum
 				end
 				transition -> night guard isnight and (last_lum <= lum_threshold)
 				action do
-					provide_cmd!set_temperature(comfort_temp - night_temp_delta)
+					send_es_cmd!set_temperature(comfort_temp - night_temp_delta)
 				end
 				transition -> day guard not isnight and (last_lum <= lum_threshold)
 				action do
-					provide_cmd!set_temperature(comfort_temp - night_temp_delta)
+					send_es_cmd!set_temperature(comfort_temp - lights_off)
 				end
 			}
 			state day {
-				transition -> day
-				event get_temp : get_cmd?temperature
+				internal
+				event set_temp : get_es_cmd?temperature
+				guard (set_temp.t > 0) and (comfort_temp > 0)
+				action do
+					send_es_cmd!set_temperature(comfort_temp - lights_off)
+				end
+				internal
+				event get_temp : get_es_cmd?temperature
+				guard get_temp.t > 0
 				action do
 					comfort_temp = get_temp.t
+					println ("Comfort temp aquired")
 				end
-				transition -> day
-				event fetch : get_cmd?set_luminance
+				internal
+				event fetch : get_es_cmd?set_luminance
+				guard fetch.lum > 0
 				action do
+					println ("Lum threshold fetched in es")
 					lum_threshold = fetch.lum
 				end
-				transition -> day
-				event get_lum : get_cmd?luminance
+				internal
+				event get_lum : get_es_cmd?luminance
+				guard get_lum.lum > 0
 				action do
+					println ("Lum fetched in es")
 					last_lum = get_lum.lum
 				end
-				transition -> day guard last_lum <= lum_threshold
+				transition -> present guard last_lum > lum_threshold and (lum_threshold > 0 and last_lum > 0)
 				action do
-					provide_cmd!set_temperature(comfort_temp - lights_off)
+					send_es_cmd!set_temperature(comfort_temp)
 				end
-				transition -> present guard last_lum > lum_threshold
+				transition -> night guard isnight
 				action do
-					provide_cmd!set_temperature(comfort_temp)
+					send_es_cmd!set_temperature(comfort_temp - night_temp_delta)
 				end
 			}
 			state night {
-				transition -> night
-				event get_temp : get_cmd?temperature
+				on entry println ("Initialize Night state")
+				internal
+				event get_es_cmd?temperature
+				guard comfort_temp > 0
+				action do
+					send_es_cmd!set_temperature(comfort_temp - night_temp_delta)
+				end
+				internal
+				event get_temp : get_es_cmd?temperature
 				action do
 					comfort_temp = get_temp.t
 				end
-				transition -> night
-				event fetch : get_cmd?set_luminance
+				internal
+				event fetch : get_es_cmd?set_luminance
 				action do
 					lum_threshold = fetch.lum
 				end
-				transition -> night
-				event get_lum : get_cmd?luminance
+				internal
+				event get_lum : get_es_cmd?luminance
 				action do
 					last_lum = get_lum.lum
 				end
-				transition -> night guard last_lum <= lum_threshold
+				transition -> day guard not isnight
 				action do
-					provide_cmd!set_temperature(comfort_temp - night_temp_delta)
+					send_es_cmd!set_temperature(comfort_temp - lights_off)
 				end
-				transition -> present guard last_lum > lum_threshold
+				transition -> present guard last_lum > lum_threshold and (lum_threshold > 0 and last_lum > 0)
 				action do
-					provide_cmd!set_temperature(comfort_temp)
+					send_es_cmd!set_temperature(comfort_temp)
 				end
 			}
 		}
@@ -767,22 +760,21 @@ thing fragment TimeStuff @java_import "import java.time.LocalTime;" {
 configuration X3D_MQTT_SIM {
 	instance T1 : MQTTDriver
 	instance pim : PIM
+	instance myself : Human
 	instance g_temp : TimerJava
 	instance g_humn : TimerJava
 	instance es : EnergySaver
 	instance sim : Simulation
-	instance es_mock : EnergySaverMock
 	connector T1.provide_temp => pim . get_sensor
-	connector T1.provide_lum_motion => es . get_cmd
+	connector T1.provide_lum_motion => es . get_es_cmd
 	connector sim.toMQTT => T1 . MQTT
-	connector sim.send_cmd => es . get_cmd
+	connector sim.toMQTT => es . get_es_cmd
+	connector myself.send_cmd => pim . human_input
+	connector myself.send_cmd => es . get_es_cmd
+	connector es.send_es_cmd => pim . human_input
 	connector pim.request_sensor => T1 . require_val
 	connector pim.request_actuator => T1 . require_val
-	connector pim.human_output => es . get_cmd
+	connector pim.human_output => myself . get_values
 	connector pim.guard_temperature => g_temp . timer
 	connector pim.guard_human => g_humn . timer
-	connector es.provide_cmd => pim . human_input
-	connector es.provide_cmd => pim . get_sensor
-	connector es_mock.send_es_cmd => es . get_cmd
-	connector es_mock.send_lumsensor => pim . get_sensor
 }

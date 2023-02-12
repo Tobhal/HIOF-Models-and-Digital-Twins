@@ -1,22 +1,20 @@
 import "datatypes.thingml" from stl
 import "pim_messages.thingml"
 import "timestuff.thingml"
-
+import "timer.thingml"
 
 thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
      
     // Sends
-    required port provide_cmd {
-        sends set_temperature,
-        	add_lightsensor  	 
+    required port send_es_cmd {
+        sends set_temperature 	 
     }
     
 	// Receives
-    provided port get_cmd {
+    provided port get_es_cmd {
         receives temperature,
         		luminance,
-        		set_luminance,
-        		set_temperature 	
+        		set_luminance	
 	}
 	
     property comfort_temp:Double           // Store comfort temperature
@@ -26,136 +24,160 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff{
 
     property last_lum: Double   // Last recored luminance value
     property lum_threshold: Double   // Threshold for when the room is dart or not
-	property lumSens_id:Integer
+	
 	
 	property isnight:Boolean = Night(Now())	//Check if it's night and no one present
 	
     statechart ES_behavior init Build {
         on entry do
-            println("Running Energy saver (ES)")
-				provide_cmd!add_lightsensor(lumSens_id) // We have only one light sensor in this system
-        end
+  				println("Running Energy saver (ES)")
+  			end
         composite state Build init setup keeps history {
-            	
+  			
           	state setup {
+          		
           		transition -> night
           		guard isnight == true
           		action do
-          			println("It is night time now")
-          		end
+            		println("Night time")
+           		end
+         
           		transition -> day
           		guard isnight == false
           		action do
-          			println("It is day time now")
-          		end
+            		println("day time")
+           		end
           	}
           	
             state present {
-            on entry do
-            	println("People are present")
-            end
-            // Get comfort temperature from human
-            transition -> present
-            event get_temp:get_cmd?temperature
-            action do
-                comfort_temp = get_temp.t
-           	end
-           	// Fetch luminance threshold
-           	transition -> present
-        	event fetch:get_cmd?set_luminance
-			action do
-				lum_threshold = fetch.lum
-			end
-            // Check luminance		
-			transition -> present
-			event get_lum: get_cmd?luminance
-			action do
-					last_lum = get_lum.lum				
-			end
-			
+    		on entry println("People are present")
+			on exit println("People are not present anymore")
 			// night time, and no one present
 			transition -> night
 			guard isnight and (last_lum<=lum_threshold)
 			action do
-				provide_cmd!set_temperature(comfort_temp - night_temp_delta) // night time and people not present
+				send_es_cmd!set_temperature(comfort_temp - night_temp_delta) // night time and people not present
 			end
 			
 			// day time, and no one present
 			transition -> day
 			guard not isnight and (last_lum<=lum_threshold)
 			action do
-				provide_cmd!set_temperature(comfort_temp - night_temp_delta) // day time and people not present
+				send_es_cmd!set_temperature(comfort_temp - lights_off) // day time and people not present
 			end
+			
+			
+			internal event get_temp:get_es_cmd?temperature
+            guard get_temp.t>0
+            action do
+                comfort_temp = get_temp.t
+            end
+            // Get comfort temperature from human
+           
+           	// Fetch luminance threshold
+        	internal event fetch:get_es_cmd?set_luminance
+        	guard fetch.lum>0
+			action do
+				lum_threshold = fetch.lum
+			end
+            // Check luminance		
+			internal event get_lum: get_es_cmd?luminance
+			guard get_lum.lum>0
+			action do
+					last_lum = get_lum.lum				
+			end
+			
 			
         	} // end present
         	
         	state day {
-        		
-        	transition -> day
-            event get_temp:get_cmd?temperature
+        	
+			transition -> present
+			guard last_lum>lum_threshold and (lum_threshold>0 and last_lum>0)
+			action do
+				send_es_cmd!set_temperature(comfort_temp) //
+			end
+			
+			transition -> night
+			guard isnight
+			action do
+				send_es_cmd!set_temperature(comfort_temp-night_temp_delta) //
+			end
+			
+			// Internal events
+			
+			internal event set_temp: get_es_cmd?temperature
+			guard (set_temp.t>0) and (comfort_temp>0)
+			action do
+				send_es_cmd!set_temperature(comfort_temp - lights_off)
+			end
+			
+			internal event get_temp:get_es_cmd?temperature
+			guard get_temp.t>0
             action do
                 comfort_temp = get_temp.t
-           	end
-           	// Fetch luminance threshold
-           	transition -> day
-        	event fetch:get_cmd?set_luminance
+                println("Comfort temp aquired")
+            end
+            
+      
+        	internal event fetch:get_es_cmd?set_luminance
+        	guard fetch.lum>0
 			action do
+				println("Lum threshold fetched in es")
 				lum_threshold = fetch.lum
 			end
-            // Check luminance		
-			transition -> day
-			event get_lum: get_cmd?luminance
+           
+           		
+			internal event get_lum: get_es_cmd?luminance
+			guard get_lum.lum>0
 			action do
+					println("Lum fetched in es")
 					last_lum = get_lum.lum				
 			end
-			
-			transition -> day
-			guard last_lum<=lum_threshold
-			action do
-				provide_cmd!set_temperature(comfort_temp - lights_off) //
-			end
-			
-			transition -> present
-			guard last_lum>lum_threshold
-			action do
-				provide_cmd!set_temperature(comfort_temp) //
-			end
-			
+		
         	} // end day
         	
         state night{
-      
-         	transition -> night
-            event get_temp:get_cmd?temperature
-            action do
-                comfort_temp = get_temp.t
-           	end
-           	
-           	// Fetch luminance threshold
-           	transition -> night
-        	event fetch:get_cmd?set_luminance
+      		on entry println("Initialize Night state")
+        	
+			transition -> day
+			guard not isnight
 			action do
-				lum_threshold = fetch.lum
-			end
-            // Check luminance		
-			transition -> night
-			event get_lum: get_cmd?luminance
-			action do
-					last_lum = get_lum.lum				
-			end
-			
-			transition -> night
-			guard last_lum<=lum_threshold
-			action do
-					provide_cmd!set_temperature(comfort_temp-night_temp_delta)
+					send_es_cmd!set_temperature(comfort_temp-lights_off)
 			end
 			
 			// If people present, get set to comfort temperature
 			transition -> present
-			guard last_lum>lum_threshold
+			guard last_lum>lum_threshold and (lum_threshold>0 and last_lum>0)
 			action do
-				provide_cmd!set_temperature(comfort_temp) // if the office is not dark
+				send_es_cmd!set_temperature(comfort_temp) // if the office is not dark
 			end
+			
+			// Internal events
+			
+			internal event get_es_cmd?temperature
+			guard comfort_temp>0
+			action do
+				send_es_cmd!set_temperature(comfort_temp - night_temp_delta) //
+			end
+			
+			internal event get_temp:get_es_cmd?temperature
+            action do
+                comfort_temp = get_temp.t
+            end
+            // Get comfort temperature from human
+           
+           	// Fetch luminance threshold
+        	internal event fetch:get_es_cmd?set_luminance
+			action do
+				lum_threshold = fetch.lum
+			end
+            // Check luminance		
+			internal event get_lum: get_es_cmd?luminance
+			action do
+					last_lum = get_lum.lum				
+			end
+			
 			
         	} // end night
        }// end Build
