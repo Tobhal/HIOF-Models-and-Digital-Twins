@@ -14,9 +14,8 @@ configuration X3D_MQTT_SIM {
 	instance g_humn:TimerJava
 
     instance es:EnergySaver
-
     instance sim:Simulation
-    instance es:EnergySaver
+ 
 	
 	// PSM	
 	connector T1.provide_temp => pim.get_sensor
