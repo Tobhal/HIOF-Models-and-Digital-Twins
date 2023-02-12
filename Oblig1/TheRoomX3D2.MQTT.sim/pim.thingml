@@ -63,7 +63,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 	
 	statechart PIM_behavior init Build {
 		on entry do
-			print("Running The Room X3D.MQTT.sim\n")
+			println("Running The Room X3D2.MQTT.sim")
 		end
 		
 		composite state Build init SetThermostat keeps history {
