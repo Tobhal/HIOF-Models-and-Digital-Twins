@@ -25,7 +25,6 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
     property last_lum: Double   // Last recored luminance value
     property lum_threshold: Double   // Threshold for when the room is dart or not
 
-	
 	property isnight:Boolean 
 	
     statechart ES_behavior init Build {
