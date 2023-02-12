@@ -12,16 +12,17 @@ configuration X3D_MQTT_SIM {
 	instance g_temp:TimerJava
 	instance g_humn:TimerJava
 	
-    instance es:EnergySaver
+    instance esm:EnergySaverMock
     instance sim:Simulation
+    instance es:EnergySaver
 	
 	// PSM	
 	connector T1.provide_temp => pim.get_sensor
-	connector T1.provide_lum_motion => es.get_luminance
+	connector T1.provide_lum_motion => esm.get_luminance
 	
 	// Simulation
 	connector sim.toMQTT => T1.MQTT // but it also works the other way 
-	connector sim.send_cmd => es.get_es_cmd
+	connector sim.send_cmd => esm.get_es_cmd
 	
 	// PIM outwards 
 	connector pim.request_sensor => T1.require_val
@@ -29,14 +30,18 @@ configuration X3D_MQTT_SIM {
 
 	// I think this connection should now be to sim instead of myself right?
 	//connector pim.human_output => myself.get_values
-	connector pim.human_output => es.get_es_cmd
+	connector pim.human_output => esm.get_es_cmd
 	
 	connector pim.guard_temperature =>g_temp.timer
 	connector pim.guard_human => g_humn.timer
 	
+	//ES Mock
+	connector esm.send_es_cmd => pim.human_input
+	connector esm.send_lumsensor => pim.get_sensor
+	
 	//ES
-	connector es.send_es_cmd => pim.human_input
-	connector es.send_lumsensor => pim.get_sensor
+	connector es.provide_cmd => T1.require_val
+	
 
 
 	// Timer
