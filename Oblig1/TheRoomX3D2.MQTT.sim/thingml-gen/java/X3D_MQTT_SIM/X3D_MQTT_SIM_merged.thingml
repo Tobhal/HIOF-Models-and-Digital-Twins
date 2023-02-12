@@ -772,6 +772,7 @@ configuration X3D_MQTT_SIM {
 	connector myself.send_cmd => pim . human_input
 	connector myself.send_cmd => es . get_es_cmd
 	connector es.send_es_cmd => pim . human_input
+	connector es.send_es_cmd => myself . get_values
 	connector pim.request_sensor => T1 . require_val
 	connector pim.request_actuator => T1 . require_val
 	connector pim.human_output => myself . get_values
