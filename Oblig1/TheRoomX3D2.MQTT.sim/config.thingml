@@ -8,44 +8,41 @@ import "energy_saver.thingml"
 configuration X3D_MQTT_SIM {
 	instance T1:MQTTDriver
 	instance pim:PIM
+	instance myself:Human
 	
 	instance g_temp:TimerJava
 	instance g_humn:TimerJava
-	
-    instance esm:EnergySaverMock
-    instance sim:Simulation
+
     instance es:EnergySaver
+    instance sim:Simulation
+ 
 	
 	// PSM	
 	connector T1.provide_temp => pim.get_sensor
-	connector T1.provide_lum_motion => esm.get_luminance
+	connector T1.provide_lum_motion => es.get_es_cmd // es gets luminence --> doesnt work
+
 	
 	// Simulation
-	connector sim.toMQTT => T1.MQTT // but it also works the other way 
-	connector sim.send_cmd => esm.get_es_cmd
+	connector sim.toMQTT => T1.MQTT // but it also works the other way
+	connector sim.toMQTT => es.get_es_cmd // es gets luminance and temp 
+	
+	// Human
+	connector myself.send_cmd => pim.human_input 
+	connector myself.send_cmd => es.get_es_cmd // es gets set_luminence
+	
+	//ES
+	connector es.send_es_cmd => pim.human_input // pim gets set_temp
+	
+
 	
 	// PIM outwards 
 	connector pim.request_sensor => T1.require_val
 	connector pim.request_actuator => T1.require_val
-
-	// I think this connection should now be to sim instead of myself right?
-	//connector pim.human_output => myself.get_values
-	connector pim.human_output => esm.get_es_cmd
 	
+	connector pim.human_output => myself.get_values // human gets temp
+
 	connector pim.guard_temperature =>g_temp.timer
 	connector pim.guard_human => g_humn.timer
-	
-	//ES Mock
-	connector esm.send_es_cmd => pim.human_input
-	connector esm.send_lumsensor => pim.get_sensor
-	
-	//ES
-	connector es.provide_cmd => T1.require_val
-	
 
-
-	// Timer
-	//instance t:TimerClientMock
-	// connector t.timer => 
 
 }

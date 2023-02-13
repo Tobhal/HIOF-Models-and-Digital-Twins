@@ -372,22 +372,6 @@ thing MQTTDriver includes TemperatureMsg , OnOffMsg , GeneralMsg , LuminanceMsg 
 				end
 			end
 			transition -> Idle
-			event put_t : MQTT?luminance
-			action do
-				id_s = put_t.id
-				i = 0
-				found = false
-				while (i < last_lum and (not found)) do
-					if (id_s == lightsensors [i]) do
-						found = true
-					end
-				end
-				if (found) do
-					lumval[i - 1] = put_t.lum
-					provide_lum_motion!luminance(id_s, put_t.lum)
-				end
-			end
-			transition -> Idle
 			event addt : require_val?add_thermometer
 			action do
 				id_s = addt.id
@@ -458,34 +442,153 @@ thing MQTTDriver includes TemperatureMsg , OnOffMsg , GeneralMsg , LuminanceMsg 
 				if (foundL) do
 					lightval[i - 1] = put_lum.lum
 					provide_lum_motion!luminance(id_s, put_lum.lum)
+					println ("lum is in psm")
 				end
 			end
 		}
+	}
+}
+thing Human includes TemperatureMsg , GeneralMsg , OnOffMsg , LuminanceMsg @mock "true" {
+	required port send_cmd {
+		sends SwitchOn sends SwitchOff sends set_luminance sends set_temperature sends set_delta sends fetch_temp
+	}
+	provided port get_values {
+		receives temperature receives prompt
 	}
 }
 thing Simulation includes TemperatureMsg , OnOffMsg , LuminanceMsg , GeneralMsg @mock "true" {
 	required port toMQTT {
 		sends temperature sends luminance receives SwitchOn receives SwitchOff
 	}
-	required port send_cmd {
-		sends SwitchOn sends SwitchOff sends set_temperature sends set_delta sends fetch_temp
-	}
-	provided port get_values {
-		receives temperature receives prompt
-	}
 }
-thing EnergySaver includes TemperatureMsg , LuminanceMsg , GeneralMsg @mock "true" {
+thing EnergySaver includes TemperatureMsg , LuminanceMsg , GeneralMsg , TimeStuff {
 	required port send_es_cmd {
-		sends set_temperature sends set_luminance sends fetch_temp
-	}
-	required port send_lumsensor {
-		sends add_lightsensor
+		sends set_temperature
 	}
 	provided port get_es_cmd {
-		receives temperature
+		receives temperature receives luminance receives set_luminance
 	}
-	provided port get_luminance {
-		receives luminance
+	property comfort_temp : Double
+	property lights_off : Double = 2
+	property night_temp_delta : Double = 8
+	property last_lum : Double
+	property lum_threshold : Double
+	property isnight : Boolean = Night(Now())
+	statechart ES_behavior init Build {
+		on entry do
+			println ("Running Energy saver (ES)")
+		end
+		composite state Build init setup keeps history {
+			state setup {
+				transition -> night guard isnight == true
+				action do
+					println ("Night time")
+				end
+				transition -> day guard isnight == false
+				action do
+					println ("day time")
+				end
+			}
+			state present {
+				on entry println ("People are present")
+				on exit println ("People are not present anymore")
+				internal
+				event get_temp : get_es_cmd?temperature
+				guard get_temp.t > 0
+				action do
+					comfort_temp = get_temp.t
+				end
+				internal
+				event fetch : get_es_cmd?set_luminance
+				guard fetch.lum > 0
+				action do
+					lum_threshold = fetch.lum
+				end
+				internal
+				event get_lum : get_es_cmd?luminance
+				guard get_lum.lum > 0
+				action do
+					last_lum = get_lum.lum
+				end
+				transition -> night guard isnight and (last_lum <= lum_threshold)
+				action do
+					send_es_cmd!set_temperature(comfort_temp - night_temp_delta)
+				end
+				transition -> day guard not isnight and (last_lum <= lum_threshold)
+				action do
+					send_es_cmd!set_temperature(comfort_temp - lights_off)
+				end
+			}
+			state day {
+				internal
+				event set_temp : get_es_cmd?temperature
+				guard (set_temp.t > 0) and (comfort_temp > 0)
+				action do
+					send_es_cmd!set_temperature(comfort_temp - lights_off)
+				end
+				internal
+				event get_temp : get_es_cmd?temperature
+				guard get_temp.t > 0
+				action do
+					comfort_temp = get_temp.t
+					println ("Comfort temp aquired")
+				end
+				internal
+				event fetch : get_es_cmd?set_luminance
+				guard fetch.lum > 0
+				action do
+					println ("Lum threshold fetched in es")
+					lum_threshold = fetch.lum
+				end
+				internal
+				event get_lum : get_es_cmd?luminance
+				guard get_lum.lum > 0
+				action do
+					println ("Lum fetched in es")
+					last_lum = get_lum.lum
+				end
+				transition -> present guard last_lum > lum_threshold and (lum_threshold > 0 and last_lum > 0)
+				action do
+					send_es_cmd!set_temperature(comfort_temp)
+				end
+				transition -> night guard isnight
+				action do
+					send_es_cmd!set_temperature(comfort_temp - night_temp_delta)
+				end
+			}
+			state night {
+				on entry println ("Initialize Night state")
+				internal
+				event get_es_cmd?temperature
+				guard comfort_temp > 0
+				action do
+					send_es_cmd!set_temperature(comfort_temp - night_temp_delta)
+				end
+				internal
+				event get_temp : get_es_cmd?temperature
+				action do
+					comfort_temp = get_temp.t
+				end
+				internal
+				event fetch : get_es_cmd?set_luminance
+				action do
+					lum_threshold = fetch.lum
+				end
+				internal
+				event get_lum : get_es_cmd?luminance
+				action do
+					last_lum = get_lum.lum
+				end
+				transition -> day guard not isnight
+				action do
+					send_es_cmd!set_temperature(comfort_temp - lights_off)
+				end
+				transition -> present guard last_lum > lum_threshold and (lum_threshold > 0 and last_lum > 0)
+				action do
+					send_es_cmd!set_temperature(comfort_temp)
+				end
+			}
+		}
 	}
 }
 datatype Byte<1>
@@ -618,22 +721,61 @@ thing fragment OnOffMsg includes DeviceGeneral {
 	message SwitchOn(did : Integer)
 	message SwitchOff(did : Integer)
 }
+thing fragment TimeStuff @java_import "import java.time.LocalTime;" {
+	property night_start : Long = 23 * 60 * 60 * 1000
+	property night_end : Long = 7 * 60 * 60 * 1000
+	function Now() : Long do
+		var timeval : Long
+		timeval = `LocalTime.now().toNanoOfDay()/1000000`
+		return timeval
+	end
+	function Timestamp(h : Integer, m : Integer, s : Integer) : Long do
+		return (s + m * 60 + h * 60 * 60) * 1000
+	end
+	function LeftOfDay() : Long do
+		var n : Long = Now()
+		var left : Long = night_start - n
+		if (left < 0) left = left + 24 * 60 * 60 * 1000
+		if (not Night(n)) return left
+		else return 0
+	end
+	function LeftOfNight() : Long do
+		var n : Long = Now()
+		var left : Long = night_end - n
+		if (left < 0) left = left + 24 * 60 * 60 * 1000
+		if (Night(n)) return left
+		else return 0
+	end
+	function Night(x : Long) : Boolean do
+		if (night_end < night_start) do
+			if (night_start <= x or x < night_end) return true
+			else return false
+		end
+		else do
+			if (night_start <= x and x < night_end) return true
+			else return false
+		end
+	end
+}
 configuration X3D_MQTT_SIM {
 	instance T1 : MQTTDriver
 	instance pim : PIM
+	instance myself : Human
 	instance g_temp : TimerJava
 	instance g_humn : TimerJava
 	instance es : EnergySaver
 	instance sim : Simulation
 	connector T1.provide_temp => pim . get_sensor
-	connector T1.provide_lum_motion => es . get_luminance
+	connector T1.provide_lum_motion => es . get_es_cmd
 	connector sim.toMQTT => T1 . MQTT
-	connector sim.send_cmd => es . get_es_cmd
+	connector sim.toMQTT => es . get_es_cmd
+	connector myself.send_cmd => pim . human_input
+	connector myself.send_cmd => es . get_es_cmd
+	connector es.send_es_cmd => pim . human_input
+	connector es.send_es_cmd => myself . get_values
 	connector pim.request_sensor => T1 . require_val
 	connector pim.request_actuator => T1 . require_val
-	connector pim.human_output => es . get_es_cmd
+	connector pim.human_output => myself . get_values
 	connector pim.guard_temperature => g_temp . timer
 	connector pim.guard_human => g_humn . timer
-	connector es.send_es_cmd => pim . human_input
-	connector es.send_lumsensor => pim . get_sensor
 }

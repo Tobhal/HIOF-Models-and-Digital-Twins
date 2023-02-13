@@ -28,12 +28,15 @@ rectangle psm:PSM {
 
     portout MQTT
 }
+'Human
+rectangle Human:myself {
+    port send_cmd
+    portin get_values
+}
 
 'SIM
 rectangle simulation:sim {
     port toMQTT
-    port send_cmd
-    portin get_values
 }
 
 'energy saver
