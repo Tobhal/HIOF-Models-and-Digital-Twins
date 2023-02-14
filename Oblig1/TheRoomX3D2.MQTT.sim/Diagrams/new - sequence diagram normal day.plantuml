@@ -8,15 +8,15 @@ participant "energy_saver:ES" as es
 actor "myself:Human" as human
 
 'Set preferred temp
-es <- human: set_temperature(prefered_temp{23})
-pim <- es: set_temperature(prefered_temp{23})
+es <- human: send_cmd!set_temperature(prefered_temp{23})
+pim <- es: human_input!set_temperature(prefered_temp{23})
 
 psm <- pim: add_light_sensor(1, "")
 
-psm <- pim: add_thermometer(1, "")
-psm <- pim: add_device(didid1, didtxt1)
+psm <- pim: request_sensor!add_thermometer(1, "")
+psm <- pim: request_actuator!add_device(didid1, didtxt1)
 
-pim -> human: prompt("Now entering thermostat")
+pim -> human: human_output!prompt("Now entering thermostat")
 
 hnote across: day and light on
 'setup compleat

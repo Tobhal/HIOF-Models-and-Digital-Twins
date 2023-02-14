@@ -7,15 +7,15 @@ participant "enerty_saver:ES" as es
 participant "test:Test" as test
 
 'Set preferred temp
-es <- test: set_temperature(prefered_temp{23})
-pim <- es: set_temperature(prefered_temp{23})
+es <- test: send_cmd!set_temperature(prefered_temp{23})
+pim <- es: human_input!set_temperature(prefered_temp{23})
 
 psm <- pim: add_light_sensor(1, "")
 
-psm <- pim: add_thermometer(1, "")
-psm <- pim: add_device(didid1, didtxt1)
+psm <- pim: request_sensor!add_thermometer(1, "")
+psm <- pim: request_actuator!add_device(didid1, didtxt1)
 
-pim -> test: prompt("Now entering thermostat")
+pim -> test: human_output!prompt("Now entering thermostat. Please give temperature observations")
 
 hnote across: day and light on
 'setup compleat
