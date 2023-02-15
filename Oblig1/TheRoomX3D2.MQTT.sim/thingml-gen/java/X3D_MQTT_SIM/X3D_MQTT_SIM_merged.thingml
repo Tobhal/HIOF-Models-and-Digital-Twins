@@ -79,7 +79,7 @@ thing PIM includes GeneralMsg , TemperatureMsg , OnOffMsg , TimerMsgs {
 	property lasttemp : Double = 0
 	statechart PIM_behavior init Build {
 		on entry do
-			print ("Running The Room X3D.MQTT.sim\n")
+			println ("Running The Room X3D2.MQTT.sim")
 		end
 		composite state Build init SetThermostat keeps history {
 			on entry guard_human!timer_start(30000)
@@ -461,111 +461,112 @@ thing Simulation includes TemperatureMsg , OnOffMsg , LuminanceMsg , GeneralMsg 
 		sends temperature sends luminance receives SwitchOn receives SwitchOff
 	}
 }
-thing EnergySaver includes TemperatureMsg , LuminanceMsg , GeneralMsg , TimeStuff {
+thing EnergySaver includes TemperatureMsg , LuminanceMsg , GeneralMsg , TimeStuff , TimerMsgs {
 	required port send_es_cmd {
 		sends set_temperature
 	}
 	provided port get_es_cmd {
-		receives temperature receives luminance receives set_luminance
+		receives set_temperature receives luminance receives set_luminance
 	}
 	property comfort_temp : Double
 	property lights_off : Double = 2
 	property night_temp_delta : Double = 8
 	property last_lum : Double
 	property lum_threshold : Double
-	property isnight : Boolean = Night(Now())
+	property isnight : Boolean
 	statechart ES_behavior init Build {
 		on entry do
-			println ("Running Energy saver (ES)")
+			println ("Running Energy Saver (ES)")
+			isnight = Night(Now())
+			var time_left : Long = 0
+			if (isnight) do
+				time_left = LeftOfNight()
+			end
+			else do
+				time_left = LeftOfDay()
+			end
 		end
 		composite state Build init setup keeps history {
 			state setup {
-				transition -> night guard isnight == true
-				action do
-					println ("Night time")
-				end
-				transition -> day guard isnight == false
-				action do
-					println ("day time")
-				end
-			}
-			state present {
-				on entry println ("People are present")
-				on exit println ("People are not present anymore")
 				internal
-				event get_temp : get_es_cmd?temperature
-				guard get_temp.t > 0
+				event get_temp : get_es_cmd?set_temperature
 				action do
 					comfort_temp = get_temp.t
 				end
 				internal
 				event fetch : get_es_cmd?set_luminance
-				guard fetch.lum > 0
 				action do
 					lum_threshold = fetch.lum
 				end
 				internal
 				event get_lum : get_es_cmd?luminance
-				guard get_lum.lum > 0
+				action do
+					last_lum = get_lum.lum
+				end
+				transition -> night guard isnight and (comfort_temp > 0 and last_lum > 0 and lum_threshold > 0)
+				transition -> day guard not isnight and (comfort_temp > 0 and last_lum > 0 and lum_threshold > 0)
+			}
+			state present {
+				on entry println ("People are present")
+				internal
+				event get_temp : get_es_cmd?set_temperature
+				action do
+					comfort_temp = get_temp.t
+				end
+				internal
+				event fetch : get_es_cmd?set_luminance
+				action do
+					lum_threshold = fetch.lum
+				end
+				internal
+				event get_lum : get_es_cmd?luminance
 				action do
 					last_lum = get_lum.lum
 				end
 				transition -> night guard isnight and (last_lum <= lum_threshold)
 				action do
 					send_es_cmd!set_temperature(comfort_temp - night_temp_delta)
+					println ("People are not present anymore")
+					println ("New temp is " + (comfort_temp - night_temp_delta) + " for night time")
 				end
 				transition -> day guard not isnight and (last_lum <= lum_threshold)
 				action do
 					send_es_cmd!set_temperature(comfort_temp - lights_off)
+					println ("People are not present anymore")
+					println ("New temp is " + (comfort_temp - lights_off) + " for day time")
 				end
 			}
 			state day {
 				internal
-				event set_temp : get_es_cmd?temperature
-				guard (set_temp.t > 0) and (comfort_temp > 0)
-				action do
-					send_es_cmd!set_temperature(comfort_temp - lights_off)
-				end
-				internal
-				event get_temp : get_es_cmd?temperature
-				guard get_temp.t > 0
-				action do
-					comfort_temp = get_temp.t
-					println ("Comfort temp aquired")
-				end
-				internal
 				event fetch : get_es_cmd?set_luminance
-				guard fetch.lum > 0
 				action do
-					println ("Lum threshold fetched in es")
 					lum_threshold = fetch.lum
 				end
 				internal
-				event get_lum : get_es_cmd?luminance
-				guard get_lum.lum > 0
+				event get_temp : get_es_cmd?set_temperature
 				action do
-					println ("Lum fetched in es")
+					comfort_temp = get_temp.t
+				end
+				internal
+				event get_lum : get_es_cmd?luminance
+				action do
 					last_lum = get_lum.lum
 				end
-				transition -> present guard last_lum > lum_threshold and (lum_threshold > 0 and last_lum > 0)
+				transition -> present guard last_lum > lum_threshold
 				action do
 					send_es_cmd!set_temperature(comfort_temp)
+					println ("New temp is " + (comfort_temp) + " for day time with people present")
 				end
 				transition -> night guard isnight
 				action do
 					send_es_cmd!set_temperature(comfort_temp - night_temp_delta)
+					println ("New temp is " + (comfort_temp - night_temp_delta) + " for night time")
 				end
 			}
 			state night {
 				on entry println ("Initialize Night state")
 				internal
-				event get_es_cmd?temperature
-				guard comfort_temp > 0
-				action do
-					send_es_cmd!set_temperature(comfort_temp - night_temp_delta)
-				end
-				internal
-				event get_temp : get_es_cmd?temperature
+				event get_temp : get_es_cmd?set_temperature
 				action do
 					comfort_temp = get_temp.t
 				end
@@ -582,10 +583,12 @@ thing EnergySaver includes TemperatureMsg , LuminanceMsg , GeneralMsg , TimeStuf
 				transition -> day guard not isnight
 				action do
 					send_es_cmd!set_temperature(comfort_temp - lights_off)
+					println ("New temp is " + (comfort_temp - lights_off) + " for day time")
 				end
-				transition -> present guard last_lum > lum_threshold and (lum_threshold > 0 and last_lum > 0)
+				transition -> present guard last_lum > lum_threshold
 				action do
 					send_es_cmd!set_temperature(comfort_temp)
+					println ("New temp is " + (comfort_temp) + " for night time with people present")
 				end
 			}
 		}
@@ -772,7 +775,6 @@ configuration X3D_MQTT_SIM {
 	connector myself.send_cmd => pim . human_input
 	connector myself.send_cmd => es . get_es_cmd
 	connector es.send_es_cmd => pim . human_input
-	connector es.send_es_cmd => myself . get_values
 	connector pim.request_sensor => T1 . require_val
 	connector pim.request_actuator => T1 . require_val
 	connector pim.human_output => myself . get_values
