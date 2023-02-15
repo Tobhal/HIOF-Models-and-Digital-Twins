@@ -27,7 +27,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 
 	property isnight:Boolean
 	
-	property Mode:Boolean  // True is day, false is night
+	property Mode:Boolean  // True is day, false is night, Usage is for present state logic when changing from day to night and vice versa
 	
     statechart ES_behavior init Build {
         on entry do
