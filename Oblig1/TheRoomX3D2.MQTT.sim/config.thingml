@@ -1,3 +1,4 @@
+/*
 import "javatimer.thingml"
 import "timer.thingml"
 import "pim.thingml"
@@ -47,3 +48,5 @@ configuration X3D_MQTT_SIM {
 	connector pim.guard_human => g_humn.timer
 	
 }
+
+*/
