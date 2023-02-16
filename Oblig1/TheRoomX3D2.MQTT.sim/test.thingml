@@ -3,7 +3,7 @@ import "pim.thingml"
 import "javatimer.thingml"
 import "timestuff.thingml"
 
-thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
+thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimeStuff {
 	// Sim
     required port toMQTT {
 		sends temperature,
@@ -32,19 +32,23 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 	property lum_on: Integer = 100
 	property lum_off: Integer = 5
 	
+	
+	property Daytime:Long = Timestamp(7,0,0)
+	property Nighttime:Long = Timestamp(23,0,0)
+	
 	property isnight:Boolean
-
+	
     statechart test_behavior init prompt_enter {
 		on entry do
 			println("T: Start test")
-			isnight = false
+			isnight = Night(Daytime)
 			send_cmd!set_temperature(prefered_temp)
 		end
 		
         state prompt_enter {
 			transition -> day_and_light_on
 			event prompt_value:get_values?prompt
-			guard prompt_value.txt == "Now entering thermostat. Please give temperature observations "
+			guard prompt_value.txt == "Now entering thermostat. Please give temperature observations " and not isnight
 			action do 
 				println("T: Correct value")
 			end
@@ -92,12 +96,13 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 
 		state some_time_later_2 {
 			on entry do 
+				isnight = Night(Nighttime)
 				toMQTT!temperature(1, "", 20)
 			end
 
 			transition -> night_start
 			event switch:toMQTT?SwitchOff
-			guard switch.did == 1
+			guard switch.did == 1 and isnight
 			action do 
 				println("T4: Switch off")
 			end
@@ -133,7 +138,6 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 		state day_start {
 			on entry do 
 				// Set to day
-				isnight = false
 			end
 
 			transition -> end_test
