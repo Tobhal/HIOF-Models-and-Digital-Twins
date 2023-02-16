@@ -59,7 +59,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 			event switch:toMQTT?SwitchOn
 			guard switch.did == 1
 			action do 
-				println("T: Switch on")
+				println("T1: Switch on")
 			end
 		}
 
@@ -72,7 +72,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 			event switch:toMQTT?SwitchOff
 			guard switch.did == 1
 			action do 
-				println("T: Switch off")
+				println("T2: Switch off")
 			end
 		}
 
@@ -86,7 +86,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 			event switch:toMQTT?SwitchOn
 			guard switch.did == 1
 			action do 
-				println("T: Switch on")
+				println("T3: Switch on")
 			end
 		}
 
@@ -99,7 +99,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 			event switch:toMQTT?SwitchOff
 			guard switch.did == 1
 			action do 
-				println("T: Switch off")
+				println("T4: Switch off")
 			end
 		}
 
@@ -113,7 +113,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 			event switch:toMQTT?SwitchOn
 			guard switch.did == 1
 			action do 
-				println("T: Switch on")
+				println("T5: Switch on")
 			end
 		}
 
@@ -126,7 +126,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 			event switch:toMQTT?SwitchOff
 			guard switch.did == 1
 			action do 
-				println("T: Switch off")
+				println("T6: Switch off")
 			end
 		}
 
@@ -142,13 +142,13 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 			event switch:toMQTT?SwitchOn
 			guard switch.did == 1
 			action do 
-				println("T: Switch on")
+				println("T7: Switch on")
 			end
 		}
 
 		state end_test {
 			on entry do
-				println("T: Success")
+				println("T8: Success")
 			end
 		}
     }
