@@ -4,6 +4,8 @@ import "pim.thingml"
 import "psm.thingml"
 import "io.thingml"
 import "energy_saver.thingml"
+import "test.thingml"
+
 
 configuration X3D_MQTT_SIM {
 	instance T1:MQTTDriver
@@ -43,6 +45,5 @@ configuration X3D_MQTT_SIM {
 
 	connector pim.guard_temperature =>g_temp.timer
 	connector pim.guard_human => g_humn.timer
-
-
+	
 }

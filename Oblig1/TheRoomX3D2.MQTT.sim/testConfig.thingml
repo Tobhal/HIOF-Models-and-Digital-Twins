@@ -1,0 +1,40 @@
+import "javatimer.thingml"
+import "timer.thingml"
+import "pim.thingml"
+import "psm.thingml"
+import "io.thingml"
+import "energy_saver.thingml"
+import "test.thingml"
+
+
+configuration X3D_MQTT_SIM {
+	instance T1:MQTTDriver
+	instance pim:PIM
+	
+	instance g_temp:TimerJava
+	instance g_humn:TimerJava
+
+    instance es:EnergySaver
+	instance test:Test
+	
+	// PSM	
+	connector T1.provide_temp => pim.get_sensor
+	connector T1.provide_lum_motion => es.get_es_cmd // es gets luminence --> doesnt work
+
+	//ES
+	connector es.send_es_cmd => pim.human_input // pim gets set_temp
+	
+	// PIM outwards 
+	connector pim.request_sensor => T1.require_val
+	connector pim.request_actuator => T1.require_val	
+	connector pim.guard_temperature =>g_temp.timer
+	connector pim.guard_human => g_humn.timer
+	
+	// Test
+	connector test.send_cmd => pim.human_input
+	
+	connector test.from_MQTT => es.get_es_cmd
+	connector test.from_MQTT => T1.MQTT
+	
+	connector pim.human_output => test.get_values
+}
