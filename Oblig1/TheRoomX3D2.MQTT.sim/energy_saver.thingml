@@ -3,7 +3,7 @@ import "pim_messages.thingml"
 import "timestuff.thingml"
 import "javatimer.thingml"
 
-thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, TimerMsgs{
+thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, TimerMsgs {
      
     // Sends
     required port send_es_cmd {
@@ -44,7 +44,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			// TODO: Set Timer based on time_left
         end
 
-        composite state Build init setup keeps history {
+		composite state Build init setup keeps history {
   			
           	state setup {
           		
@@ -215,10 +215,10 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				
 				internal event get_lum: get_es_cmd?luminance
 				action do
-						last_lum = get_lum.lum			
+					last_lum = get_lum.lum			
 				end	
 				
         	} // end night
-       }// end Build
+		}// end Build
     }// End statechart
- } // End thing
+} // End thing
