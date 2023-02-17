@@ -5,12 +5,11 @@ import "javatimer.thingml"
 
 thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, TimerMsgs{
      
-    // Sends
+     // Ports
     required port send_es_cmd {
         sends set_temperature	 
     }
     
-	// Receives
     provided port get_es_cmd {
         receives set_temperature,
         		luminance,
