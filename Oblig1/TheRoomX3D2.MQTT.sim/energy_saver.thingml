@@ -48,27 +48,26 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			end
 			timer_port!timer_start(time_left)
 			println("Started day/night timer with " + time_left/1000 + "s until it changes again.")
-			
         end
 
-        composite state Build init setup keeps history {
+        composite state Build init Setup keeps history {
   			
-          	state setup {
+          	state Setup {
           		// Setting initial state based on time and luminance
-          		transition -> present
+          		transition -> Present
           		guard last_lum>=lum_threshold
           		action do
           			println("Starting in Present state")
           		end
           		
-          		transition -> night
+          		transition -> Night
           		guard isnight and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
           		action do
           			Mode = false
           			println("Starting in Night state")
           		end
 
-          		transition -> day
+          		transition -> Day
           		guard not isnight  and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
      			action do
      				Mode = true
@@ -92,12 +91,12 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
      
           	}
           	
-            state present {
+            state Present {
 
 				// Transitions to other states within the state
 				
 				// night time, and no one present
-				transition -> night
+				transition -> Night
 				//event get_temp: get_es_cmd?set_temperature
 				guard isnight and (last_lum<=lum_threshold)
 				action do
@@ -111,7 +110,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				end
 				
 				// day time, and no one present
-				transition -> day
+				transition -> Day
 				//event get_lum: get_es_cmd?luminance
 				guard not isnight and (last_lum<=lum_threshold)
 				action do
@@ -147,12 +146,12 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				
         	} // end present
         	
-        	state day {
+        	state Day {
 	        	
 	        	
 	        	// Transitions to other states within the state
 	        	
-				transition -> present
+				transition -> Present
 				//event get_lum: get_es_cmd?luminance
 				guard last_lum>lum_threshold
 				action do
@@ -161,7 +160,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 					println("Updated to comfort temp " + (comfort_temp) + " for day time")
 				end
 				
-				transition -> night
+				transition -> Night
 				guard isnight
 				action do
 					Mode = false
@@ -190,11 +189,11 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			
         	} // end day
         	
-        	state night{
+        	state Night{
 
 				// Transitions to other states within the state
 				
-				transition -> day
+				transition -> Day
 				//event get_temp:get_es_cmd?set_temperature
 				guard not isnight
 				action do
@@ -205,7 +204,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				end
 				
 				// If people present, temp is set to comfort temperature
-				transition -> present
+				transition -> Present
 				//event get_lum:get_es_cmd?luminance
 				guard last_lum>lum_threshold
 				action do
@@ -231,7 +230,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 						last_lum = get_lum.lum			
 				end	
 				
-        	} // end night
+        	} // end Night
        }// end Build
     }// End ES_behavior
  } // End EnergySaver thing
