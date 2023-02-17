@@ -48,26 +48,33 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			end
 			timer_port!timer_start(time_left)
 			println("Started day/night timer with " + time_left/1000 + "s until it changes again.")
+			
         end
 
         composite state Build init setup keeps history {
   			
           	state setup {
+          		// Setting initial state based on time and luminance
+          		transition -> present
+          		guard last_lum>=lum_threshold
+          		action do
+          			println("Starting in Present state")
+          		end
           		
           		transition -> night
           		guard isnight and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
           		action do
           			Mode = false
-          			println("Initialize Night state")
+          			println("Starting in Night state")
           		end
 
           		transition -> day
           		guard not isnight  and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
      			action do
      				Mode = true
-          			println("Initialize Day state")
+          			println("Starting in Day state")
           		end
-     
+          		
      			internal event get_temp:get_es_cmd?set_temperature
 	            action do
 	                comfort_temp = get_temp.t
