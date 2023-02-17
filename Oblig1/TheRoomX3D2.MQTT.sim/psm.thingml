@@ -24,9 +24,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 				 add_device, 
 				 add_lightsensor, 
 				 SwitchOn, 
-				 SwitchOff, 
-				 iamalive1, 
-				 iamalive2
+				 SwitchOff
 	}
 
 	// Sends
