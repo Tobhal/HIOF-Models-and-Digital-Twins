@@ -36,7 +36,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			  SwitchOff
 	}
 
-	//timer ports - it does not hold to include TimerClient since it only has one port and therefore cannot distinguish between two timers
+	//timer ports - it is not enough to include TimerClient since it only has one port and therefore cannot distinguish between two timers
 	
 	required port guard_temperature
     {

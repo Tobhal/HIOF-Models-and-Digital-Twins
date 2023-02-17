@@ -14,6 +14,7 @@ configuration X3D_MQTT_SIM {
 	instance g_temp:TimerJava
 	instance g_humn:TimerJava
 
+	instance night_day_timer:TimerJava
     instance es:EnergySaver
     // instance sim:Simulation
  
@@ -33,7 +34,7 @@ configuration X3D_MQTT_SIM {
 	
 	//ES
 	connector es.send_es_cmd => pim.human_input // pim gets set_temp
-
+	connector es.timer_port => night_day_timer.timer
 	
 	// PIM outwards 
 	connector pim.request_sensor => T1.require_val

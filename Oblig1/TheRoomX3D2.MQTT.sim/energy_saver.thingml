@@ -5,18 +5,24 @@ import "javatimer.thingml"
 
 thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, TimerMsgs {
      
-    // Sends
+     // Ports.
     required port send_es_cmd {
         sends set_temperature	 
     }
     
-	// Receives
     provided port get_es_cmd {
         receives set_temperature,
         		luminance,
         		set_luminance	
 	}
 	
+	required port timer_port {
+		receives timer_timeout
+		sends timer_start,
+			  timer_cancel
+	}
+	
+	// Properties.
     property comfort_temp:Double           // Store comfort temperature
     	
     property lights_off:Double = 2 // Store temperature offset for when lights are off
@@ -40,28 +46,34 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			else do
 				time_left = LeftOfDay()
 			end
-			
-			// TODO: Set Timer based on time_left
+			timer_port!timer_start(time_left)
+			println("Started day/night timer with " + time_left/1000 + "s until it changes again.")
         end
 
-		composite state Build init setup keeps history {
+        composite state Build init Setup keeps history {
   			
-          	state setup {
+          	state Setup {
+          		// Setting initial state based on time and luminance
+          		transition -> Present
+          		guard last_lum>=lum_threshold
+          		action do
+          			println("Starting in Present state")
+          		end
           		
-          		transition -> night
+          		transition -> Night
           		guard isnight and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
           		action do
           			Mode = false
-          			println("Initialize Night state")
+          			println("Starting in Night state")
           		end
 
-          		transition -> day
+          		transition -> Day
           		guard not isnight  and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
      			action do
      				Mode = true
-          			println("Initialize Day state")
+          			println("Starting in Day state")
           		end
-     
+          		
      			internal event get_temp:get_es_cmd?set_temperature
 	            action do
 	                comfort_temp = get_temp.t
@@ -79,12 +91,12 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
      
           	}
           	
-            state present {
+            state Present {
 
 				// Transitions to other states within the state
 				
 				// night time, and no one present
-				transition -> night
+				transition -> Night
 				//event get_temp: get_es_cmd?set_temperature
 				guard isnight and (last_lum<=lum_threshold)
 				action do
@@ -98,7 +110,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				end
 				
 				// day time, and no one present
-				transition -> day
+				transition -> Day
 				//event get_lum: get_es_cmd?luminance
 				guard not isnight and (last_lum<=lum_threshold)
 				action do
@@ -134,12 +146,12 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				
         	} // end present
         	
-        	state day {
+        	state Day {
 	        	
 	        	
 	        	// Transitions to other states within the state
 	        	
-				transition -> present
+				transition -> Present
 				//event get_lum: get_es_cmd?luminance
 				guard last_lum>lum_threshold
 				action do
@@ -148,7 +160,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 					println("Updated to comfort temp " + (comfort_temp) + " for day time")
 				end
 				
-				transition -> night
+				transition -> Night
 				guard isnight
 				action do
 					Mode = false
@@ -177,11 +189,11 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			
         	} // end day
         	
-        	state night{
+        	state Night{
 
 				// Transitions to other states within the state
 				
-				transition -> day
+				transition -> Day
 				//event get_temp:get_es_cmd?set_temperature
 				guard not isnight
 				action do
@@ -192,7 +204,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				end
 				
 				// If people present, temp is set to comfort temperature
-				transition -> present
+				transition -> Present
 				//event get_lum:get_es_cmd?luminance
 				guard last_lum>lum_threshold
 				action do
