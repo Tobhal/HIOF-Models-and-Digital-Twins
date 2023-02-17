@@ -233,5 +233,5 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				
         	} // end night
        }// end Build
-    }// End statechart
- } // End thing
+    }// End ES_behavior
+ } // End EnergySaver thing
