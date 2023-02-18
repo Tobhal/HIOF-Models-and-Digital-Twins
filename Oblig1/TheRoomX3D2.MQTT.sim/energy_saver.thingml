@@ -13,7 +13,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
     provided port get_es_cmd {
         receives set_temperature,
         		luminance,
-        		set_luminance	
+        		set_lum_threshold	
 	}
 	
 	required port timer_port {
@@ -74,7 +74,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 	        	comfort_temp = get_temp.t
 	        end
 	
-	        internal event fetch:get_es_cmd?set_luminance
+	        internal event fetch:get_es_cmd?set_lum_threshold
 			action do
 				lum_threshold = fetch.lum
 			end
@@ -125,7 +125,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 	        	comfort_temp = get_temp.t
 	        end
 	
-	        internal event fetch:get_es_cmd?set_luminance
+	        internal event fetch:get_es_cmd?set_lum_threshold
 			action do
 				lum_threshold = fetch.lum
 			end
@@ -162,7 +162,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				
 			// Internal events
 				
-			internal event fetch:get_es_cmd?set_luminance
+			internal event fetch:get_es_cmd?set_lum_threshold
 			action do
 				lum_threshold = fetch.lum
 			end
@@ -209,7 +209,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 	        	comfort_temp = get_temp.t
 	        end
 	           
-	        internal event fetch:get_es_cmd?set_luminance
+	        internal event fetch:get_es_cmd?set_lum_threshold
 			action do
 				lum_threshold = fetch.lum
 			end
