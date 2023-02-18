@@ -26,10 +26,10 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
     property comfort_temp:Double           // Store comfort temperature
     	
     property lights_off:Double = 2 // Store temperature offset for when lights are off
-    property night_temp_delta:Double = 8           // Store temperature offset for when +there is night
+    property night_temp_delta:Double = 8           // Store temperature offset for when there is night
 
-    property last_lum: Double   // Last recored luminance value
-    property lum_threshold: Double   // Threshold for when the room is dark or not
+    property last_lum: Double // Last recored luminance value.
+    property lum_threshold: Double = 30  // Threshold for when the room is dark or not. Defaults to 30
 
 	property isnight:Boolean // True if it is night
 	
