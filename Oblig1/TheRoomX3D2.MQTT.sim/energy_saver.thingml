@@ -87,12 +87,11 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 		}// end Build
 		
 		state Present {
-
-			// Transitions to other states within the state
-				
-			// night time, and no one present
+			// When we receive a new luminance value, check if it's lower than threshold
+			
+			// Night time and no one present
 			transition -> Night
-			//event get_temp: get_es_cmd?set_temperature
+			event recieve_lum: get_es_cmd?luminance
 			guard isnight and (last_lum<=lum_threshold)
 			action do
 				println("Entering night mode")
@@ -102,7 +101,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				println("New temp is " + (comfort_temp - night_temp_delta) + " for night time")
 			end
 				
-			// day time, and no one present
+			// Day time, and no one present
 			transition -> Day
 			//event get_lum: get_es_cmd?luminance
 			guard not isnight and (last_lum<=lum_threshold)
@@ -220,5 +219,5 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			end	
 				
         } // end Night
-    }// End tatechart
+    }// End statechart
 } // End thing
