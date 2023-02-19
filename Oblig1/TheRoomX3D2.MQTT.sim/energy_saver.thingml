@@ -21,6 +21,10 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 		sends timer_start
 	}
 	
+	required  port human_output{
+		sends prompt
+	}
+	
 	// Properties.
     property comfort_temp:Double           // Store comfort temperature
     	
@@ -45,19 +49,41 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			end
 			timer_port!timer_start(time_left)
 			println("Started day/night timer with " + time_left/1000 + "s until it changes again.")
-			
         end
-        state Setup {
+        
+        composite state Setup init RecieveLumThreshold{
+        	// TODO: create logic to receive values for luminance, lum_threshold, and comfort temperature 
+        	state RecieveLumThreshold {
+        		on entry do
+        			human_output!prompt("Please enter luminance threshold")
+        			
+        		end
+        	}
         	
-            // Setting initial state based on time and luminance
+        	// Setting initial state based on time and luminance
           	transition -> Present
+          	event set_temp:get_es_cmd ?set_temperature
           	guard last_lum>=lum_threshold
-          		
+          	action do
+          		comfort_temp = set_temp.t
+          		send_es_cmd!set_temperature(set_temp.t)
+          	end
+          	
           	transition -> Night
+          	event set_temp:get_es_cmd ?set_temperature
           	guard isnight and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
+          	action do
+          		comfort_temp = set_temp.t
+          		send_es_cmd!set_temperature(set_temp.t)
+          	end
 
           	transition -> Day
+          	event set_temp:get_es_cmd ?set_temperature
           	guard not isnight  and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
+          	action do
+          		comfort_temp = set_temp.t
+          		send_es_cmd!set_temperature(set_temp.t)
+          	end
           		
      		internal event get_temp:get_es_cmd?set_temperature
 	        action do
