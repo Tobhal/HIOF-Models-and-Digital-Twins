@@ -18,8 +18,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 	
 	required port timer_port {
 		receives timer_timeout
-		sends timer_start,
-			  timer_cancel
+		sends timer_start
 	}
 	
 	// Properties.
