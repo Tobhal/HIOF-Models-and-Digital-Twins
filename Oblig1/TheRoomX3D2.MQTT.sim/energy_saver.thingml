@@ -53,21 +53,12 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
             // Setting initial state based on time and luminance
           	transition -> Present
           	guard last_lum>=lum_threshold
-          	action do
-          		println("Starting in Present state")
-          	end
           		
           	transition -> Night
           	guard isnight and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
-          	action do
-          		println("Starting in Night state")
-          	end
 
           	transition -> Day
           	guard not isnight  and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
-     		action do
-          		println("Starting in Day state")
-          	end
           		
      		internal event get_temp:get_es_cmd?set_temperature
 	        action do
@@ -87,6 +78,9 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 		}// end Build
 		
 		state Present {
+			on entry do
+				println("Entering Present State")
+			end
 			// When we receive a new luminance value, check if it's lower than threshold
 			
 			// Night time and no one present
@@ -94,8 +88,6 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			event recieve_lum: get_es_cmd?luminance
 			guard isnight and (last_lum<=lum_threshold)
 			action do
-				println("Entering night mode")
-
 				send_es_cmd!set_temperature(comfort_temp - night_temp_delta) // night time and people not present
 				println("People are not present anymore")
 				println("New temp is " + (comfort_temp - night_temp_delta) + " for night time")
@@ -106,8 +98,6 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			//event get_lum: get_es_cmd?luminance
 			guard not isnight and (last_lum<=lum_threshold)
 			action do
-				println("Entering day mode")
-				
 				send_es_cmd!set_temperature(comfort_temp - lights_off) // day time and people not present
 				println("People are not present anymore")
 				println("New temp is " + (comfort_temp - lights_off) + " for day time")
@@ -137,7 +127,9 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
         } // end Present
         	
         state Day {
-	        	
+			on entry do
+				println("Entering Day State")
+			end
 	        	
 	        // Transitions to other states within the state
 	        	
@@ -145,7 +137,6 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			//event get_lum: get_es_cmd?luminance
 			guard last_lum>lum_threshold
 			action do
-				println("People are present")
 				send_es_cmd!set_temperature(comfort_temp) //
 				println("Updated to comfort temp " + (comfort_temp) + " for day time")
 			end
@@ -153,7 +144,6 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			transition -> Night
 			guard isnight
 			action do
-				println("Entering night mode")
 				send_es_cmd!set_temperature(comfort_temp - night_temp_delta) //
 				println("New temp is " + (comfort_temp - night_temp_delta) + " for night time")
 			end
@@ -179,14 +169,15 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
         } // end Day
         	
         state Night{
-
+			on entry do
+				println("Entering Night State")
+			end
 			// Transitions to other states within the state
 				
 			transition -> Day
 			//event get_temp:get_es_cmd?set_temperature
 			guard not isnight
 			action do
-					println("Entering day mode")
 					send_es_cmd!set_temperature(comfort_temp-lights_off)
 					println("New temp is " + (comfort_temp - lights_off) + " for day time")
 			end
@@ -196,7 +187,6 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			//event get_lum:get_es_cmd?luminance
 			guard last_lum>lum_threshold
 			action do
-				println("People are present")
 				send_es_cmd!set_temperature(comfort_temp) // if the office is not dark
 				println("Updated to comfort temp " + (comfort_temp) + " for night time")
 			end
