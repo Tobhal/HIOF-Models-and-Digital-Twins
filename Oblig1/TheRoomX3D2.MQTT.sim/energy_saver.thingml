@@ -142,8 +142,17 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			end
 				
 			transition -> Night
-			guard isnight
+			event day_night_change:timer_port?timer_timeout
 			action do
+			
+				// isnight swithes
+				isnight = Night(Now())
+				
+				// Reset timer 
+				var time_left:Long = LeftOfNight()
+				timer_port!timer_start(time_left)
+				
+				// Change comfort temperature
 				send_es_cmd!set_temperature(comfort_temp - night_temp_delta) //
 				println("New temp is " + (comfort_temp - night_temp_delta) + " for night time")
 			end
@@ -175,9 +184,16 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			// Transitions to other states within the state
 				
 			transition -> Day
-			//event get_temp:get_es_cmd?set_temperature
-			guard not isnight
+			event day_night_change:timer_port?timer_timeout
 			action do
+					// isnight swithes
+					isnight = Night(Now())
+					
+					// Reset timer 
+					var time_left:Long = LeftOfDay()
+					timer_port!timer_start(time_left)
+					
+					// Change comfort temperature
 					send_es_cmd!set_temperature(comfort_temp-lights_off)
 					println("New temp is " + (comfort_temp - lights_off) + " for day time")
 			end
