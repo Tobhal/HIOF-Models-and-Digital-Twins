@@ -33,9 +33,8 @@ configuration X3D_MQTT_SIM {
 	connector myself.send_cmd => es.get_es_cmd // es gets set_luminence and set_temperature
 	
 	//ES
-	connector es.send_es_cmd => pim.human_input // pim gets set_temp
+	connector es.send_es_cmd => pim.es_input // pim gets set_temp
 	connector es.timer_port => night_day_timer.timer
-	connector es.human_output => myself.get_values
 
 	
 	// PIM outwards 

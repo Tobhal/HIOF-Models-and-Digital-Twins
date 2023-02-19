@@ -15,10 +15,13 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 	}
 	provided port human_input {
 		receives SwitchOn, 
-				 SwitchOff, 
-				 set_temperature,  
+				 SwitchOff,  
 				 set_delta, 
 				 fetch_temp
+	}
+	
+	provided port es_input {
+		receives set_temperature
 	}
 
 	// Sends
@@ -89,7 +92,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			
 			// Normal transition to the Running state
 			transition -> Running
-			event set_temp:human_input?set_temperature
+			event set_temp:es_input?set_temperature
 			action do
 				tmrature = set_temp.t
 				human_output!prompt("Now entering thermostat. Please give temperature observations ") // SIMULATION: prompting on console for the user to react properly
@@ -235,7 +238,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				end
 
 				transition -> Thermostat
-				event set_temp:human_input?set_temperature
+				event set_temp:es_input?set_temperature
 				action do
 					tmrature = set_temp.t
 				end
@@ -255,7 +258,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				end
 
 				transition -> Thermostat
-				event set_temp:human_input?set_temperature
+				event set_temp:es_input?set_temperature
 				action do
 					tmrature = set_temp.t
 				end
@@ -282,7 +285,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				end
 
 				transition -> Thermostat
-				event set_temp:human_input?set_temperature
+				event set_temp:es_input?set_temperature
 				action do
 					tmrature = set_temp.t
 				end
@@ -324,7 +327,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			end
 
 			transition -> Running
-			event human_input?set_temperature
+			event es_input?set_temperature
 			action do
 				human_output!prompt("INTERNAL ERROR: Impossible set_temperature at PIM.Running")
 			end

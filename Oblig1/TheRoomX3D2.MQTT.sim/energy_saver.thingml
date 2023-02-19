@@ -7,11 +7,11 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
      
      // Ports.
     required port send_es_cmd {
-        sends set_temperature	 
+        sends set_temperature  // pass on to pim	 
     }
     
     provided port get_es_cmd {
-        receives set_temperature,
+        receives set_temperature, // to receive as input
         		luminance,
         		set_lum_threshold	
 	}
@@ -21,17 +21,13 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 		sends timer_start
 	}
 	
-	required  port human_output{
-		sends prompt
-	}
-	
 	// Properties.
     property comfort_temp:Double           // Store comfort temperature
     	
     property lights_off:Double = 2 // Store temperature offset for when lights are off
     property night_temp_delta:Double = 8           // Store temperature offset for when there is night
 
-    property last_lum: Double // Last recored luminance value.
+    property last_lum: Double = 20 // Last recored luminance value. Defaults to 20
     property lum_threshold: Double = 30  // Threshold for when the room is dark or not. Defaults to 30
 
 	property isnight:Boolean // True if it is night
@@ -42,27 +38,21 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
             isnight = Night(Now())	//Check if it's night and no one present
 			var time_left:Long = 0
 			if (isnight) do
+				println("It's night time")
 				time_left = LeftOfNight()
 			end
 			else do
+				println("It's day time")
 				time_left = LeftOfDay()
 			end
 			timer_port!timer_start(time_left)
 			println("Started day/night timer with " + time_left/1000 + "s until it changes again.")
         end
         
-        composite state Setup init RecieveLumThreshold{
-        	// TODO: create logic to receive values for luminance, lum_threshold, and comfort temperature 
-        	state RecieveLumThreshold {
-        		on entry do
-        			human_output!prompt("Please enter luminance threshold")
-        			
-        		end
-        	}
-        	
+        state Setup{
         	// Setting initial state based on time and luminance
           	transition -> Present
-          	event set_temp:get_es_cmd ?set_temperature
+          	event set_temp:get_es_cmd?set_temperature
           	guard last_lum>=lum_threshold
           	action do
           		comfort_temp = set_temp.t
@@ -70,25 +60,21 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
           	end
           	
           	transition -> Night
-          	event set_temp:get_es_cmd ?set_temperature
-          	guard isnight and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
+          	event set_temp:get_es_cmd?set_temperature
+          	guard isnight
           	action do
           		comfort_temp = set_temp.t
           		send_es_cmd!set_temperature(set_temp.t)
           	end
 
           	transition -> Day
-          	event set_temp:get_es_cmd ?set_temperature
-          	guard not isnight  and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
+          	event set_temp:get_es_cmd?set_temperature
+          	guard not isnight
           	action do
+          		println("ES just recieived set temp of " + set_temp.t)
           		comfort_temp = set_temp.t
           		send_es_cmd!set_temperature(set_temp.t)
           	end
-          		
-     		internal event get_temp:get_es_cmd?set_temperature
-	        action do
-	        	comfort_temp = get_temp.t
-	        end
 	
 	        internal event fetch:get_es_cmd?set_lum_threshold
 			action do
