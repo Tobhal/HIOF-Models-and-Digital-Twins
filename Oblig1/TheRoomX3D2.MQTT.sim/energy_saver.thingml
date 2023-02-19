@@ -33,7 +33,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 
 	property isnight:Boolean // True if it is night
 	
-    statechart ES_behavior init Build {
+    statechart ES_behavior init Setup {
         on entry do
             println("Running Energy Saver (ES)")
             isnight = Night(Now())	//Check if it's night and no one present
@@ -48,7 +48,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			println("Started day/night timer with " + time_left/1000 + "s until it changes again.")
 			
         end
-        state Build {
+        state Setup {
         	
             // Setting initial state based on time and luminance
           	transition -> Present
@@ -75,7 +75,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				last_lum = get_lum.lum			
 			end  	
             
-		}// end Build
+		}// end Setup
 		
 		state Present {
 			on entry do
