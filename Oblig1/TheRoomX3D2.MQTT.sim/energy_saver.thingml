@@ -7,19 +7,18 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
      
      // Ports.
     required port send_es_cmd {
-        sends set_temperature	 
+        sends set_temperature  // pass on to pim	 
     }
     
     provided port get_es_cmd {
-        receives set_temperature,
+        receives set_temperature, // to receive as input
         		luminance,
-        		set_luminance	
+        		set_lum_threshold	
 	}
 	
 	required port timer_port {
 		receives timer_timeout
-		sends timer_start,
-			  timer_cancel
+		sends timer_start
 	}
 	
 	// Properties.
@@ -28,104 +27,98 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
     property lights_off:Double = 2 // Store temperature offset for when lights are off
     property night_temp_delta:Double = 8           // Store temperature offset for when there is night
 
-    property last_lum: Double   // Last recored luminance value
-    property lum_threshold: Double   // Threshold for when the room is dark or not
+    property last_lum: Double = 20 // Last recored luminance value. Defaults to 20
+    property lum_threshold: Double = 30  // Threshold for when the room is dark or not. Defaults to 30
 
-	property isnight:Boolean
+	property isnight:Boolean // True if it is night
 	
-	property Mode:Boolean  // True is day, false is night, Usage is for present state logic when changing from day to night and vice versa
-	
-    statechart ES_behavior init Build {
+    statechart ES_behavior init Setup {
         on entry do
             println("Running Energy Saver (ES)")
             isnight = Night(Now())	//Check if it's night and no one present
 			var time_left:Long = 0
 			if (isnight) do
+				println("It's night time")
 				time_left = LeftOfNight()
 			end
 			else do
+				println("It's day time")
 				time_left = LeftOfDay()
 			end
 			timer_port!timer_start(time_left)
 			println("Started day/night timer with " + time_left/1000 + "s until it changes again.")
         end
-
-        composite state Build init Setup keeps history {
-  			
-          	state Setup {
-          		// Setting initial state based on time and luminance
-          		transition -> Present
-          		guard last_lum>=lum_threshold
-          		action do
-          			println("Starting in Present state")
-          		end
-          		
-          		transition -> Night
-          		guard isnight and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
-          		action do
-          			Mode = false
-          			println("Starting in Night state")
-          		end
-
-          		transition -> Day
-          		guard not isnight  and (comfort_temp>0 and last_lum>0 and lum_threshold>0)
-     			action do
-     				Mode = true
-          			println("Starting in Day state")
-          		end
-          		
-     			internal event get_temp:get_es_cmd?set_temperature
-	            action do
-	                comfort_temp = get_temp.t
-	            end
-	
-	        	internal event fetch:get_es_cmd?set_luminance
-				action do
-					lum_threshold = fetch.lum
-				end
-				
-				internal event get_lum: get_es_cmd?luminance
-				action do
-					last_lum = get_lum.lum			
-				end
-     
-          	}
+        
+        state Setup{
+        	// Setting initial state based on time and luminance
+          	transition -> Present
+          	event set_temp:get_es_cmd?set_temperature
+          	guard last_lum>=lum_threshold
+          	action do
+          		comfort_temp = set_temp.t
+          		send_es_cmd!set_temperature(set_temp.t)
+          	end
           	
-            state Present {
+          	transition -> Night
+          	event set_temp:get_es_cmd?set_temperature
+          	guard isnight
+          	action do
+          		comfort_temp = set_temp.t
+          		send_es_cmd!set_temperature(set_temp.t)
+          	end
 
-				// Transitions to other states within the state
+          	transition -> Day
+          	event set_temp:get_es_cmd?set_temperature
+          	guard not isnight
+          	action do
+          		println("ES just recieived set temp of " + set_temp.t)
+          		comfort_temp = set_temp.t
+          		send_es_cmd!set_temperature(set_temp.t)
+          	end
+	
+	        internal event fetch:get_es_cmd?set_lum_threshold
+			action do
+				lum_threshold = fetch.lum
+			end
 				
-				// night time, and no one present
-				transition -> Night
-				//event get_temp: get_es_cmd?set_temperature
-				guard isnight and (last_lum<=lum_threshold)
-				action do
-					if(Mode) do
-						Mode = false
-						println("Entering night mode")
-					end
-					send_es_cmd!set_temperature(comfort_temp - night_temp_delta) // night time and people not present
-					println("People are not present anymore")
-					println("New temp is " + (comfort_temp - night_temp_delta) + " for night time")
-				end
+			internal event get_lum: get_es_cmd?luminance
+			action do
+				last_lum = get_lum.lum			
+			end  	
+            
+		}// end Setup
+		
+		state Present {
+			on entry do
+				println("Entering Present State")
+			end
+			// When we receive a new luminance value, check if it's lower than threshold
+			
+			// Night time and no one present
+			transition -> Night
+			event recieve_lum: get_es_cmd?luminance
+			guard isnight and (last_lum<=lum_threshold)
+			action do
+				send_es_cmd!set_temperature(comfort_temp - night_temp_delta) // night time and people not present
+				println("People are not present anymore")
+				println("New temp is " + (comfort_temp - night_temp_delta) + " for night time")
+			end
 				
-				// day time, and no one present
-				transition -> Day
-				//event get_lum: get_es_cmd?luminance
-				guard not isnight and (last_lum<=lum_threshold)
-				action do
-					if(not Mode) do
-						Mode = true
-						println("Entering day mode")
-					end
-					send_es_cmd!set_temperature(comfort_temp - lights_off) // day time and people not present
-					println("People are not present anymore")
-					println("New temp is " + (comfort_temp - lights_off) + " for day time")
-				end
+			// Day time, and no one present
+			transition -> Day
+			//event get_lum: get_es_cmd?luminance
+			guard not isnight and (last_lum<=lum_threshold)
+			action do
+				send_es_cmd!set_temperature(comfort_temp - lights_off) // day time and people not present
+				println("People are not present anymore")
+				println("New temp is " + (comfort_temp - lights_off) + " for day time")
+			end
 				
 				
-				// Internal events
+			// Internal events
 				
+				
+			// Get values
 				
 				// Get values
 				
@@ -135,48 +128,49 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 					send_es_cmd!set_temperature(comfort_temp)
 	            end
 	
-	        	internal event fetch:get_es_cmd?set_luminance
-				action do
-					lum_threshold = fetch.lum
-				end
+	        internal event fetch:get_es_cmd?set_lum_threshold
+			action do
+				lum_threshold = fetch.lum
+			end
 				
-				internal event get_lum: get_es_cmd?luminance
-				action do
-					last_lum = get_lum.lum			
-				end
+			internal event get_lum: get_es_cmd?luminance
+			action do
+				last_lum = get_lum.lum			
+			end
 				
-        	} // end present
+        } // end Present
         	
-        	state Day {
+        state Day {
+			on entry do
+				println("Entering Day State")
+			end
 	        	
+	        // Transitions to other states within the state
 	        	
-	        	// Transitions to other states within the state
-	        	
-				transition -> Present
-				//event get_lum: get_es_cmd?luminance
-				guard last_lum>lum_threshold
-				action do
-					println("People are present")
-					send_es_cmd!set_temperature(comfort_temp) //
-					println("Updated to comfort temp " + (comfort_temp) + " for day time")
-				end
+			transition -> Present
+			//event get_lum: get_es_cmd?luminance
+			guard last_lum>lum_threshold
+			action do
+				send_es_cmd!set_temperature(comfort_temp) //
+				println("Updated to comfort temp " + (comfort_temp) + " for day time")
+			end
 				
-				transition -> Night
-				guard isnight
-				action do
-					Mode = false
-					println("Entering night mode")
-					send_es_cmd!set_temperature(comfort_temp - night_temp_delta) //
-					println("New temp is " + (comfort_temp - night_temp_delta) + " for night time")
-				end
+			transition -> Night
+			event day_night_change:timer_port?timer_timeout
+			action do
+			
+				// isnight swithes
+				isnight = Night(Now())
 				
+				// Reset timer 
+				var time_left:Long = LeftOfNight()
+				timer_port!timer_start(time_left)
 				
-				// Internal events
+				// Change comfort temperature
+				send_es_cmd!set_temperature(comfort_temp - night_temp_delta) //
+				println("New temp is " + (comfort_temp - night_temp_delta) + " for night time")
+			end
 				
-				internal event fetch:get_es_cmd?set_luminance
-				action do
-					lum_threshold = fetch.lum
-				end
 				
 				internal event get_temp:get_es_cmd?set_temperature
 	            action do
@@ -184,38 +178,44 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 					send_es_cmd!set_temperature(comfort_temp)
 	            end
 	            
-	            internal event get_lum: get_es_cmd?luminance
-				action do
-						last_lum = get_lum.lum			
-				end
+	        internal event get_lum: get_es_cmd?luminance
+			action do
+					last_lum = get_lum.lum			
+			end
 			
-        	} // end day
+        } // end Day
         	
-        	state Night{
-
-				// Transitions to other states within the state
+        state Night{
+			on entry do
+				println("Entering Night State")
+			end
+			// Transitions to other states within the state
 				
-				transition -> Day
-				//event get_temp:get_es_cmd?set_temperature
-				guard not isnight
-				action do
-						Mode = true
-						println("Entering day mode")
-						send_es_cmd!set_temperature(comfort_temp-lights_off)
-						println("New temp is " + (comfort_temp - lights_off) + " for day time")
-				end
+			transition -> Day
+			event day_night_change:timer_port?timer_timeout
+			action do
+					// isnight swithes
+					isnight = Night(Now())
+					
+					// Reset timer 
+					var time_left:Long = LeftOfDay()
+					timer_port!timer_start(time_left)
+					
+					// Change comfort temperature
+					send_es_cmd!set_temperature(comfort_temp-lights_off)
+					println("New temp is " + (comfort_temp - lights_off) + " for day time")
+			end
 				
-				// If people present, temp is set to comfort temperature
-				transition -> Present
-				//event get_lum:get_es_cmd?luminance
-				guard last_lum>lum_threshold
-				action do
-					println("People are present")
-					send_es_cmd!set_temperature(comfort_temp) // if the office is not dark
-					println("Updated to comfort temp " + (comfort_temp) + " for night time")
-				end
+			// If people present, temp is set to comfort temperature
+			transition -> Present
+			//event get_lum:get_es_cmd?luminance
+			guard last_lum>lum_threshold
+			action do
+				send_es_cmd!set_temperature(comfort_temp) // if the office is not dark
+				println("Updated to comfort temp " + (comfort_temp) + " for night time")
+			end
 				
-				// Internal events
+			// Internal events
 				
 				internal event get_temp:get_es_cmd?set_temperature
 	            action do
@@ -223,17 +223,16 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 					send_es_cmd!set_temperature(comfort_temp)
 	            end
 	           
-	        	internal event fetch:get_es_cmd?set_luminance
-				action do
-					lum_threshold = fetch.lum
-				end
+	        internal event fetch:get_es_cmd?set_lum_threshold
+			action do
+				lum_threshold = fetch.lum
+			end
+			
+			internal event get_lum: get_es_cmd?luminance
+			action do
+				last_lum = get_lum.lum			
+			end	
 				
-				internal event get_lum: get_es_cmd?luminance
-				action do
-					last_lum = get_lum.lum			
-				end	
-				
-        	} // end night
-		}// end Build
+        } // end Night
     }// End statechart
 } // End thing
