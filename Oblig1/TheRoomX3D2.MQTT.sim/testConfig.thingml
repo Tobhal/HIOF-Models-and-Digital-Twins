@@ -36,6 +36,8 @@ configuration X3D_MQTT_SIM {
 	connector es.send_es_cmd => pim.human_input // pim gets set_temp
 	connector es.timer_port => night_day_timer.timer
 	
+	connector es.timer_port => test.timer_port_es
+	
 	// PIM outwards 
 	connector pim.request_sensor => T1.require_val
 	connector pim.request_actuator => T1.require_val

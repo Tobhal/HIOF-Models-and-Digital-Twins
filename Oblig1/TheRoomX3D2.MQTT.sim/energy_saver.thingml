@@ -80,6 +80,11 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			action do
 				lum_threshold = fetch.lum
 			end
+			
+			internal event fetch:get_es_cmd?luminance
+			action do
+				Initial_lum = fetch.lum
+			end
 				 	
             
 		}// end Setup

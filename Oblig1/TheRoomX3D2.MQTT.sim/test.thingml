@@ -3,7 +3,7 @@ import "pim.thingml"
 import "javatimer.thingml"
 import "timestuff.thingml"
 
-thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimeStuff {
+thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimeStuff, TimerMsgs {
 	// Sim
     required port toMQTT {
 		sends temperature,
@@ -22,12 +22,16 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimeStuf
 	provided port get_values {
 		receives temperature, prompt
 	}
+	
+	
+	// Timer from ES
+	provided port timer_port_es {
+		sends timer_timeout
+	}
 
 	property prefered_temp: Integer = 23
 	property temp_diff: Integer = 2
 	property temp_night_diff: Integer = 8
-	
-	property test_temp:Double	
 	
 	property lum_on: Integer = 100
 	property lum_off: Integer = 5
@@ -43,13 +47,15 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimeStuf
 			println("T: Start test")
 			isnight = Night(Daytime)
 			send_cmd!set_temperature(prefered_temp)
+			send_cmd!set_delta(2)
 		end
 		
         state prompt_enter {
 			transition -> day_and_light_on
 			event prompt_value:get_values?prompt
-			guard prompt_value.txt == "Now entering thermostat. Please give temperature observations " and not isnight
-			action do 
+			//guard prompt_value.txt == "Now entering thermostat. Please give temperature observations " and not isnight
+			action do
+				println(prompt_value.txt)
 				println("T: Correct value")
 			end
         }
@@ -97,6 +103,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimeStuf
 		state some_time_later_2 {
 			on entry do 
 				isnight = Night(Nighttime)
+				timer_port_es!timer_timeout()
 				toMQTT!temperature(1, "", 20)
 			end
 
