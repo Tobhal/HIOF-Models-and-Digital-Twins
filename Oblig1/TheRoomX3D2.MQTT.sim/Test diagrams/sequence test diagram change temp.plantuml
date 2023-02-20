@@ -1,0 +1,50 @@
+@startuml sequense diagram
+mainframe Test set temperature
+
+participant "psm:PSM" as psm
+participant "pim:PIM" as pim
+participant "«TestItem»\nenerty_saver:ES" as es
+participant "«Test Component»\ntest:Test" as test
+
+'Set preferred temp
+es <- test: send_cmd!set_temperature(prefered_temp{23})
+pim <- es: human_input!set_temperature(prefered_temp{23})
+
+psm <- pim: add_light_sensor(1, "")
+
+psm <- pim: request_sensor!add_thermometer(1, "")
+psm <- pim: request_actuator!add_device(didid1, didtxt1)
+
+pim -> test: human_output!prompt("Now entering thermostat. Please give temperature observations")
+
+hnote across: 1) day and light on
+'setup compleat
+
+test -> psm: toMQTT!temperature(1, "", 25)
+psm -> pim: provide_temp!temperature(1, "", 25)
+
+psm <- pim: request_actuator!switch_off(1)
+test <- psm: MQTT!switch_off(1)
+
+/'---divider---'/
+
+hnote across: 2) some time later
+
+test -> psm: toMQTT!temperature(1, "", 21)
+psm -> pim: provide_temp!temperature(1, "", 21)
+
+psm <- pim: request_actuator!switch_on(1)
+test <- psm: MQTT!switch_on(1)
+
+/'---divider---'/
+
+hnote across: 3) change comfort temperature
+
+es <- test: send_cmd!set_temperature(prefered_temp{20})
+pim <- es: human_input!set_temperature(prefered_temp{20})
+
+psm <- pim: request_actuator!switch_off(1)
+test <- psm: MQTT!switch_off(1)
+
+
+@enduml
