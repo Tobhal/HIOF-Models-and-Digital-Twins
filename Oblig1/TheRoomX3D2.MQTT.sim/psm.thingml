@@ -32,7 +32,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 		sends temperature
 	}
 	
-	required port provide_lum_motion {
+	required port provide_luminance {
 		sends luminance
 	}
 	
@@ -173,7 +173,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 
 				if (foundL) do 
 					lightval[i-1] = put_lum.lum
-					provide_lum_motion!luminance(id_s, put_lum.lum)
+					provide_luminance!luminance(id_s, put_lum.lum)
 					println("lum is in psm")
 				end
 			end

@@ -22,7 +22,7 @@ configuration X3D_MQTT_SIM {
 	
 	// PSM	
 	connector T1.provide_temp => pim.get_sensor
-	connector T1.provide_lum_motion => es.get_es_cmd // es gets luminence --> doesnt work
+	connector T1.provide_luminance => es.get_es_cmd // es gets luminence --> doesnt work
 	
 	// Simulation
 	connector sim.toMQTT => T1.MQTT // but it also works the other way
