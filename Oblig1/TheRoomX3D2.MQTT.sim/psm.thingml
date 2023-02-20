@@ -159,6 +159,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 			transition -> Idle
 			event put_lum:MQTT?luminance
 			action do 
+				println("PSM recieved luminance value " + put_lum.lum)
 				id_s=put_lum.id
 
 				i = 0

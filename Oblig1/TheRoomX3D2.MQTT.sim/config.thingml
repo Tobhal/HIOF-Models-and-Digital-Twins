@@ -26,7 +26,7 @@ configuration X3D_MQTT_SIM {
 	
 	// Simulation
 	connector sim.toMQTT => T1.MQTT // but it also works the other way
-	connector sim.toMQTT => es.get_es_cmd // es gets luminance and temp 
+	//connector sim.toMQTT => es.get_es_cmd // es gets luminance and temp 
 	
 	// Human
 	connector myself.send_cmd => pim.human_input 
