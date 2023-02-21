@@ -17,8 +17,10 @@ configuration X3D_MQTT_SIM {
 	instance night_day_timer:TimerJava
     instance es:EnergySaver
     // instance sim:Simulation
- 
+ 	
+ 	//Test 
  	instance test:Test
+	connector test.timer_port => night_day_timer.timer
 	
 	// PSM	
 	connector T1.provide_temp => pim.get_sensor
@@ -26,7 +28,6 @@ configuration X3D_MQTT_SIM {
 
 	// Simulation
 	connector test.toMQTT => T1.MQTT // but it also works the other way
-	//connector test.toMQTT => es.get_es_cmd // es gets luminance and temp 
 	
 	// Human
 	connector test.send_cmd => pim.human_input 
