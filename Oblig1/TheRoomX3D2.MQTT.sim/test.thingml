@@ -3,7 +3,7 @@ import "pim.thingml"
 import "javatimer.thingml"
 import "timestuff.thingml"
 
-thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
+thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsgs{
 	// Sim
     required port toMQTT {
 		sends temperature,
@@ -22,6 +22,12 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 	provided port get_values {
 		receives temperature, prompt
 	}
+	
+	required port timer_port {
+		receives timer_timeout
+		sends timer_start,
+			 timer_cancel
+	}
 
 	property prefered_temp: Integer = 23
 	property temp_diff: Integer = 2
@@ -33,6 +39,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 	property lum_off: Integer = 5
 	
 	property isnight:Boolean
+
 
     statechart test_behavior init prompt_enter {
 		on entry do
