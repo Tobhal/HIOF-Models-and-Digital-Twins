@@ -116,12 +116,20 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			end
 				
 				
-			// Internal events	
 
-			internal event get_temp:get_es_cmd?set_temperature
-	        action do
-	        	comfort_temp = get_temp.t
-	        end
+			// Internal events
+				
+				
+			// Get values
+				
+				// Get values
+				
+				internal event get_temp:get_es_cmd?set_temperature
+	            action do
+	                comfort_temp = get_temp.t
+					send_es_cmd!set_temperature(comfort_temp)
+	            end
+
 	
 	        internal event fetch:get_es_cmd?set_lum_threshold
 			action do
@@ -162,17 +170,11 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			end
 				
 				
-			// Internal events
-				
-			internal event fetch:get_es_cmd?set_lum_threshold
-			action do
-				lum_threshold = fetch.lum
-			end
-				
-			internal event get_temp:get_es_cmd?set_temperature
-	        action do
-	        	comfort_temp = get_temp.t
-	        end
+				internal event get_temp:get_es_cmd?set_temperature
+	            action do
+	                comfort_temp = get_temp.t
+					send_es_cmd!set_temperature(comfort_temp)
+	            end
 	            
 			
         } // end Day
@@ -209,10 +211,11 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				
 			// Internal events
 				
-			internal event get_temp:get_es_cmd?set_temperature
-	        action do
-	        	comfort_temp = get_temp.t
-	        end
+				internal event get_temp:get_es_cmd?set_temperature
+	            action do
+	                comfort_temp = get_temp.t
+					send_es_cmd!set_temperature(comfort_temp)
+	            end
 	           
 	        internal event fetch:get_es_cmd?set_lum_threshold
 			action do

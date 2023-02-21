@@ -30,7 +30,6 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			  prompt
 	}
 	required port request_sensor {
-
 		sends add_thermometer
 	}
 	required port request_actuator{
