@@ -38,6 +38,8 @@ configuration X3D_MQTT_SIM {
 	connector es.timer_port => night_day_timer.timer
 	connector es.request_sensor => T1.require_val // To add lightsensor
 	
+	connector es.timer_port => test.timer_port_es
+	
 	// PIM outwards 
 	connector pim.request_sensor => T1.require_val
 	connector pim.request_actuator => T1.require_val

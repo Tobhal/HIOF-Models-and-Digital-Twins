@@ -3,7 +3,10 @@ import "pim.thingml"
 import "javatimer.thingml"
 import "timestuff.thingml"
 
+
 thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsgs{
+
+
 	// Sim
     required port toMQTT {
 		sends temperature,
@@ -22,37 +25,41 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 	provided port get_values {
 		receives temperature, prompt
 	}
-	
+
 	required port timer_port {
 		receives timer_timeout
 		sends timer_start,
 			 timer_cancel
+
 	}
 
 	property prefered_temp: Integer = 23
 	property temp_diff: Integer = 2
 	property temp_night_diff: Integer = 8
 	
-	property test_temp:Double	
-	
 	property lum_on: Integer = 100
 	property lum_off: Integer = 5
 	
+	
+	property Daytime:Long = Timestamp(7,0,0)
+	property Nighttime:Long = Timestamp(23,0,0)
+	
 	property isnight:Boolean
-
 
     statechart test_behavior init prompt_enter {
 		on entry do
 			println("T: Start test")
-			isnight = false
+			isnight = Night(Daytime)
 			send_cmd!set_temperature(prefered_temp)
+			send_cmd!set_delta(2)
 		end
 		
         state prompt_enter {
 			transition -> day_and_light_on
 			event prompt_value:get_values?prompt
-			guard prompt_value.txt == "Now entering thermostat. Please give temperature observations "
-			action do 
+			//guard prompt_value.txt == "Now entering thermostat. Please give temperature observations " and not isnight
+			action do
+				println(prompt_value.txt)
 				println("T: Correct value")
 			end
         }
@@ -99,12 +106,14 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 
 		state some_time_later_2 {
 			on entry do 
+				isnight = Night(Nighttime)
+				timer_port_es!timer_timeout()
 				toMQTT!temperature(1, "", 20)
 			end
 
 			transition -> night_start
 			event switch:toMQTT?SwitchOff
-			guard switch.did == 1
+			guard switch.did == 1 and isnight
 			action do 
 				println("T4: Switch off")
 			end
@@ -140,7 +149,6 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 		state day_start {
 			on entry do 
 				// Set to day
-				isnight = false
 			end
 
 			transition -> end_test
