@@ -163,7 +163,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 
 				i = 0
 				foundL = false
-				while (i>last_light and (not foundL)) do 
+				while (i<last_light and (not foundL)) do 
 					if (id_s == lightsensors[i]) do 
 						foundL = true	// trick to terminate while loop
 					end
