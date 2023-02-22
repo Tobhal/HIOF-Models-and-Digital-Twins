@@ -10,7 +10,7 @@ import "timer.thingml"
 thing Human includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg
 @mock "true"
 { 	required port send_cmd {
-		sends SwitchOn, SwitchOff, set_luminance , set_temperature, set_delta, fetch_temp
+		sends SwitchOn, SwitchOff, set_lum_threshold , set_temperature, set_delta, fetch_temp
 	}
 	provided port get_values {
 		receives temperature, prompt

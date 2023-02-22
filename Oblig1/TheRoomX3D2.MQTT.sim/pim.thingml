@@ -11,16 +11,17 @@ import "timer.thingml"
 thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 	// Receives
 	provided port get_sensor {
-		receives iamalive1, 
-				 iamalive2, 
-				 temperature
+		receives temperature
 	}
 	provided port human_input {
 		receives SwitchOn, 
-				 SwitchOff, 
-				 set_temperature,  
+				 SwitchOff,  
 				 set_delta, 
 				 fetch_temp
+	}
+	
+	provided port es_input {
+		receives set_temperature
 	}
 
 	// Sends
@@ -29,7 +30,6 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			  prompt
 	}
 	required port request_sensor {
-
 		sends add_thermometer
 	}
 	required port request_actuator{
@@ -38,7 +38,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			  SwitchOff
 	}
 
-	//timer ports - it does not hold to include TimerClient since it only has one port and therefore cannot distinguish between two timers
+	//timer ports - it is not enough to include TimerClient since it only has one port and therefore cannot distinguish between two timers
 	
 	required port guard_temperature
     {
@@ -91,7 +91,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			
 			// Normal transition to the Running state
 			transition -> Running
-			event set_temp:human_input?set_temperature
+			event set_temp:es_input?set_temperature
 			action do
 				tmrature = set_temp.t
 				human_output!prompt("Now entering thermostat. Please give temperature observations ") // SIMULATION: prompting on console for the user to react properly
@@ -117,16 +117,6 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				lasttemp = temp.t
 			end
 
-			internal event get_sensor?iamalive1
-			action do 
-				human_output!prompt("INTERNAL ERROR: iamalive1 is covered inside Build")
-			end
-
-			internal event get_sensor?iamalive2
-			action do 
-				human_output!prompt("INTERNAL ERROR: iamalive2 is covered inside Build")
-			end
-				
 			transition -> Build
 			event tmout:guard_human?timer_timeout
 			action do
@@ -247,7 +237,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				end
 
 				transition -> Thermostat
-				event set_temp:human_input?set_temperature
+				event set_temp:es_input?set_temperature
 				action do
 					tmrature = set_temp.t
 				end
@@ -267,7 +257,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				end
 
 				transition -> Thermostat
-				event set_temp:human_input?set_temperature
+				event set_temp:es_input?set_temperature
 				action do
 					tmrature = set_temp.t
 				end
@@ -294,7 +284,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				end
 
 				transition -> Thermostat
-				event set_temp:human_input?set_temperature
+				event set_temp:es_input?set_temperature
 				action do
 					tmrature = set_temp.t
 				end
@@ -336,7 +326,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			end
 
 			transition -> Running
-			event human_input?set_temperature
+			event es_input?set_temperature
 			action do
 				human_output!prompt("INTERNAL ERROR: Impossible set_temperature at PIM.Running")
 			end
@@ -346,16 +336,6 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			action do
 				human_output!prompt("INTERNAL ERROR: temperature received at PIM.Running")
 				lasttemp = temp.t
-			end
-
-			internal event get_sensor?iamalive1
-			action do 
-				human_output!prompt("INTERNAL ERROR: iamalive1 received at PIM.Running")
-			end
-
-			internal event get_sensor?iamalive2
-			action do 
-				human_output!prompt("INTERNAL ERROR: iamalive2 received at PIM.Running")
 			end
 
 		} // end Running

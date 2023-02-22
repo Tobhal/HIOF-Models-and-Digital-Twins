@@ -22,7 +22,7 @@ thing fragment TemperatureMsg {
 thing fragment LuminanceMsg {
     message luminance(id:Integer, lum:Double); //luminance
     message add_lightsensor(id:Integer);
-    message set_luminance(lum:Double); // for setting the threshold
+    message set_lum_threshold(lum:Double); // for setting the threshold
 }
 
 //Motion

@@ -24,9 +24,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 				 add_device, 
 				 add_lightsensor, 
 				 SwitchOn, 
-				 SwitchOff, 
-				 iamalive1, 
-				 iamalive2
+				 SwitchOff
 	}
 
 	// Sends
@@ -34,7 +32,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 		sends temperature
 	}
 	
-	required port provide_lum_motion {
+	required port provide_luminance {
 		sends luminance
 	}
 	
@@ -78,6 +76,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 			transition -> Idle
 			event put_t:MQTT?temperature
 			action do
+				println("PSM recieved luminance value " + put_t.t)
 				id_s=put_t.id
 
 				i=0
@@ -90,6 +89,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 				end
 				if (found) do
 					thermoval[i-1]=put_t.t
+					println("PSM is attempting to send temperature")
 					provide_temp!temperature(id_s,thermotext[i],put_t.t)				
 				end
 			end
@@ -152,6 +152,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 			transition -> Idle
 			event addlum:require_val?add_lightsensor
 			action do 
+				println("Light sensor added with id " + addlum.id)
 				id_s = addlum.id
 				lightsensors[last_light] = id_s
 				lightval[last_light] = 50	// Just a default value
@@ -161,21 +162,22 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 			transition -> Idle
 			event put_lum:MQTT?luminance
 			action do 
+				println("PSM recieved luminance value " + put_lum.lum)
 				id_s=put_lum.id
 
 				i = 0
-				foundL = false
-				while (i>last_light and (not foundL)) do 
+				found = false
+				while (i<last_light and (not found)) do 
 					if (id_s == lightsensors[i]) do 
-						foundL = true	// trick to terminate while loop
+						found = true	// trick to terminate while loop
 					end
 					i = i + 1
 				end
 
-				if (foundL) do 
+				if (found) do 
 					lightval[i-1] = put_lum.lum
-					provide_lum_motion!luminance(id_s, put_lum.lum)
-					println("lum is in psm")
+					println("PSM is attempting to send luminance")
+					provide_luminance!luminance(id_s, put_lum.lum)
 				end
 			end
 		}

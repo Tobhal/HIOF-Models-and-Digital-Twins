@@ -1,119 +1,148 @@
 import "datatypes.thingml" from stl
 import "pim.thingml"
-import "timer.thingml"
+import "javatimer.thingml"
+import "timestuff.thingml"
 
-thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
-    provided port from_MQTT {
-		receives SwitchOn,
-			  	 SwitchOff
+
+thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsgs{
+
+
+	// Sim
+    required port toMQTT {
 		sends temperature,
 			  luminance
+			  
+		receives SwitchOn,
+			  	 SwitchOff
 	} 
-
+	
+	// Human
     required port send_cmd {
 		sends SwitchOn, SwitchOff, set_temperature, set_delta, fetch_temp
 	}
 
+	// Human
 	provided port get_values {
 		receives temperature, prompt
+	}
+
+	required port timer_port {
+		receives timer_timeout
+		sends timer_start,
+			 timer_cancel
+
 	}
 
 	property prefered_temp: Integer = 23
 	property temp_diff: Integer = 2
 	property temp_night_diff: Integer = 8
-
+	
 	property lum_on: Integer = 100
 	property lum_off: Integer = 5
+	
+	
+	property Daytime:Long = Timestamp(7,0,0)
+	property Nighttime:Long = Timestamp(23,0,0)
+	
+	property isnight:Boolean
 
     statechart test_behavior init prompt_enter {
 		on entry do
+			println("T: Start test")
+			isnight = Night(Daytime)
 			send_cmd!set_temperature(prefered_temp)
+			send_cmd!set_delta(2)
 		end
-
+		
         state prompt_enter {
 			transition -> day_and_light_on
 			event prompt_value:get_values?prompt
-			action do 
-				if (prompt_value.txt == "Now entering thermostat") do 
-					print("correct value")
-				end
-				else do 
-					print("Wrong value")
-				end
+			//guard prompt_value.txt == "Now entering thermostat. Please give temperature observations " and not isnight
+			action do
+				println(prompt_value.txt)
+				println("T: Correct value")
 			end
         }
 
 		state day_and_light_on {
 			on entry do 
-				from_MQTT!temperature(1, "", 15)
+				toMQTT!temperature(1, "", 15)
 			end
 
 			transition -> some_time_later_1
-			event switch:from_MQTT?SwitchOn
+			event switch:toMQTT?SwitchOn
+			guard switch.did == 1
 			action do 
-				print("Switch on")
+				println("T1: Switch on")
 			end
 		}
 
 		state some_time_later_1 {
 			on entry do 
-				from_MQTT!temperature(1, "", 25)
+				toMQTT!temperature(1, "", 25)
 			end
 
 			transition -> day_and_light_off
-			event switch:from_MQTT?SwitchOff
+			event switch:toMQTT?SwitchOff
+			guard switch.did == 1
 			action do 
-				print("Switch off")
+				println("T2: Switch off")
 			end
 		}
 
 		state day_and_light_off {
 			on entry do 
-				from_MQTT!temperature(1, "", 15)
-				from_MQTT!luminance(1, lum_off)
+				toMQTT!temperature(1, "", 15)
+				toMQTT!luminance(1, lum_off)
 			end
 
 			transition -> some_time_later_2
-			event switch:from_MQTT?SwitchOn
+			event switch:toMQTT?SwitchOn
+			guard switch.did == 1
 			action do 
-				print("Switch on")
+				println("T3: Switch on")
 			end
 		}
 
 		state some_time_later_2 {
 			on entry do 
-				from_MQTT!temperature(1, "", 20)
+				isnight = Night(Nighttime)
+				timer_port_es!timer_timeout()
+				toMQTT!temperature(1, "", 20)
 			end
 
 			transition -> night_start
-			event switch:from_MQTT?SwitchOff
+			event switch:toMQTT?SwitchOff
+			guard switch.did == 1 and isnight
 			action do 
-				print("Switch off")
+				println("T4: Switch off")
 			end
 		}
 
 		state night_start {
 			on entry do
 				// Set to night
-				from_MQTT!temperature(1, "", 10)
+				toMQTT!temperature(1, "", 10)
 			end
 
 			transition -> some_time_later_3
-			event switch:from_MQTT?SwitchOn
+			event switch:toMQTT?SwitchOn
+			guard switch.did == 1
 			action do 
-				print("Switch on")
+				println("T5: Switch on")
 			end
 		}
 
 		state some_time_later_3 {
 			on entry do 
-				from_MQTT!temperature(1, "", 14)
+				toMQTT!temperature(1, "", 14)
 			end
 
 			transition -> day_start
-			event switch:from_MQTT?SwitchOff
+			event switch:toMQTT?SwitchOff
+			guard switch.did == 1
 			action do 
-				print("Switch off")
+				println("T6: Switch off")
 			end
 		}
 
@@ -123,14 +152,17 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg {
 			end
 
 			transition -> end_test
-			event switch:from_MQTT?SwitchOn
+			event switch:toMQTT?SwitchOn
+			guard switch.did == 1
 			action do 
-				print("Switch on")
+				println("T7: Switch on")
 			end
 		}
 
 		state end_test {
-
+			on entry do
+				println("T9: Success")
+			end
 		}
     }
 }
