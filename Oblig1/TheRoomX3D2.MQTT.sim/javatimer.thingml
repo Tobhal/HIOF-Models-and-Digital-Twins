@@ -6,7 +6,6 @@ object JTimerTask
 object JTimer
 @java_type "java.util.Timer";
 
-
 // Manage a set of software timers.
 thing TimerJava includes Timer
 @pim "Timer"
@@ -46,4 +45,3 @@ thing TimerJava includes Timer
         }
     }
 }
-

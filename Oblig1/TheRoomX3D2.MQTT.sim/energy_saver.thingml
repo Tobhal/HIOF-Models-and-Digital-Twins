@@ -4,7 +4,6 @@ import "timestuff.thingml"
 import "javatimer.thingml"
 
 thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, TimerMsgs {
-     
      // Ports.
     required port send_es_cmd {
         sends set_temperature  // pass on to pim	 
@@ -89,8 +88,6 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			action do
 				Initial_lum = fetch.lum
 			end
-				 	
-            
 		}// end Setup
 		
 		state Present {
@@ -118,28 +115,19 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				println("People are not present anymore")
 				println("New temp is " + (comfort_temp - lights_off) + " for day time")
 			end
-				
-				
 
 			// Internal events
-				
-				
 			// Get values
-				
-				// Get values
-				
-				internal event get_temp:get_es_cmd?set_temperature
-	            action do
-	                comfort_temp = get_temp.t
-					send_es_cmd!set_temperature(comfort_temp)
-	            end
-
+			internal event get_temp:get_es_cmd?set_temperature
+			action do
+				comfort_temp = get_temp.t
+				send_es_cmd!set_temperature(comfort_temp)
+			end
 	
 	        internal event fetch:get_es_cmd?set_lum_threshold
 			action do
 				lum_threshold = fetch.lum
 			end
-	
         } // end Present
         	
         state Day {
@@ -148,7 +136,6 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			end
 	        	
 	        // Transitions to other states within the state
-	        	
 			transition -> Present
 			event recieve_lum: get_es_cmd?luminance
 			guard recieve_lum.lum>lum_threshold
@@ -160,7 +147,6 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			transition -> Night
 			event day_night_change:timer_port?timer_timeout
 			action do
-			
 				// isnight swithes
 				isnight = Night(Now())
 				
@@ -173,14 +159,11 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				println("New temp is " + (comfort_temp - night_temp_delta) + " for night time")
 			end
 				
-				
-				internal event get_temp:get_es_cmd?set_temperature
-	            action do
-	                comfort_temp = get_temp.t
-					send_es_cmd!set_temperature(comfort_temp)
-	            end
-	            
-			
+			internal event get_temp:get_es_cmd?set_temperature
+			action do
+				comfort_temp = get_temp.t
+				send_es_cmd!set_temperature(comfort_temp)
+			end
         } // end Day
         	
         state Night{
@@ -192,16 +175,16 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			transition -> Day
 			event day_night_change:timer_port?timer_timeout
 			action do
-					// isnight swithes
-					isnight = Night(Now())
-					
-					// Reset timer 
-					var time_left:Long = LeftOfDay()
-					timer_port!timer_start(time_left)
-					
-					// Change comfort temperature
-					send_es_cmd!set_temperature(comfort_temp-lights_off)
-					println("New temp is " + (comfort_temp - lights_off) + " for day time")
+				// isnight swithes
+				isnight = Night(Now())
+				
+				// Reset timer 
+				var time_left:Long = LeftOfDay()
+				timer_port!timer_start(time_left)
+				
+				// Change comfort temperature
+				send_es_cmd!set_temperature(comfort_temp-lights_off)
+				println("New temp is " + (comfort_temp - lights_off) + " for day time")
 			end
 				
 			// If people present, temp is set to comfort temperature
@@ -214,18 +197,16 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			end
 				
 			// Internal events
-				
-				internal event get_temp:get_es_cmd?set_temperature
-	            action do
-	                comfort_temp = get_temp.t
-					send_es_cmd!set_temperature(comfort_temp)
-	            end
+			internal event get_temp:get_es_cmd?set_temperature
+			action do
+				comfort_temp = get_temp.t
+				send_es_cmd!set_temperature(comfort_temp)
+			end
 	           
 	        internal event fetch:get_es_cmd?set_lum_threshold
 			action do
 				lum_threshold = fetch.lum
 			end
-				
         } // end Night
     }// End statechart
 } // End thing

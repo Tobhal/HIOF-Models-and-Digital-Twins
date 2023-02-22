@@ -3,10 +3,7 @@ import "pim.thingml"
 import "javatimer.thingml"
 import "timestuff.thingml"
 
-
 thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsgs{
-
-
 	// Sim
     required port toMQTT {
 		sends temperature,
@@ -39,7 +36,6 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 	
 	property lum_on: Integer = 100
 	property lum_off: Integer = 5
-	
 	
 	property Daytime:Long = Timestamp(7,0,0)
 	property Nighttime:Long = Timestamp(23,0,0)

@@ -48,6 +48,4 @@ configuration X3D_MQTT_SIM {
 
 	connector pim.guard_temperature =>g_temp.timer
 	connector pim.guard_human => g_humn.timer
-
-
 }

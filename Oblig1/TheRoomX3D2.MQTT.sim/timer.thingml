@@ -1,6 +1,5 @@
 import "datatypes.thingml" from stl
 
-
 /*****************************************************************************
  * Definition of the built-in things and messages
  *****************************************************************************/
@@ -41,4 +40,3 @@ thing TimerClientMock includes TimerClient
 {
 	
 }
-

@@ -16,7 +16,6 @@ protocol MQTT @serializer "JSON"
   @mqtt_subscribe_topic "CPS2021/tempoutput";
  */
 
-
 thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 	// Receives
 	provided port require_val {
@@ -71,7 +70,6 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 	property did:Integer 				// temporary device id
 	
 	statechart behaviorMQTTDriver init Idle{
-
 		state Idle {
 			transition -> Idle
 			event put_t:MQTT?temperature
@@ -183,4 +181,3 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 		}
 	}
 } // MQTTDriver
-
