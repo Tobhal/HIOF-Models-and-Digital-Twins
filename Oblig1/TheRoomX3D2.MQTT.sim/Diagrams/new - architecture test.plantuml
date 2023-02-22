@@ -12,13 +12,6 @@ rectangle g_humn:Timer {
     portout humn_timer
 }
 
-'human
-rectangle human {
-    portin get_values
-    
-    portout send_cmd
-}
-
 'PIM
 rectangle pim:PIM {
     portout get_sensor
@@ -43,11 +36,6 @@ rectangle psm:PSM {
     portout MQTT
 }
 
-'SIM
-rectangle simulation:sim {
-    port toMQTT
-}
-
 'energy saver
 rectangle energy_saver:ES {
     portin send_es_cmd
@@ -56,6 +44,16 @@ rectangle energy_saver:ES {
     portout get_es_cmd
     'es prefix for clarity
     portout es_request_sensor
+}
+
+rectangle test:Test {
+    portin get_values
+    
+    portout send_cmd
+
+    port toMQTT
+    'test prefix for clarity
+    port test_timer_port
 }
 
 'PSM
@@ -74,6 +72,8 @@ send_es_cmd --> es_input
 timer_port --> timer
 es_request_sensor --> require_val
 
+timer_port --> timer_port_es
+
 'PIM
 request_sensor --> require_val
 request_actuator --> require_val
@@ -82,5 +82,8 @@ human_output --> get_values
 
 guard_temperature --> temp_timer
 guard_human --> humn_timer
+
+'Test
+test_timer_port --> timer
 
 @enduml
