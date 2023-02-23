@@ -43,7 +43,6 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
     statechart test_behavior init prompt_enter {
 		on entry do
 			println("T: Start test")
-			println("Sending comfort temperature to PIM")
 			send_cmd!set_temperature(prefered_temp)
 		end
 		
@@ -52,7 +51,8 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 			event prompt_value:get_values?prompt
 			guard prompt_value.txt == "Now entering thermostat. Please give temperature observations "
 			action do
-				println("T: Success")
+				println("----------------------------")
+				println("T: Sending comfort temperature to PIM")
 			end
         }
 
@@ -60,7 +60,11 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 			on entry do
 				if(isNight)
 					timer_port!timer_timeout()
+				println("----------------------------")
+				println("T: Day time and light on")
 				toMQTT!temperature(1, "", 15)
+				toMQTT!luminance(1, lum_on)
+
 			end
 
 			transition -> some_time_later_1
@@ -74,6 +78,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 		state some_time_later_1 {
 			on entry do 
 				toMQTT!temperature(1, "", 25)
+				println("Sending temperature above comfort")
 			end
 
 			transition -> day_and_light_off
@@ -86,6 +91,8 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 
 		state day_and_light_off {
 			on entry do 
+				println("----------------------------")
+				println("T: Day time and lights off")
 				toMQTT!temperature(1, "", 15)
 				toMQTT!luminance(1, lum_off)
 			end
@@ -100,8 +107,10 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 
 		state some_time_later_2 {
 			on entry do
-				timer_port!timer_timeout()
+				println("----------------------------")
+				println("T: Night time and lights off")
 				toMQTT!temperature(1, "", 20)
+				timer_port!timer_timeout()
 			end
 
 			transition -> night_start
@@ -115,8 +124,8 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 		state night_start {
 			on entry do
 				// Set to night
-				println("T: Testing Night")
 				toMQTT!temperature(1, "", 10)
+				println("Setting temperature lower than expected value")
 			end
 
 			transition -> some_time_later_3
@@ -126,11 +135,28 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 				println("T5: Switch on")
 			end
 		}
-
+		
 		state some_time_later_3 {
 			on entry do
-				timer_port!timer_timeout() 
+				println("----------------------------")
+				println("T: Night time and lights on")
 				toMQTT!temperature(1, "", 20)
+				toMQTT!luminance(1, lum_on)
+			end
+			transition -> some_time_later_4
+			event switch:toMQTT?SwitchOn
+			guard switch.did == 1
+			action do 
+				println("T5: Switch on")
+			end
+			}
+
+		state some_time_later_4 {
+			on entry do
+				println("----------------------------")
+				println("T: Day time and lights on")
+				timer_port!timer_timeout() 
+				toMQTT!temperature(1, "", 25)
 			end
 
 			transition -> day_start
@@ -144,20 +170,23 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 		state day_start {
 			on entry do 
 				// Set to day
-				println("T: Testing day again")
+				println("----------------------------")
+				println("T: Day time and lights off")
+				toMQTT!luminance(1, lum_off)
 			end
 
 			transition -> end_test
-			event switch:toMQTT?SwitchOn
+			event switch:toMQTT?SwitchOff
 			guard switch.did == 1
 			action do 
-				println("T7: Switch on")
+				println("T7: Switch off")
 			end
 		}
 
 		state end_test {
 			on entry do
-				println("T8: Success")
+				println("----------------------------")
+				println("T: All tests complete")
 			end
 		}
     }
