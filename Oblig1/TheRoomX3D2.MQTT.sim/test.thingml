@@ -5,8 +5,6 @@ import "timestuff.thingml"
 
 
 thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsgs, TimeStuff {
-
-
 	// Sim
     required port toMQTT {
 		sends temperature,

@@ -6,7 +6,6 @@ import "io.thingml"
 import "energy_saver.thingml"
 import "test.thingml"
 
-
 configuration X3D_MQTT_SIM {
 	instance T1:MQTTDriver
 	instance pim:PIM

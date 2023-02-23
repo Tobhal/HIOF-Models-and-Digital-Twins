@@ -32,11 +32,10 @@ thing fragment TimerClient includes TimerMsgs
 		receives timer_timeout
 		sends timer_start, timer_cancel
 	}
-    
 }
 
 thing TimerClientMock includes TimerClient
 @mock "true"
-{
-	
+{ 
+
 }
