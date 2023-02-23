@@ -38,6 +38,8 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 	property lum_on: Integer = 100
 	property lum_off: Integer = 5
 	
+	property isNight:Boolean = Night(Now())
+	
     statechart test_behavior init prompt_enter {
 		on entry do
 			println("T: Start test")
@@ -55,7 +57,9 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
         }
 
 		state day_and_light_on {
-			on entry do 
+			on entry do
+				if(isNight)
+					timer_port!timer_timeout()
 				toMQTT!temperature(1, "", 15)
 			end
 
