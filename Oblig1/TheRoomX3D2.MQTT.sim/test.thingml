@@ -94,7 +94,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 
 		state some_time_later_2 {
 			on entry do 
-				toMQTT!temperature(1, "", 19)
+				toMQTT!temperature(1, "", 22)
 				println("----------------------------")
 				println("T3: Sending temperature below comfort")
 			end
@@ -111,7 +111,6 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 			on entry do 
 				println("----------------------------")
 				println("T4: Day time and lights off")
-				toMQTT!temperature(1, "", 23)
 				toMQTT!luminance(1, lum_off)
 			end
 
