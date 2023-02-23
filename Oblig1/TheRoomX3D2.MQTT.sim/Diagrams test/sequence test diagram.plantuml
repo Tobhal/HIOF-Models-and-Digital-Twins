@@ -7,138 +7,159 @@ participant "«TestItem»\nenerty_saver:ES" as es
 participant "«Test Component»\ntest:Test" as test
 
 'Set preferred temp
-es <- test: send_cmd!set_temperature(prefered_temp{23})
-pim <- es: human_input!set_temperature(prefered_temp{23})
+es <- test: set_temperature(prefered_temp{23})
+pim <- es: set_temperature(prefered_temp{23})
 
 psm <- pim: add_light_sensor(1, "")
 
-psm <- pim: request_sensor!add_thermometer(1, "")
-psm <- pim: request_actuator!add_device(didid1, didtxt1)
+psm <- pim: add_thermometer(1, "")
+psm <- pim: add_device(didid1, didtxt1)
 
-pim -> test: human_output!prompt("Now entering thermostat. Please give temperature observations")
+pim -> test: prompt("Now entering thermostat. Please give temperature observations")
 
-hnote across: 1) day and light on
+hnote across: T1) day and light on
 'setup compleat
 
-test -> psm: toMQTT!temperature(1, "", 25)
-psm -> pim: provide_temp!temperature(1, "", 25)
+test -> psm: temperature(1, "", 15)
+psm -> pim: temperature(1, "", 15)
 
-psm <- pim: request_actuator!switch_off(1)
-test <- psm: MQTT!switch_off(1)
+test -> psm: luminence(1, "", 20)
+psm -> pim: luminence(1, "", 20)
+pim -> es: luminence(1, "", 20)
 
-/'---divider---'/
-
-hnote across: 2) some time later
-
-test -> psm: toMQTT!temperature(1, "", 21)
-psm -> pim: provide_temp!temperature(1, "", 21)
-
-psm <- pim: request_actuator!switch_on(1)
-test <- psm: MQTT!switch_on(1)
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
 
 /'---divider---'/
 
-hnote across: 3) lights off
+hnote across: T2) some time later 1
 
-test -> psm: to!MQTT!luminence(1, "", 5)
-psm -> pim: provide_temp!luminence(1, "", 5)
-pim -> es: human_output!luminence(1, "", 5)
+test -> psm: temperature(1, "", 25)
+psm -> pim: temperature(1, "", 25)
 
-pim <- es: provide_cmd!set_temperature(prefered_temp{23} - temp_diff{2})
-
-psm <- pim: request_actuator!switch_off(1)
-test <- psm: MQTT!switch_off(1)
+psm <- pim: switch_off(1)
+test <- psm: switch_off(1)
 
 /'---divider---'/
 
-hnote across: 4) some time later
+hnote across: T3) some time later 2
 
-test -> psm: toMQTT!temperature(1, "", 19)
-psm -> pim: provide_temp!temperature(1, "", 19)
+test -> psm: temperature(1, "", 19)
+psm -> pim: temperature(1, "", 19)
 
-psm <- pim: request_actuator!switch_on(1)
-test <- psm: MQTT!switch_on(1)
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
 
 /'---divider---'/
 
-hnote across: 5) night start
+hnote across: T4) lights off
+
+test -> psm: luminence(1, "", 5)
+psm -> pim: luminence(1, "", 5)
+pim -> es: luminence(1, "", 5)
+
+pim <- es: set_temperature(prefered_temp{23} - temp_diff{2})
+
+psm <- pim: switch_off(1)
+test <- psm: switch_off(1)
+
+/'---divider---'/
+
+hnote across: T5) some time later 3
+
+test -> psm: temperature(1, "", 16)
+psm -> pim: temperature(1, "", 16)
+
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
+
+/'---divider---'/
+
+hnote across: T6) night start
 note over es: Timer day/night toggle
 es <- test: timer_timeout()
 
-pim <- es: provide_cmd!set_temperature(prefered_temp{23} - temp_night_diff{8})
+pim <- es: set_temperature(prefered_temp{23} - temp_night_diff{8})
 
-psm <- pim: request_actuator!switch_off(1)
-test <- psm: MQTT!switch_off(1)
-
-/'---divider---'/
-
-hnote across: 6) some time later
-
-test -> psm: toMQTT!temperature(1, "", 14)
-psm -> pim: provide_temp!temperature(1, "", 14)
-
-psm <- pim: request_actuator!switch_on(1)
-test <- psm: MQTT!switch_on(1)
+psm <- pim: switch_off(1)
+test <- psm: switch_off(1)
 
 /'---divider---'/
 
-hnote across: 7) some time later
+hnote across: T7) some time later 4
 
-test -> psm: toMQTT!temperature(1, "", 15)
-psm -> pim: provide_temp!temperature(1, "", 15)
+test -> psm: temperature(1, "", 14)
+psm -> pim: temperature(1, "", 14)
 
-psm <- pim: request_actuator!switch_off(1)
-test <- psm: MQTT!switch_off(1)
-
-/'---divider---'/
-
-hnote across: 8) lights on
-
-test -> psm: to!MQTT!luminence(1, "", 20)
-psm -> pim: provide_temp!luminence(1, "", 20)
-pim -> es: human_output!luminence(1, "", 20)
-
-pim <- es: provide_cmd!set_temperature(prefered_temp{23})
-
-psm <- pim: request_actuator!switch_on(1)
-test <- psm: MQTT!switch_on(1)
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
 
 /'---divider---'/
 
-hnote across: 9) lights off
+hnote across: T8) some time later 5
 
-test -> psm: to!MQTT!luminence(1, "", 5)
-psm -> pim: provide_temp!luminence(1, "", 5)
-pim -> es: human_output!luminence(1, "", 5)
+test -> psm: temperature(1, "", 16)
+psm -> pim: temperature(1, "", 16)
 
-pim <- es: provide_cmd!set_temperature(prefered_temp{23} - temp_diff{2})
-
-psm <- pim: request_actuator!switch_off(1)
-test <- psm: MQTT!switch_off(1)
+psm <- pim: switch_off(1)
+test <- psm: switch_off(1)
 
 /'---divider---'/
 
-hnote across: 10) day start
+hnote across: T9) lights on
+
+test -> psm: luminence(1, "", 20)
+psm -> pim: luminence(1, "", 20)
+pim -> es: luminence(1, "", 20)
+
+pim <- es: set_temperature(prefered_temp{23})
+
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
+
+/'---divider---'/
+
+hnote across: T10) some time later 6
+
+test -> psm: temperature(1, "", 14)
+psm -> pim: temperature(1, "", 14)
+
+psm <- pim: switch_off(1)
+test <- psm: switch_off(1)
+
+/'---divider---'/
+
+hnote across: T11) some time later 7
+
+test -> psm: temperature(1, "", 16)
+psm -> pim: temperature(1, "", 16)
+
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
+
+/'---divider---'/
+
+hnote across: T12) lights off
+
+test -> psm: luminence(1, "", 5)
+psm -> pim: luminence(1, "", 5)
+pim -> es: luminence(1, "", 5)
+
+pim <- es: set_temperature(prefered_temp{23} - temp_diff{2})
+
+psm <- pim: switch_off(1)
+test <- psm: switch_off(1)
+
+/'---divider---'/
+
+hnote across: T13) day start
 note over es: Timer day/night toggle
 
 es <- test: timer_timeout()
 
 pim <- es: set_temperature(prefered_temp{23} - temp_diff{2})
 
-psm <- pim: request_actuator!switch_on(1)
-test <- psm: MQTT!switch_on(1)
-
-/'---divider---'/
-
-hnote across: 11) lights on
-
-test -> psm: to!MQTT!luminence(1, "", 20)
-psm -> pim: provide_temp!luminence(1, "", 20)
-pim -> es: human_output!luminence(1, "", 20)
-
-pim <- es: provide_cmd!set_temperature(prefered_temp{23})
-
-psm <- pim: request_actuator!switch_on(1)
-test <- psm: MQTT!switch_on(1)
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
 
 @enduml
