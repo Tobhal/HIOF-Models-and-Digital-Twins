@@ -16,9 +16,13 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 	}
 	
 	required port timer_port {
-		receives timer_timeout
-		sends timer_start
+		sends timer_start					// Timer starts
 	}
+	
+	provided port timer_port_es {
+			receives timer_timeout				// Timer expires
+	}
+	
 	required port request_sensor {
 		sends add_lightsensor
 	}
@@ -56,7 +60,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
         	// Setting initial state based on time and luminance
           	transition -> Present
           	event set_temp:get_es_cmd?set_temperature
-          	guard Initial_lum>=lum_threshold
+          	guard last_lum>=lum_threshold
           	action do
           		comfort_temp = set_temp.t
           		send_es_cmd!set_temperature(set_temp.t)
@@ -86,7 +90,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			
 			internal event fetch:get_es_cmd?luminance
 			action do
-				Initial_lum = fetch.lum
+				last_lum = fetch.lum
 			end
 		}// end Setup
 		
@@ -118,11 +122,13 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 
 			// Internal events
 			// Get values
+		
 			internal event get_temp:get_es_cmd?set_temperature
-			action do
-				comfort_temp = get_temp.t
-				send_es_cmd!set_temperature(comfort_temp)
-			end
+	        action do
+	           	comfort_temp = get_temp.t
+	           	send_es_cmd!set_temperature(comfort_temp)
+	        end
+
 	
 	        internal event fetch:get_es_cmd?set_lum_threshold
 			action do
@@ -145,7 +151,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			end
 				
 			transition -> Night
-			event day_night_change:timer_port?timer_timeout
+			event day_night_change:timer_port_es?timer_timeout
 			action do
 				// isnight swithes
 				isnight = Night(Now())
@@ -173,7 +179,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			// Transitions to other states within the state
 				
 			transition -> Day
-			event day_night_change:timer_port?timer_timeout
+			event day_night_change:timer_port_es?timer_timeout
 			action do
 				// isnight swithes
 				isnight = Night(Now())
@@ -197,11 +203,12 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			end
 				
 			// Internal events
+				
 			internal event get_temp:get_es_cmd?set_temperature
-			action do
-				comfort_temp = get_temp.t
+	        action do
+	            comfort_temp = get_temp.t
 				send_es_cmd!set_temperature(comfort_temp)
-			end
+	        end
 	           
 	        internal event fetch:get_es_cmd?set_lum_threshold
 			action do
