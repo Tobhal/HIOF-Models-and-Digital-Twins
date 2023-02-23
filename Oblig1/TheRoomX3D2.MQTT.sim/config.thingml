@@ -24,8 +24,6 @@ configuration X3D_MQTT_SIM {
 	connector T1.provide_temp => pim.get_sensor
 	connector T1.provide_luminance => es.get_es_cmd // es gets luminence
 	
-
-	
 	// Simulation
 	connector sim.toMQTT => T1.MQTT // but it also works the other way
 	

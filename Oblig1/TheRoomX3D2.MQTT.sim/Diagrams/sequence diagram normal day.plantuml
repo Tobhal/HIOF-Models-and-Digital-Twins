@@ -1,112 +1,75 @@
 @startuml sequense diagram
-mainframe set name here
+mainframe Normal day new
 
-
+participant "simulation:sim" as sim
 participant "psm:PSM" as psm
 participant "pim:PIM" as pim
-participant "enerty_saver:ES" as es
-participant "simulation:sim" as sim
-
+participant "energy_saver:ES" as es
+actor "myself:Human" as human
 
 'Set preferred temp
-es <- sim: set_temperature(prefered_temp{23})
-es -> pim: set_luminance({50})
-pim <- es: set_temperature(prefered_temp{23})
+es <- human: send_cmd!set_temperature(prefered_temp{23})
+pim <- es: human_input!set_temperature(prefered_temp{23})
 
-psm <- es: add_lightsensor(1, "")
+psm <- pim: add_light_sensor(1, "")
 
-psm <- pim: add_thermometer(1, "")
-psm <- pim: add_device(didid1, didtxt1)
+psm <- pim: request_sensor!add_thermometer(1, "")
+psm <- pim: request_actuator!add_device(didid1, didtxt1)
 
-pim -> sim: prompt("Now entering thermostat")
+pim -> human: human_output!prompt("Now entering thermostat")
 
 hnote across: day and light on
 'setup compleat
 
-sim -> psm: temprature(1, "", 15)
-psm -> pim: temprature(1, "", 15)
-pim -> es: temprature(1, "", 15)
+sim -> psm: toMQTT!temperature(1, "", 15)
+psm -> pim: provide_temp!temperature(1, "", 15)
 
-sim -> es: luminence(1, "", 20_000)
-sim <- pim: switch_on(1)
+psm <- pim: request_actuator!switch_on(1)
+sim <- psm: MQTT!switch_on(1)
 
 hnote across: some time later
 
-sim -> psm: temprature(1, "", 25)
-psm -> pim: temprature(1, "", 25)
-pim -> es: temprature(1, "", 25)
+sim -> psm: toMQTT!temperature(1, "", 25)
+psm -> pim: provide_temp!temperature(1, "", 25)
 
-sim -> es: luminence(1, "", 20_000)
-sim <- pim: switch_off(1)
+psm <- pim: request_actuator!switch_off(1)
+sim <- psm: MQTT!switch_off(1)
 
 hnote across: lights off
 
-sim -> psm: temprature(1, "", 23)
-psm -> pim: temprature(1, "", 23)
-pim -> es: temprature(1, "", 23)
+sim -> psm: to!MQTT!luminence(1, "", 100)
+psm -> pim: provide_temp!luminence(1, "", 100)
+pim -> es: human_output!luminence(1, "", 100)
 
-sim -> es: luminence(1, "", 40)
-
-pim <- es: set_temperature(prefered_temp{23} - temp_diff{2})
-
-sim <- pim: switch_off(1)
+pim <- es: provide_cmd!set_temperature(prefered_temp{23} - temp_diff{2})
 
 hnote across: some time later
 
-sim -> psm: temprature(1, "", 20)
-psm -> pim: temprature(1, "", 20)
-pim -> es: temprature(1, "", 20)
+sim -> psm: toMQTT!temperature(1, "", 19)
+psm -> pim: provide_temp!temperature(1, "", 19)
 
-sim -> es: luminence(1, "", 40)
-sim <- pim: switch_on(1)
+psm <- pim: request_actuator!switch_on(1)
+sim <- psm: MQTT!switch_on(1)
 
 hnote across: night start
+hnote over es: Timer day/night toggle
 
-sim -> es: Timer for night activate
-sim -> psm: temprature(1, "", 20)
-psm -> pim: temprature(1, "", 20)
-pim -> es: temprature(1, "", 20)
+pim <- es: provide_cmd!set_temperature(prefered_temp{23} - temp_night_diff{8})
 
-sim -> es: luminence(1, "", 40)
-
-pim <- es: set_temperature(prefered_temp{20} - temp_night_diff{8})
-sim <- pim: switch_off(1)
+psm <- pim: request_actuator!switch_off(1)
+sim <- psm: MQTT!switch_off(1)
 
 hnote across: some time later
 
-sim -> psm: temprature(1, "", 14)
-psm -> pim: temprature(1, "", 14)
-pim -> es: temprature(1, "", 14)
+sim -> psm: toMQTT!temperature(1, "", 14)
+psm -> pim: provide_temp!temperature(1, "", 14)
 
-sim -> es: luminence(1, "", 40)
+psm <- pim: request_actuator!switch_on(1)
+sim <- psm: MQTT!switch_on(1)
 
-sim <- pim: switch_on(1)
+hnote across: day start
+hnote over es: Timer day/night toggle
 
-hnote across: day start, but light off
-
-sim -> es: Timer for day activate
-
-sim -> psm: temprature(1, "", 15)
-psm -> pim: temprature(1, "", 15)
-pim -> es: temprature(1, "", 15)
-
-sim -> es: luminence(1, "", 40)
-
-pim <- es: set_temperature(prefered_temp{15} - temp_diff{2})
-sim <- pim: switch_on(1)
-
-hnote across: day continue, light turns on
-
-sim -> es: Timer for day activate
-
-sim -> psm: temprature(1, "", 15)
-psm -> pim: temprature(1, "", 15)
-pim -> es: temprature(1, "", 15)
-
-sim -> es: luminence(1, "", 200)
-
-pim <- es: set_temperature(prefered_temp{15})
-sim <- pim: switch_on(1)
-
+pim <- es: set_temperature(prefered_temp{23} - temp_diff{2})
 
 @enduml

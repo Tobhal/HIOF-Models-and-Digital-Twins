@@ -15,11 +15,9 @@ configuration X3D_MQTT_SIM {
 
 	instance night_day_timer:TimerJava
     instance es:EnergySaver
-
  	
  	//Test 
  	instance test:Test
-	
 	
 	// PSM	
 	connector T1.provide_temp => pim.get_sensor
