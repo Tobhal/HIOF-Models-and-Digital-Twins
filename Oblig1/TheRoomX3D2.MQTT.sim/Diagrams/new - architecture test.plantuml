@@ -39,11 +39,15 @@ rectangle psm:PSM {
 'energy saver
 rectangle energy_saver:ES {
     portin send_es_cmd
+
     portin timer_port
 
     portout get_es_cmd
+
     'es prefix for clarity
     portout es_request_sensor
+
+    portout timer_port_es
 }
 
 rectangle test:Test {
@@ -66,13 +70,12 @@ toMQTT --> MQTT
 'Human
 send_cmd --> human_input
 send_cmd --> get_es_cmd
+test_timer_port --> timer_port_es
 
 'ES
-send_es_cmd --> es_input
 timer_port --> timer
+send_es_cmd --> es_input
 es_request_sensor --> require_val
-
-timer_port --> timer_port_es
 
 'PIM
 request_sensor --> require_val
@@ -82,8 +85,5 @@ human_output --> get_values
 
 guard_temperature --> temp_timer
 guard_human --> humn_timer
-
-'Test
-test_timer_port --> timer
 
 @enduml

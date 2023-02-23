@@ -1,5 +1,6 @@
 @startuml X3D2_MQTT_SIM
 
+'Timers
 rectangle night_day_timer:Timer {
     portout timer
 }
@@ -14,8 +15,7 @@ rectangle g_humn:Timer {
 
 'human
 rectangle human {
-    portin get_values
-    
+    portout get_values
     portout send_cmd
 }
 
@@ -51,11 +51,15 @@ rectangle simulation:sim {
 'energy saver
 rectangle energy_saver:ES {
     portin send_es_cmd
+
     portin timer_port
 
     portout get_es_cmd
+
     'es prefix for clarity
     portout es_request_sensor
+
+    portout timer_port_es
 }
 
 'PSM
