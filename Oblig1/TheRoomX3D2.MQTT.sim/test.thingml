@@ -4,7 +4,7 @@ import "javatimer.thingml"
 import "timestuff.thingml"
 
 
-thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsgs{
+thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsgs, TimeStuff {
 
 
 	// Sim
@@ -27,9 +27,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 	}
 
 	required port timer_port {
-		receives timer_timeout
-		sends timer_start,
-			 timer_cancel
+		sends timer_timeout
 
 	}
 
@@ -49,18 +47,17 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
     statechart test_behavior init prompt_enter {
 		on entry do
 			println("T: Start test")
+			println("Sending comfort temperature to PIM")
 			isnight = Night(Daytime)
 			send_cmd!set_temperature(prefered_temp)
-			send_cmd!set_delta(2)
 		end
 		
         state prompt_enter {
 			transition -> day_and_light_on
 			event prompt_value:get_values?prompt
-			//guard prompt_value.txt == "Now entering thermostat. Please give temperature observations " and not isnight
+			guard prompt_value.txt == "Now entering thermostat. Please give temperature observations " and not isnight
 			action do
-				println(prompt_value.txt)
-				println("T: Correct value")
+				println("T: Success")
 			end
         }
 
@@ -105,9 +102,9 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 		}
 
 		state some_time_later_2 {
-			on entry do 
+			on entry do
 				isnight = Night(Nighttime)
-				timer_port_es!timer_timeout()
+				timer_port!timer_timeout()
 				toMQTT!temperature(1, "", 20)
 			end
 
@@ -122,7 +119,6 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 		state night_start {
 			on entry do
 				// Set to night
-				toMQTT!temperature(1, "", 10)
 			end
 
 			transition -> some_time_later_3
@@ -161,7 +157,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 
 		state end_test {
 			on entry do
-				println("T9: Success")
+				println("T8: Success")
 			end
 		}
     }

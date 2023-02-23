@@ -76,7 +76,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 			transition -> Idle
 			event put_t:MQTT?temperature
 			action do
-				println("PSM recieved luminance value " + put_t.t)
+				//println("PSM recieved temperature value " + put_t.t)
 				id_s=put_t.id
 
 				i=0
@@ -89,7 +89,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 				end
 				if (found) do
 					thermoval[i-1]=put_t.t
-					println("PSM is attempting to send temperature")
+					//println("PSM is attempting to send temperature")
 					provide_temp!temperature(id_s,thermotext[i],put_t.t)				
 				end
 			end
@@ -152,7 +152,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 			transition -> Idle
 			event addlum:require_val?add_lightsensor
 			action do 
-				println("Light sensor added with id " + addlum.id)
+				//println("Light sensor added with id " + addlum.id)
 				id_s = addlum.id
 				lightsensors[last_light] = id_s
 				lightval[last_light] = 50	// Just a default value
@@ -162,7 +162,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 			transition -> Idle
 			event put_lum:MQTT?luminance
 			action do 
-				println("PSM recieved luminance value " + put_lum.lum)
+				//println("PSM recieved luminance value " + put_lum.lum)
 				id_s=put_lum.id
 
 				i = 0
@@ -177,7 +177,7 @@ thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 
 				if (found) do 
 					lightval[i-1] = put_lum.lum
-					println("PSM is attempting to send luminance")
+					//println("PSM is attempting to send luminance")
 					provide_luminance!luminance(id_s, put_lum.lum)
 				end
 			end
