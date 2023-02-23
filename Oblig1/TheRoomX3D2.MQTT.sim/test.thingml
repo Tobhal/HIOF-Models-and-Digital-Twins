@@ -38,24 +38,17 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 	property lum_on: Integer = 100
 	property lum_off: Integer = 5
 	
-	
-	property Daytime:Long = Timestamp(7,0,0)
-	property Nighttime:Long = Timestamp(23,0,0)
-	
-	property isnight:Boolean
-
     statechart test_behavior init prompt_enter {
 		on entry do
 			println("T: Start test")
 			println("Sending comfort temperature to PIM")
-			isnight = Night(Daytime)
 			send_cmd!set_temperature(prefered_temp)
 		end
 		
         state prompt_enter {
 			transition -> day_and_light_on
 			event prompt_value:get_values?prompt
-			guard prompt_value.txt == "Now entering thermostat. Please give temperature observations " and not isnight
+			guard prompt_value.txt == "Now entering thermostat. Please give temperature observations "
 			action do
 				println("T: Success")
 			end
@@ -103,14 +96,13 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 
 		state some_time_later_2 {
 			on entry do
-				isnight = Night(Nighttime)
 				timer_port!timer_timeout()
 				toMQTT!temperature(1, "", 20)
 			end
 
 			transition -> night_start
 			event switch:toMQTT?SwitchOff
-			guard switch.did == 1 and isnight
+			guard switch.did == 1
 			action do 
 				println("T4: Switch off")
 			end
@@ -119,6 +111,8 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 		state night_start {
 			on entry do
 				// Set to night
+				println("T: Testing Night")
+				toMQTT!temperature(1, "", 10)
 			end
 
 			transition -> some_time_later_3
@@ -130,8 +124,9 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 		}
 
 		state some_time_later_3 {
-			on entry do 
-				toMQTT!temperature(1, "", 14)
+			on entry do
+				timer_port!timer_timeout() 
+				toMQTT!temperature(1, "", 20)
 			end
 
 			transition -> day_start
@@ -145,6 +140,7 @@ thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsg
 		state day_start {
 			on entry do 
 				// Set to day
+				println("T: Testing day again")
 			end
 
 			transition -> end_test

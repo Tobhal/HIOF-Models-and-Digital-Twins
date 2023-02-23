@@ -9,18 +9,17 @@ import "test.thingml"
 configuration X3D_MQTT_SIM {
 	instance T1:MQTTDriver
 	instance pim:PIM
-	// instance myself:Human
 	
 	instance g_temp:TimerJava
 	instance g_humn:TimerJava
 
 	instance night_day_timer:TimerJava
     instance es:EnergySaver
-    // instance sim:Simulation
+
  	
  	//Test 
  	instance test:Test
-	connector test.timer_port => night_day_timer.timer
+	
 	
 	// PSM	
 	connector T1.provide_temp => pim.get_sensor
@@ -32,6 +31,7 @@ configuration X3D_MQTT_SIM {
 	// Human
 	connector test.send_cmd => pim.human_input
 	connector test.send_cmd => es.get_es_cmd // es gets set_luminence
+	connector test.timer_port => es.timer_port_es
 	
 	//ES
 	connector es.timer_port => night_day_timer.timer
