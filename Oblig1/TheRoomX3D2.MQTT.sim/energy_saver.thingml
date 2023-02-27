@@ -105,6 +105,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			event recieve_lum: get_es_cmd?luminance
 			guard isnight and (recieve_lum.lum<=lum_threshold)
 			action do
+				last_lum = recieve_lum.lum
 				send_es_cmd!set_temperature(comfort_temp - night_temp_delta) // night time and people not present
 				println("People are not present anymore")
 				println("New temp is " + (comfort_temp - night_temp_delta) + " for night time")
@@ -133,6 +134,20 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			action do
 				lum_threshold = fetch.lum
 			end
+			
+			internal event fetch:get_es_cmd?luminance
+			action do
+				last_lum = fetch.lum
+			end
+			
+			internal event update: timer_port_es?timer_timeout
+			action do
+					isnight = Night(Now())
+					
+					var time_left:Long = LeftOfNight()
+					timer_port!timer_start(time_left)			
+			end
+			
         } // end Present
         	
         state Day {
@@ -145,6 +160,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			event recieve_lum: get_es_cmd?luminance
 			guard recieve_lum.lum>lum_threshold
 			action do
+				last_lum = recieve_lum.lum
 				send_es_cmd!set_temperature(comfort_temp) //
 				println("Updated to comfort temp " + (comfort_temp) + " for day time")
 			end
@@ -169,6 +185,19 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 				comfort_temp = get_temp.t
 				send_es_cmd!set_temperature(comfort_temp)
 			end
+			
+			
+			internal event get_thresh:get_es_cmd?set_lum_threshold
+			action do
+				lum_threshold = get_thresh.lum
+				send_es_cmd!set_temperature(comfort_temp)
+			end
+			
+			internal event fetch:get_es_cmd?luminance
+			action do
+				last_lum = fetch.lum
+			end
+			
         } // end Day
         	
         state Night{
@@ -197,6 +226,7 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			event recieve_lum:get_es_cmd?luminance
 			guard recieve_lum.lum>lum_threshold
 			action do
+				last_lum = recieve_lum.lum
 				send_es_cmd!set_temperature(comfort_temp) // if the office is not dark
 				println("Updated to comfort temp " + (comfort_temp) + " for night time")
 			end
@@ -213,6 +243,12 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			action do
 				lum_threshold = fetch.lum
 			end
+			
+			internal event fetch:get_es_cmd?luminance
+			action do
+				last_lum = fetch.lum
+			end
+			
         } // end Night
     }// End statechart
 } // End thing

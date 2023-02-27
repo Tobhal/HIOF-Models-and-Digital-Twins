@@ -3,8 +3,8 @@ mainframe Test normal day
 
 participant "psm:PSM" as psm
 participant "pim:PIM" as pim
-participant "«TestItem»\nenerty_saver:ES" as es
-participant "«Test Component»\ntest:Test" as test
+participant "TestItem\nenerty_saver:ES" as es
+participant "Test Component\ntest:Test" as test
 
 'Set preferred temp
 es <- test: set_temperature(prefered_temp{23})
