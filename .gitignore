@@ -5,7 +5,4 @@
 *-gen/
 *.swp
 
-*.java
-*.class
-
 *.adoc
