@@ -1,0 +1,61 @@
+
+/* ThingML Framework */
+
+// Base datatypes
+import "datatypes.thingml" from stl
+
+import "pim.thingml"
+
+protocol stdio
+@serializer "JSON"
+
+// This io works only on Console
+thing Human includes TemperatureMsg, GeneralMsg, OnOffMsg, DeviceGeneral
+// TTY 
+{ 	required port send_cmd_temp {
+		sends SwitchOn, SwitchOff, set_temperature, set_delta, fetch_temp
+	}
+	provided port TTYin_temp {
+		receives SwitchOn, SwitchOff, set_temperature, set_delta, fetch_temp
+	}
+	required port get_values {
+		sends temperature, prompt
+	}
+	provided port TTYout{
+		receives temperature, prompt
+	}
+	
+	statechart HumanBehavior init Idle {
+		state Idle {
+			transition -> Idle
+			event son:TTYin_temp?SwitchOn
+			action send_cmd_temp!SwitchOn(son.did)
+			transition -> Idle
+			event sof:TTYin_temp?SwitchOff
+			action send_cmd_temp!SwitchOff(sof.did)
+			transition -> Idle
+			event st:TTYin_temp?set_temperature
+			action send_cmd_temp!set_temperature(st.t)
+			transition -> Idle
+			event sd:TTYin_temp?set_delta
+			action send_cmd_temp!set_delta(sd.dlta)
+			transition -> Idle
+			event st:TTYin_temp?fetch_temp
+			action send_cmd_temp!fetch_temp()
+			
+			transition -> Idle
+			event tp:TTYout?temperature
+			action do
+				// println "id:", tp.id, "txt:", tp.txt, "t:", tp.t
+				get_values!temperature(tp.id,tp.txt,tp.t)
+			end
+			
+			transition -> Idle
+			event prm:TTYout?prompt
+			action do
+				println prm.txt
+				// get_values!prompt(prm.txt)
+			end
+		}
+	}
+}

@@ -1,0 +1,33 @@
+import "psm.thingml"
+import "pim.thingml"
+import "io.thingml"
+import "javatimer.thingml"
+
+configuration X3D_MQTT_TTY {
+	instance T1:MQTTDriver
+	instance pim:PIM
+	instance myself:Human
+	instance g_temp:TimerJava
+	instance g_humn:TimerJava
+	
+	// PSM	
+	connector T1.provide_temp => pim.get_sensor
+		
+	// HMI
+	connector myself.send_cmd_temp => pim.human_input
+	
+	// PIM outwards 
+	connector pim.request_sensor => T1.require_val
+	connector pim.request_actuator => T1.require_val
+	connector pim.human_output => myself.TTYout
+	
+	connector pim.guard_temperature =>g_temp.timer
+	connector pim.guard_human => g_humn.timer
+
+	// TTY communication on console (see psm.thingml and io.thingml)
+	connector myself.get_values over stdio
+	connector myself.TTYin_temp over stdio
+	
+	//Receive values from Openhab connected sensors via MQTT protocol
+	connector T1.MQTT over MQTT	
+}
