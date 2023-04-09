@@ -1,0 +1,165 @@
+@startuml sequense diagram
+mainframe Test normal day
+
+participant "psm:PSM" as psm
+participant "pim:PIM" as pim
+participant "«TestItem»\nenerty_saver:ES" as es
+participant "«Test Component»\ntest:Test" as test
+
+'Set preferred temp
+es <- test: set_temperature(prefered_temp{23})
+pim <- es: set_temperature(prefered_temp{23})
+
+psm <- pim: add_light_sensor(1, "")
+
+psm <- pim: add_thermometer(1, "")
+psm <- pim: add_device(didid1, didtxt1)
+
+pim -> test: prompt("Now entering thermostat. Please give temperature observations")
+
+hnote across: T1) day and light on
+'setup compleat
+
+test -> psm: temperature(1, "", 15)
+psm -> pim: temperature(1, "", 15)
+
+test -> psm: luminence(1, "", 20)
+psm -> pim: luminence(1, "", 20)
+pim -> es: luminence(1, "", 20)
+
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
+
+/'---divider---'/
+
+hnote across: T2) some time later 1
+
+test -> psm: temperature(1, "", 25)
+psm -> pim: temperature(1, "", 25)
+
+psm <- pim: switch_off(1)
+test <- psm: switch_off(1)
+
+/'---divider---'/
+
+hnote across: T3) some time later 2
+
+test -> psm: temperature(1, "", 19)
+psm -> pim: temperature(1, "", 19)
+
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
+
+/'---divider---'/
+
+hnote across: T4) lights off
+
+test -> psm: luminence(1, "", 5)
+psm -> pim: luminence(1, "", 5)
+pim -> es: luminence(1, "", 5)
+
+pim <- es: set_temperature(prefered_temp{23} - temp_diff{2})
+
+psm <- pim: switch_off(1)
+test <- psm: switch_off(1)
+
+/'---divider---'/
+
+hnote across: T5) some time later 3
+
+test -> psm: temperature(1, "", 16)
+psm -> pim: temperature(1, "", 16)
+
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
+
+/'---divider---'/
+
+hnote across: T6) night start
+note over es: Timer day/night toggle
+es <- test: timer_timeout()
+
+pim <- es: set_temperature(prefered_temp{23} - temp_night_diff{8})
+
+psm <- pim: switch_off(1)
+test <- psm: switch_off(1)
+
+/'---divider---'/
+
+hnote across: T7) some time later 4
+
+test -> psm: temperature(1, "", 14)
+psm -> pim: temperature(1, "", 14)
+
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
+
+/'---divider---'/
+
+hnote across: T8) some time later 5
+
+test -> psm: temperature(1, "", 16)
+psm -> pim: temperature(1, "", 16)
+
+psm <- pim: switch_off(1)
+test <- psm: switch_off(1)
+
+/'---divider---'/
+
+hnote across: T9) lights on
+
+test -> psm: luminence(1, "", 20)
+psm -> pim: luminence(1, "", 20)
+pim -> es: luminence(1, "", 20)
+
+pim <- es: set_temperature(prefered_temp{23})
+
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
+
+/'---divider---'/
+
+hnote across: T10) some time later 6
+
+test -> psm: temperature(1, "", 14)
+psm -> pim: temperature(1, "", 14)
+
+psm <- pim: switch_off(1)
+test <- psm: switch_off(1)
+
+/'---divider---'/
+
+hnote across: T11) some time later 7
+
+test -> psm: temperature(1, "", 16)
+psm -> pim: temperature(1, "", 16)
+
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
+
+/'---divider---'/
+
+hnote across: T12) lights off
+
+test -> psm: luminence(1, "", 5)
+psm -> pim: luminence(1, "", 5)
+pim -> es: luminence(1, "", 5)
+
+pim <- es: set_temperature(prefered_temp{23} - temp_diff{2})
+
+psm <- pim: switch_off(1)
+test <- psm: switch_off(1)
+
+/'---divider---'/
+
+hnote across: T13) day start
+note over es: Timer day/night toggle
+
+es <- test: timer_timeout()
+
+pim <- es: set_temperature(prefered_temp{23} - temp_diff{2})
+
+psm <- pim: switch_on(1)
+test <- psm: switch_on(1)
+
+@enduml

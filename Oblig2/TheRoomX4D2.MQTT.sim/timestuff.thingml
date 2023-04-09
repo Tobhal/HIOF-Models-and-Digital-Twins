@@ -1,0 +1,51 @@
+import "datatypes.thingml" from stl
+
+thing fragment TimeStuff 
+@java_import "import java.time.LocalTime;"
+{	
+	function Now():Long // Number of milliseconds since midnight
+	do
+		var timeval:Long
+		timeval=`LocalTime.now().toNanoOfDay()/1000000`
+		return timeval
+	end
+	
+	function Timestamp(h:Integer,m:Integer, s:Integer):Long
+	do
+		return (s+m*60+h*60*60)*1000
+	end
+	
+	function LeftOfDay():Long // Number of milliseconds until night_start
+	do
+		var n:Long = Now()
+		var left:Long = night_start-n
+		if (left < 0) left = left+24*60*60*1000 // modulo day
+		if (not Night(n)) return left
+		else return 0
+	end
+
+	function LeftOfNight():Long // Number of milliseconds until night_end
+	do
+		var n:Long = Now()
+		var left:Long = night_end-n
+		if (left < 0) left = left+24*60*60*1000 // modulo day
+		if (Night(n)) return left
+		else return 0
+	end
+
+	property night_start:Long = 23*60*60*1000 // 11PM is default night time
+	property night_end:Long = 7*60*60*1000 // 7AM is default day start time
+	
+	function Night(x:Long):Boolean
+	// All timestamps are milliseconds since last midnight
+	do
+		if (night_end < night_start) do
+			if (night_start <= x or x<night_end) return true
+			else return false
+		end
+		else do
+			if (night_start <= x and x<night_end) return true
+			else return false	
+		end
+	end
+}

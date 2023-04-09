@@ -1,0 +1,27 @@
+/* ThingML Framework */
+
+// Base datatypes
+import "datatypes.thingml" from stl
+import "pim.thingml"
+import "timer.thingml"
+
+// A Mock only needs the port definition and a Swing component will be generated
+ 
+thing Human includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg
+@mock "true"
+{ 	required port send_cmd {
+		sends SwitchOn, SwitchOff, set_lum_threshold , set_temperature, set_delta, fetch_temp
+	}
+	provided port get_values {
+		receives temperature, prompt
+	}
+}
+
+//SIMULATION
+thing Simulation includes TemperatureMsg, OnOffMsg, LuminanceMsg, GeneralMsg 
+@mock "true"
+{ 	required port toMQTT {
+		sends temperature, luminance
+		receives SwitchOn, SwitchOff
+	}
+}

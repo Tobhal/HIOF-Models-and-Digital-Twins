@@ -1,0 +1,290 @@
+import "datatypes.thingml" from stl
+import "pim.thingml"
+import "javatimer.thingml"
+import "timestuff.thingml"
+
+
+thing Test includes TemperatureMsg, GeneralMsg, OnOffMsg, LuminanceMsg, TimerMsgs, TimeStuff {
+	// Sim
+    required port toMQTT {
+		sends temperature,
+			  luminance
+			  
+		receives SwitchOn,
+			  	 SwitchOff
+	} 
+	
+	// Human
+    required port send_cmd {
+		sends SwitchOn, 
+			  SwitchOff, 
+			  set_temperature, 
+			  set_delta, 
+			  fetch_temp
+	}
+
+	// Human
+	provided port get_values {
+		receives temperature, 
+				 prompt
+	}
+
+	required port timer_port {
+		sends timer_timeout
+
+	}
+
+	property prefered_temp: Integer = 23
+	property temp_diff: Integer = 2
+	property temp_night_diff: Integer = 8
+	
+	property lum_on: Integer = 100
+	property lum_off: Integer = 5
+	
+	property isNight:Boolean = Night(Now())
+	
+    statechart test_behavior init prompt_enter {
+		on entry do
+			println("T0: Start test")
+			send_cmd!set_temperature(prefered_temp)
+		end
+		
+        state prompt_enter {
+			transition -> day_and_light_on
+			event prompt_value:get_values?prompt
+			guard prompt_value.txt == "Now entering thermostat. Please give temperature observations "
+			action do
+				println("----------------------------")
+				println("T0: Sending comfort temperature to PIM")
+			end
+        }
+
+		state day_and_light_on {
+			on entry do
+				if(isNight)
+					timer_port!timer_timeout()
+				println("----------------------------")
+				println("T1: Day time and light on")
+				toMQTT!temperature(1, "", 15)
+				toMQTT!luminance(1, lum_on)
+			end
+
+			transition -> some_time_later_1
+			event switch:toMQTT?SwitchOn
+			guard switch.did == 1
+			action do 
+				println("T1: Switch on")
+			end
+		}
+
+		state some_time_later_1 {
+			on entry do 
+				toMQTT!temperature(1, "", 25)
+				println("----------------------------")
+				println("T2: Sending temperature above comfort")
+			end
+
+			transition -> some_time_later_2
+			event switch:toMQTT?SwitchOff
+			guard switch.did == 1
+			action do 
+				println("T2: Switch off")
+			end
+		}
+
+		state some_time_later_2 {
+			on entry do 
+				toMQTT!temperature(1, "", 22)
+				println("----------------------------")
+				println("T3: Sending temperature below comfort")
+			end
+
+			transition -> day_and_light_off
+			event switch:toMQTT?SwitchOn
+			guard switch.did == 1
+			action do 
+				println("T3: Switch on")
+			end
+		}
+
+		state day_and_light_off {
+			on entry do 
+				println("----------------------------")
+				println("T4: Day time and lights off")
+				toMQTT!luminance(1, lum_off)
+			end
+
+			transition -> some_time_later_3
+			event switch:toMQTT?SwitchOff
+			guard switch.did == 1
+			action do 
+				println("T4: Switch off")
+			end
+		}
+
+		state some_time_later_3 {
+			on entry do
+				println("----------------------------")
+				println("T5: Set temperature to below preferred temperature")
+				toMQTT!temperature(1, "", 16)
+			end
+
+			transition -> night_start
+			event switch:toMQTT?SwitchOn
+			guard switch.did == 1
+			action do 
+				println("T5: Switch on")
+			end
+		}
+
+		state night_start {
+			on entry do
+				println("----------------------------")
+				println("T6: Night time and lights off")
+				// Set to night
+				timer_port!timer_timeout()
+			end
+
+			transition -> some_time_later_4
+			event switch:toMQTT?SwitchOff
+			guard switch.did == 1
+			action do 
+				println("T6: Switch off")
+			end
+		}
+		
+		state some_time_later_4 {
+			on entry do
+				println("----------------------------")
+				println("T7: Change temperature to below comfort temperature")
+				toMQTT!temperature(1, "", 14)
+			end
+			transition -> some_time_later_5
+			event switch:toMQTT?SwitchOn
+			guard switch.did == 1
+			action do 
+				println("T7: Switch on")
+			end
+		}
+
+		state some_time_later_5 {
+			on entry do
+				println("----------------------------")
+				println("T8: Change temperature to above comfort temperature")
+				toMQTT!temperature(1, "", 16)
+			end
+
+			transition -> night_and_lights_on
+			event switch:toMQTT?SwitchOff
+			guard switch.did == 1
+			action do 
+				println("T8: Switch off")
+			end
+		}
+
+		state night_and_lights_on {
+			on entry do 
+				println("----------------------------")
+				println("T9: Night time and lights on")
+				toMQTT!luminance(1, lum_on)
+			end
+
+			transition -> some_time_later_6
+			event switch:toMQTT?SwitchOn
+			guard switch.did == 1
+			action do 
+				println("T9: Switch on")
+			end
+		}
+
+		state some_time_later_6 {
+			on entry do 
+				println("----------------------------")
+				println("T10: Sending temperature above comfort")
+				toMQTT!temperature(1, "", 25)
+			end
+
+			transition -> some_time_later_7
+			event switch:toMQTT?SwitchOff
+			guard switch.did == 1
+			action do 
+				println("T10: Switch off")
+			end
+		}
+
+		state some_time_later_7 {
+			on entry do 
+				println("----------------------------")
+				println("T11: Sending temperature below comfort")
+				toMQTT!temperature(1, "", 12)
+			end
+
+			transition -> day_start
+			event switch:toMQTT?SwitchOn
+			guard switch.did == 1
+			action do 
+				println("T11: Switch on")
+			end
+		}
+
+
+		state day_start {
+			on entry do 
+				// Set to day
+				timer_port!timer_timeout()
+				println("----------------------------")
+				println("T12: Day time and lights off")
+				toMQTT!luminance(1, lum_off)
+				
+			end
+
+			transition -> day_increase_temp
+			event switch:toMQTT?SwitchOn
+			guard switch.did == 1
+			action do 
+				println("T12: Switch on")
+			end
+		}
+		
+		
+			state day_increase_temp {
+			on entry do 
+				// Set to day
+				println("----------------------------")
+				println("T13: Day time and increasing temperature above comfort")
+				toMQTT!temperature(1, "", 25)		
+			end
+
+			transition -> day_light_on
+			event switch:toMQTT?SwitchOff
+			guard switch.did == 1
+			action do 
+				println("T13: Switch off")
+			end
+		}
+		
+
+			state day_light_on {
+			on entry do 
+				// Set to day
+				println("----------------------------")
+				println("T14: Day time and lights on")
+				toMQTT!luminance(1, lum_on)	
+			end
+
+			transition -> end_test
+			event switch:toMQTT?SwitchOff
+			guard switch.did == 1
+			action do 
+				println("T14: Switch off")
+			end
+		}
+
+		final state end_test {
+			on entry do
+				println("----------------------------")
+				println("All tests complete")
+			end
+		}
+    }
+}
