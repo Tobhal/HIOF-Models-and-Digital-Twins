@@ -8,13 +8,11 @@
 import "datatypes.thingml" from stl	
 import "pim_messages.thingml"
 
-/*
 protocol MQTT @serializer "JSON"
   @mqtt_broker_address "localhost"
   @mqtt_broker_port "1883" 
   @mqtt_publish_topic "CPS2021/SwitchControl"
   @mqtt_subscribe_topic "CPS2021/tempoutput";
- */
 
 thing MQTTDriver includes TemperatureMsg, OnOffMsg, GeneralMsg, LuminanceMsg {
 	// Receives
