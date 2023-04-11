@@ -1,33 +1,20 @@
-import "javatimer.thingml"
-import "timer.thingml"
-import "pim.thingml"
 import "psm.thingml"
+import "pim.thingml"
 import "io.thingml"
-import "energy_saver.thingml"
-import "test.thingml"
+import "javatimer.thingml"
 
 configuration X3D_MQTT_TTY {
 	instance T1:MQTTDriver
 	instance pim:PIM
 	instance myself:Human
-	
 	instance g_temp:TimerJava
 	instance g_humn:TimerJava
 	
-	instance night_day_timer:TimerJava
-	instance es:EnergySaver
-	
 	// PSM	
 	connector T1.provide_temp => pim.get_sensor
-	connector T1.provide_luminance => es.get_es_cmd // es gets luminenced
 		
 	// HMI
 	connector myself.send_cmd_temp => pim.human_input
-	
-	//ES
-	connector es.send_es_cmd => pim.es_input // pim gets set_temp
-	connector es.timer_port => night_day_timer.timer
-	connector es.request_sensor => T1.require_val // To add lightsensor
 	
 	// PIM outwards 
 	connector pim.request_sensor => T1.require_val
