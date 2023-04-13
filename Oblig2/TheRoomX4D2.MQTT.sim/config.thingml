@@ -17,30 +17,37 @@ configuration X3D_MQTT_TTY {
 	instance night_day_timer:TimerJava
 	instance es:EnergySaver
 	
-	// PSM	
+	/* 
+	PSM
+	*/
 	connector T1.provide_temp => pim.get_sensor
 	connector T1.provide_luminance => es.get_es_cmd // es gets luminenced
+	// Receive values from Openhab connected sensors via MQTT protocol
+	connector T1.MQTT over MQTT	
 		
-	// HMI
-	connector myself.send_cmd_temp => pim.human_input
+	/* 
+	Human
+	*/
+	connector myself.send_cmd_temp => pim.human_input	// for: switchOn, switchOff, fetch_temp
+	connector myself.send_cmd_temp => es.get_es_cmd		// for: set_temperature, set_delta
+	// TTY communication on console (see psm.thingml and io.thingml)
+	connector myself.get_values over stdio
+	connector myself.TTYin_temp over stdio
 	
-	//ES
-	connector es.send_es_cmd => pim.es_input // pim gets set_temp
+	/*
+	ES
+	*/
+	connector es.send_es_cmd => pim.es_input 		// pim gets set_temp
+	connector es.request_sensor => T1.require_val 	// To add lightsensor
 	connector es.timer_port => night_day_timer.timer
-	connector es.request_sensor => T1.require_val // To add lightsensor
 	
-	// PIM outwards 
+	/* 
+	PIM outwards 
+	*/
 	connector pim.request_sensor => T1.require_val
 	connector pim.request_actuator => T1.require_val
 	connector pim.human_output => myself.TTYout
 	
 	connector pim.guard_temperature =>g_temp.timer
 	connector pim.guard_human => g_humn.timer
-
-	// TTY communication on console (see psm.thingml and io.thingml)
-	connector myself.get_values over stdio
-	connector myself.TTYin_temp over stdio
-	
-	//Receive values from Openhab connected sensors via MQTT protocol
-	connector T1.MQTT over MQTT	
 }

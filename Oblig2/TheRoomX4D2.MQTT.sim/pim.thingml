@@ -71,6 +71,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 		on exit guard_human!timer_cancel()
 			state SetThermostat {
 				on entry do
+					println("PIM: Enter Build and Set thermostat")
 					request_sensor!add_thermometer(thermo_id,"t") // We have only one thermometer in this system
 					request_actuator!add_device(switch_id) // We have only one switch device in this system
 				end
@@ -95,6 +96,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			action do
 				tmrature = set_temp.t
 				human_output!prompt("Now entering thermostat. Please give temperature observations ") // SIMULATION: prompting on console for the user to react properly
+				println("PIM: Entering running")
 			end
 			
 			//Escape situations
@@ -120,7 +122,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			transition -> Build
 			event tmout:guard_human?timer_timeout
 			action do
-				human_output!prompt("Please continue doing the build of the temperature control")
+				human_output!prompt("Please continue doing the build of the temperature control. Send set_temperature in TTY")
 			end
 		} // end Build
 		

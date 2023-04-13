@@ -12,16 +12,29 @@ protocol stdio
 thing Human includes TemperatureMsg, GeneralMsg, OnOffMsg, DeviceGeneral
 // TTY 
 { 	required port send_cmd_temp {
-		sends SwitchOn, SwitchOff, set_temperature, set_delta, fetch_temp
+		sends SwitchOn, 
+			  SwitchOff, 
+			  set_temperature, 
+			  set_delta, 
+			  fetch_temp
 	}
+	
 	provided port TTYin_temp {
-		receives SwitchOn, SwitchOff, set_temperature, set_delta, fetch_temp
+		receives SwitchOn, 
+				 SwitchOff, 
+				 set_temperature, 
+				 set_delta, 
+				 fetch_temp
 	}
+	
 	required port get_values {
-		sends temperature, prompt
+		sends temperature, 
+			  prompt
 	}
+
 	provided port TTYout{
-		receives temperature, prompt
+		receives temperature, 
+				 prompt
 	}
 	
 	statechart HumanBehavior init Idle {

@@ -15,8 +15,11 @@ rectangle g_humn:Timer {
 
 'human
 rectangle human {
-    portout get_values
-    portout send_cmd
+    port send_cmd_temp
+    port get_values
+
+    portin TTYin_temp
+    portout TTYout
 }
 
 'PIM
@@ -66,12 +69,16 @@ rectangle energy_saver:ES {
 provide_temp --> get_sensor
 provide_luminence --> get_es_cmd
 
-'Simulation
-toMQTT --> MQTT
+'Simulation, over mqtt
+toMQTT -.> MQTT
+
+'TTY, over stdin
+get_values -.> MQTT 
+TTYin_temp -.> MQTT
 
 'Human
-send_cmd --> human_input
-send_cmd --> get_es_cmd
+send_cmd_temp --> human_input
+send_cmd_temp --> get_es_cmd
 
 'ES
 send_es_cmd --> es_input
