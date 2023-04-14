@@ -5,6 +5,7 @@ import "psm.thingml"
 import "io.thingml"
 import "energy_saver.thingml"
 import "test.thingml"
+import "room_shadow.thingml"
 
 configuration X3D_MQTT_TTY {
 	instance T1:MQTTDriver
@@ -50,4 +51,10 @@ configuration X3D_MQTT_TTY {
 	
 	connector pim.guard_temperature =>g_temp.timer
 	connector pim.guard_human => g_humn.timer
+	
+	// Shadow
+	instance sample_interval:TimerJava
+	instance room_shadow:RoomShadow
+	connector room_shadow.timer_port => sample_interval.timer
+	connector room_shadow.shadow_mqtt => T1.MQTT
 }
