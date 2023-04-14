@@ -54,6 +54,8 @@ thing EnergySaver includes TemperatureMsg, LuminanceMsg, GeneralMsg, TimeStuff, 
 			end
 			timer_port!timer_start(time_left)
 			println("Started day/night timer with " + time_left/1000 + "s until it changes again.")
+			
+			send_es_cmd!set_temperature(20)	// just to simplify testing
         end
         
         state Setup{
