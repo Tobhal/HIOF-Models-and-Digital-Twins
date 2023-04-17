@@ -9,8 +9,21 @@ current_temperature = 20.0
 time_multiplier = 2 # Change this value to speed up or slow down the shadow.
 time_interval = 5/time_multiplier
 coming_values_queue = [20.0 for x in range(5)]
-switch_on = True
-       
+switch_on = threading.Event() # This is a trick to share a boolean variable between threads.
+switch_on.set()
+
+def init_csv_file():
+    """
+    If file does not exist: creates new empty file.
+    If file exists: Deletes it, and creates a new empty file.
+    """
+    with open('shadow_output.csv', 'w') as writer:
+        writer.write("\"createAt\",\"temperature\",\"ON/OFF\"\n")
+
+def write_line_to_csf_file(minutes_since_start:float, temp:float, on_off:str):
+    with open('shadow_output.csv','a') as writer:
+        writer.write(f"{minutes_since_start},{temp},{on_off}\n")
+
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected to MQTT Broker!")
@@ -34,7 +47,7 @@ def publish_temperature(pub_temp: float, client):
 
 def get_new_temp(client): # This is where LSTM model will go.
     """Function to decide what the next measured temerature is."""
-    if switch_on:
+    if switch_on.is_set():
         coming_values_queue.append(coming_values_queue[1]+0.1)
     else:
         coming_values_queue.append(coming_values_queue[1]-0.1)
@@ -47,17 +60,21 @@ def on_message(client, userdata, msg):
     payload = msg.payload.decode() # e.g. {"SwitchOff":{"did":1}}
     mgs_data_dict = json.loads(payload) # Deserializing the payload
     if "SwitchOff" in mgs_data_dict.keys():
-        switch_on = False
-        print("Switch Off!!!!!!!!!!!!!!!!!!!")
+        switch_on.clear()
+        print(f"Switch Off")
     elif "SwitchOn" in mgs_data_dict.keys():
-        switch_on = True
-        print("Switch On!!!!!!!!!!!!!!!!!!!")
+        switch_on.set()
+        print(f"Switch On")
 
 def interrupt_timer_handler(client):
     """Function to run every time we want to publish based on a timer."""
     new_measured_temp = get_new_temp(client)
     publish_temperature(pub_temp=new_measured_temp, client=client)
-    print(f"This message was written by the timer after 5 sec.")
+    print(f"A temperature message was just published. switch_on = {switch_on}")
+
+    on_off_str = "\"ON\"" if switch_on.is_set() else "\"OFF\""
+    write_line_to_csf_file(10.0, new_measured_temp, on_off_str)
+    
 
 class MyThread(threading.Thread):
     """Threaded timer class. This lets us make a non-blocking repeating timer on a separate thread to the subscriber."""
@@ -72,6 +89,8 @@ class MyThread(threading.Thread):
         while not self.stopped.wait(time_interval):
             print("my thread")
             interrupt_timer_handler(self.pub_client)
+
+init_csv_file()
 
 stopFlag = threading.Event()
 thread = MyThread(stopFlag)
