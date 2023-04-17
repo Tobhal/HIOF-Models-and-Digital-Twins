@@ -47,8 +47,9 @@ configuration X3D_MQTT_TTY {
 	
 	
 	// Shadow
-	instance sample_interval:TimerJava
-	instance room_shadow:RoomShadow
-	connector room_shadow.timer_port => sample_interval.timer
-	connector room_shadow.shadow_mqtt => T1.MQTT
+//	instance sample_interval:TimerJava
+//	instance room_shadow:RoomShadow
+//	connector room_shadow.timer_port => sample_interval.timer
+//	connector room_shadow.shadow_mqtt => T1.MQTT
+//	connector rooom_shadow.MQTT over MQTT
 }
