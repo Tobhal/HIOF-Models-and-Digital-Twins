@@ -23,6 +23,7 @@ configuration X3D_MQTT_TTY {
 		
 	// HMI
 	connector myself.send_cmd_temp => pim.human_input
+	connector myself.send_cmd_temp => es.get_es_cmd
 	
 	//ES
 	connector es.send_es_cmd => pim.es_input // pim gets set_temp
