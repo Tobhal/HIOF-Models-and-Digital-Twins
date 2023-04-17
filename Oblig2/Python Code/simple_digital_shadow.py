@@ -1,8 +1,6 @@
 import paho.mqtt.client as paho
 import json
 import threading
-import multitimer
-import time
 
 broker="127.0.0.1"
 port=1883
@@ -31,10 +29,10 @@ def publish_temperature(pub_temp: float, client):
     }
     # Serializing JSON
     json_object = json.dumps(temp_msg, indent = None)
-    ret = client.publish( topic="CPS2021/tempoutput", payload=json_object)
-    # print(f"Broker returned: {ret}")
+    client.publish( topic="CPS2021/tempoutput", payload=json_object)
 
-def get_new_temp(client): # This is where LSTM model will go
+
+def get_new_temp(client): # This is where LSTM model will go.
     """Function to decide what the next measured temerature is."""
     if switch_on:
         coming_values_queue.append(coming_values_queue[1]+0.1)
@@ -53,15 +51,13 @@ def on_message(client, userdata, msg):
         print("Switch Off!!!!!!!!!!!!!!!!!!!")
     elif "SwitchOn" in mgs_data_dict.keys():
         switch_on = True
+        print("Switch On!!!!!!!!!!!!!!!!!!!")
 
 def interrupt_timer_handler(client):
     """Function to run every time we want to publish based on a timer."""
     new_measured_temp = get_new_temp(client)
     publish_temperature(pub_temp=new_measured_temp, client=client)
     print(f"This message was written by the timer after 5 sec.")
-    
-    # t1 = threading.Timer(time_interval, interrupt_timer_handler(client))
-    # t1.start()
 
 class MyThread(threading.Thread):
     """Threaded timer class. This lets us make a non-blocking repeating timer on a separate thread to the subscriber."""
@@ -82,9 +78,9 @@ thread = MyThread(stopFlag)
 thread.start()
 
 
-sub_client= paho.Client("sub_client")                           # Create client object
+sub_client= paho.Client("sub_client")   # Create client object.
 sub_client.on_connect = on_connect
 sub_client.on_message = on_message
-sub_client.connect(broker,port)                     # Establish connection
+sub_client.connect(broker,port) # Establish connection.
 sub_client.subscribe("CPS2021/SwitchControl")
 sub_client.loop_forever()
