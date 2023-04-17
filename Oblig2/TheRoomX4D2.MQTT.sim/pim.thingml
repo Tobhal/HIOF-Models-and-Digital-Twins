@@ -63,7 +63,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 	
 	statechart PIM_behavior init Build {
 		on entry do
-			println("Running The Room X3D2.MQTT.sim")
+			println("PIM: Running The Room X3D2.MQTT.sim")
 		end
 		
 		composite state Build init SetThermostat keeps history {
@@ -79,13 +79,13 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				transition -> SetThermostat
 				event human_input?SwitchOn
 				action do
-					human_output!prompt("Please set temperature for Thermostat")
+					human_output!prompt("PIM: Please set temperature for Thermostat")
 				end
 
 				transition -> SetThermostat
 				event human_input?SwitchOff
 				action do
-					human_output!prompt("Please set temperature for Thermostat")
+					human_output!prompt("PIM: Please set temperature for Thermostat")
 				end
 			}
 			
@@ -94,7 +94,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			event set_temp:es_input?set_temperature
 			action do
 				tmrature = set_temp.t
-				human_output!prompt("Now entering thermostat. Please give temperature observations ") // SIMULATION: prompting on console for the user to react properly
+				human_output!prompt("PIM: Now entering thermostat. Please give temperature observations ") // SIMULATION: prompting on console for the user to react properly
 			end
 			
 			//Escape situations
@@ -120,7 +120,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			transition -> Build
 			event tmout:guard_human?timer_timeout
 			action do
-				human_output!prompt("Please continue doing the build of the temperature control")
+				human_output!prompt("PIM: Please continue doing the build of the temperature control")
 			end
 		} // end Build
 		
@@ -141,7 +141,10 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				}
 				
 				state TemprIncrease { // Invariant: Switch is ON and temperature should increase
-					on entry guard_temperature!timer_start(65000)
+					on entry do 
+						guard_temperature!timer_start(65000)
+						// println("PIM: In TemprIncrease")
+					end
 					on exit guard_temperature!timer_cancel()
 				
 					transition -> TemprIncrease 
@@ -150,6 +153,8 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 					action do
 						if (lasttemp>temp.t) request_actuator!SwitchOn(switch_id) // the temperature is still falling even though switch should be ON, reactivate
 						lasttemp = temp.t
+						
+						println("PIM (Temp-): Temp = " + temp.t + ". Switch turned on")
 					end
 					
 					transition -> TemprDecrease
@@ -158,12 +163,15 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 					action do
 						request_actuator!SwitchOff(switch_id)
 						lasttemp = temp2.t
+						
+						println("PIM (Temp-): temp = " + temp2.t + ". Switch off.")
 					end
 					
 					transition -> TemprIncrease
 					event timout:guard_temperature?timer_timeout
 					action do
 						human_output!prompt("WARNING: @TemprIncrease - temperature measurement is delayed")						
+						println("PIM: Last temp: " + lasttemp + ". Comfort temp: " + tmrature)
 					end
 					
 					// Now the parameters that should not change the innermost state
@@ -171,6 +179,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 					event givedelta:human_input?set_delta
 					action do
 						delta = givedelta.dlta
+						println("PIM (Temp-): set delta = " + givedelta.dlta)
 					end
 
 					transition -> TemprIncrease
@@ -182,7 +191,10 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				}
 
 				state TemprDecrease { // Invariant: Switch is OFF and temperature should decrease
-					on entry guard_temperature!timer_start(65000) 
+					on entry do 
+						guard_temperature!timer_start(65000)
+						// println("PIM: In TemprDecrease")
+					end
 					on exit guard_temperature!timer_cancel()
 				
 					transition-> TemprDecrease
@@ -192,6 +204,8 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 						// TRACING to follow thermostat print("TempDecrease: Observed=") print(temp.t) print(" Desired ") print(tmrature) print("\n") 
 						if (lasttemp<temp.t) request_actuator!SwitchOff(switch_id) // the temperature is still rising even though switch should be OFF, reactivate
 						lasttemp = temp.t
+
+						println("PIM (Temp+): Temp = " + temp.t + ". Switch turned on")
 					end
 					
 					transition -> TemprIncrease
@@ -200,12 +214,15 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 					action do
 						request_actuator!SwitchOn(switch_id)
 						lasttemp = temp2.t
+
+						println("PIM (Temp+): Temp = " + temp2.t)
 					end
 					
 					transition -> TemprDecrease
 					event timout:guard_temperature?timer_timeout
 					action do
-						human_output!prompt("WARNING: @TemprDecrease - temperature measurement is delayed")
+						human_output!prompt("WARNING: @TemprDecrease - temperature measurement is delayed. Current temp = " + lasttemp)
+						println("PIM: Last temp: " + lasttemp + ". Comfort temp: " + tmrature)
 					end
 
 					// Now the parameters that should not change the innermost state
@@ -214,6 +231,8 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 					action do
 						// just forward the polling interval instructions to the PSM
 						delta = givedelta.dlta
+
+						println("PIM (Temp-): set delta = " + givedelta.dlta)
 					end
 
 					transition -> TemprIncrease
@@ -227,14 +246,14 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				transition -> On
 				event swon:human_input?SwitchOn
 				action do
-					human_output!prompt("Switch on")
+					human_output!prompt("PIM: Switch on")
 					request_actuator!SwitchOn(swon.did)
 				end
 
 				transition -> Off
 				event swoff:human_input?SwitchOff
 				action do
-					human_output!prompt("Switch off")
+					human_output!prompt("PIM: Switch off")
 					request_actuator!SwitchOff(swoff.did)
 				end
 
@@ -242,6 +261,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				event set_temp:es_input?set_temperature
 				action do
 					tmrature = set_temp.t
+					println("PIM: Temperature = " + set_temp.t)
 				end
 			} // end Thermostat
 			
@@ -249,14 +269,14 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				transition -> Off
 				event swoff:human_input?SwitchOff
 				action do
-					human_output!prompt("Switch off")
+					human_output!prompt("PIM: Switch off")
 					request_actuator!SwitchOff(swoff.did)
 				end
 
 				transition -> On
 				event swon:human_input?SwitchOn
 				action do
-					human_output!prompt("Switch on")
+					human_output!prompt("PIM: Switch on")
 					request_actuator!SwitchOn(swon.did)
 				end
 
@@ -264,6 +284,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				event set_temp:es_input?set_temperature
 				action do
 					tmrature = set_temp.t
+					println("PIM (On): Temperature = " + set_temp.t)
 				end
 
 				transition -> On
@@ -278,14 +299,14 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				transition -> Off
 				event swoff:human_input?SwitchOff
 				action do
-					human_output!prompt("Switch off")
+					human_output!prompt("PIM: Switch off")
 					request_actuator!SwitchOff(swoff.did)
 				end
 
 				transition -> On
 				event swon:human_input?SwitchOn
 				action do
-					human_output!prompt("Switch on")
+					human_output!prompt("PIM: Switch on")
 					request_actuator!SwitchOn(swon.did)
 				end
 
@@ -293,6 +314,7 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 				event set_temp:es_input?set_temperature
 				action do
 					tmrature = set_temp.t
+					println("PIM (On): Temperature = " + set_temp.t)
 				end
 
 				transition -> Off
@@ -322,25 +344,25 @@ thing PIM includes GeneralMsg, TemperatureMsg, OnOffMsg, TimerMsgs {
 			transition -> Running
 			event human_input?SwitchOn
 			action do
-				human_output!prompt("INTERNAL ERROR: Impossible SwitchOn at PIM.Running")
+				human_output!prompt("PIM: INTERNAL ERROR: Impossible SwitchOn at PIM.Running")
 			end
 
 			transition -> Running
 			event human_input?SwitchOff
 			action do
-				human_output!prompt("INTERNAL ERROR: Impossible SwitchOff at PIM.Running")
+				human_output!prompt("PIM: INTERNAL ERROR: Impossible SwitchOff at PIM.Running")
 			end
 
 			transition -> Running
 			event es_input?set_temperature
 			action do
-				human_output!prompt("INTERNAL ERROR: Impossible set_temperature at PIM.Running")
+				human_output!prompt("PIM: INTERNAL ERROR: Impossible set_temperature at PIM.Running")
 			end
 
 			transition -> Running
 			event temp:get_sensor?temperature
 			action do
-				human_output!prompt("INTERNAL ERROR: temperature received at PIM.Running")
+				human_output!prompt("PIM: INTERNAL ERROR: temperature received at PIM.Running")
 				lasttemp = temp.t
 			end
 
