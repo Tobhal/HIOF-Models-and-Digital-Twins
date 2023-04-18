@@ -6,31 +6,44 @@ import "javatimer.thingml"
  * This is the digital Shadow of Oystein's Room based on some data from his room.
  * To increase the speed of the shadow, decrease the property called time_interval_ms
  */
+protocol MQTT @serializer "JSON"
+  @mqtt_broker_address "localhost"
+  @mqtt_broker_port "1883"
+  @mqtt_publish_topic "CPS2021/tempoutput"
+  @mqtt_subscribe_topic "CPS2021/SwitchControl";
+  
 thing RoomShadow includes OnOffMsg, TemperatureMsg, TimeStuff, TimerMsgs
 	{
-	provided port switch_control {
-		
-	}
-	
-	required port shadow_mqtt {
-		sends temperature
-		receives SwitchOn, SwitchOff
-	}
 	
 	required port timer_port{
 		receives timer_timeout
 		sends timer_start
 	}
 	
-	property current_temp:Float = 20.0
+	provided port MQTT{
+		receives SwitchOn, SwitchOff
+		sends temperature
+	}
+	
+	property current_temp:Double = 20.0 //Currently measured temperature
 	property switch_on_state:Boolean = true 
 //	property time_multiplier:Integer = 1
-	property time_interval_ms:Integer = 10*1000 //  10 s
-
+	property time_interval_ms:Integer = 1*1000 //  10 s
+	property coming_temperatures:Double[6]// List of coming temperatures as the measured temp lags slightly behind reality.
+	property i:Integer // index to keep track of lists
+	
 	statechart RoomSimulation init Setup{
 		state Setup{
 			on entry do
 				timer_port!timer_start(time_interval_ms)
+				// Initialize list coming_temperatures
+				i = 0
+				while (i<6) do
+					coming_temperatures[i] = 20.0
+					//println("Adding value " + coming_temperatures[i] + " at index" + i)
+					i = i + 1
+				end
+				
 			end
 			transition -> SwitchStateOn
 			guard switch_on_state == true
@@ -41,28 +54,51 @@ thing RoomShadow includes OnOffMsg, TemperatureMsg, TimeStuff, TimerMsgs
 		
 		state SwitchStateOn{
 			transition -> SwitchStateOff
-			event swoff:shadow_mqtt?SwitchOff
+			event swoff:MQTT?SwitchOff
 			
 			transition -> SwitchStateOn
 			event newtemp:timer_port?timer_timeout
 			action do
-				current_temp = current_temp+0.5
+				// Pop last vaslue in coming_temperatures as current_temp
+				current_temp = coming_temperatures[5]
+				i = 5
+				while (i>0) do
+					coming_temperatures[i] = coming_temperatures[i-1]
+					i = i - 1
+				end
+				//Push new value into coming_temperature list
+				coming_temperatures[0] = coming_temperatures[1] + 0.1
+				
+				
+//				current_temp = current_temp+0.1
 				println("Switch is On | New temp from shadow room " + current_temp)
-				shadow_mqtt!temperature(1,"temperature ",current_temp)	
+				MQTT!temperature(1,"temperature ",current_temp)	
 				timer_port!timer_start(time_interval_ms)
 			end
 		} //End state SwitchOn
 		
 		state SwitchStateOff{
 			transition -> SwitchStateOn
-			event swon:shadow_mqtt?SwitchOn
+			event swon:MQTT?SwitchOn
 			
 			transition -> SwitchStateOff
 			event newtemp:timer_port?timer_timeout
 			action do
-				current_temp = current_temp-0.5
+			
+				// Pop last vaslue in coming_temperatures as current_temp
+				current_temp = coming_temperatures[5]
+				i = 5
+				while (i>0) do
+					coming_temperatures[i] = coming_temperatures[i-1]
+					i = i - 1
+				end
+				//Push new value into coming_temperature list
+				coming_temperatures[0] = coming_temperatures[1] - 0.1
+			
+			
+//				current_temp = current_temp-0.1
 				println("Switch is Off | New temp from shadow room " + current_temp)
-				shadow_mqtt!temperature(1,"temperature ",current_temp)
+				MQTT!temperature(1,"temperature ",current_temp)
 				timer_port!timer_start(time_interval_ms)
 			end
 		} //End state SwitchOff
