@@ -6,12 +6,13 @@ broker="127.0.0.1"
 port=1883
 
 current_temperature = 20.0
-time_multiplier = 30 # Change this value to speed up or slow down the shadow.
-time_interval = 60/time_multiplier
-coming_values_queue = [20.0 for x in range(5)]
+time_multiplier = 1000 # Change this value to speed up or slow down the shadow. 1 means realtime.
+time_interval = 60/time_multiplier # How many seconds a simulated minute takes to run.
+coming_values_queue = [20.0 for x in range(5)] # FIFO queue 
 switch_on = threading.Event() # This is a trick to share a boolean variable between threads.
 switch_on.set()
 min_since_start = 0.0
+slope = 1.0
 
 def init_csv_file():
     """
@@ -45,14 +46,22 @@ def publish_temperature(pub_temp: float, client):
     json_object = json.dumps(temp_msg, indent = None)
     client.publish( topic="CPS2021/tempoutput", payload=json_object)
 
-def get_new_temp(client): # This is where LSTM model will go.
-    """Function to decide what the next measured temerature is."""
+def get_new_temp(client): # This is where LSTM model could go.
+    """
+    Function to decide what the next measured temerature is.
+    Adds new values on right of list and removes from left.
+    """
+    global slope
     if switch_on.is_set():
-        coming_values_queue.append(coming_values_queue[1]+0.1)
+        coming_values_queue.append(round(coming_values_queue[-1]+slope,3))
+        slope += 0.01
     else:
-        coming_values_queue.append(coming_values_queue[1]-0.1)
-        
-    measured_temp = coming_values_queue.pop()
+        coming_values_queue.append(round(coming_values_queue[-1]+slope,3))
+        slope -= 0.01
+    
+    measured_temp = coming_values_queue[0]
+    del coming_values_queue[0]
+    print(coming_values_queue)
     return measured_temp
 
 def on_message(client, userdata, msg):
@@ -88,7 +97,6 @@ class MyThread(threading.Thread):
 
     def run(self):
         while not self.stopped.wait(time_interval):
-            print("my thread")
             interrupt_timer_handler(self.pub_client)
 
 init_csv_file()
