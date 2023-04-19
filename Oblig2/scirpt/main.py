@@ -18,7 +18,7 @@ import threading
 sleep_time = 1
 
 last_temp = 16.0
-switch_on = 0
+switch_on = 1
 last_hour = 0.0
 last_minute = 15
 
